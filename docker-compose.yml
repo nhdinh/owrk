@@ -1,0 +1,345 @@
+services:
+  # ======================
+  # INFRASTRUCTURE SERVICES
+  # ======================
+
+  # PostgreSQL - Write Database
+  postgres:
+    image: postgres:14-alpine
+    container_name: asset_postgres
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: secret123
+      POSTGRES_DB: asset_management
+      POSTGRES_MULTIPLE_DATABASES: auth_db,asset_db,procurement_db,maintenance_db,notification_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./scripts/init-postgres.sh:/docker-entrypoint-initdb.d/init-postgres.sh
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # MongoDB - Read Database (for CQRS)
+  mongodb:
+    image: mongo:7
+    container_name: asset_mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: secret123
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb-data:/data/db
+    networks:
+      - backend
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis - Caching & Session Store
+  redis:
+    image: redis:7-alpine
+    container_name: asset_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    command: redis-server --appendonly yes
+
+  # RabbitMQ - Message Queue (for CQRS & Event-Driven)
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: asset_rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    ports:
+      - "5672:5672"      # AMQP port
+      - "15672:15672"    # Management UI
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    networks:
+      - backend
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ======================
+  # API GATEWAY
+  # ======================
+
+  nginx:
+    image: nginx:alpine
+    container_name: asset_nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - auth-service
+      - asset-service
+      - procurement-service
+      - maintenance-service
+      - report-service
+      - notification-service
+    networks:
+      - backend
+    restart: unless-stopped
+
+  # ======================
+  # MICROSERVICES
+  # ======================
+
+  # Auth Service
+  auth-service:
+    build:
+      context: ./services/auth
+      dockerfile: Dockerfile
+    container_name: auth-service
+    environment:
+      - DATABASE_URL=postgresql://admin:secret123@postgres:5432/asset_management
+      - MONGODB_URL=mongodb://admin:secret123@mongodb:27017/
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=your-super-secret-jwt-key-change-in-production
+      - JWT_ALGORITHM=HS256
+      - ACCESS_TOKEN_EXPIRE_MINUTES=480
+      - REFRESH_TOKEN_EXPIRE_DAYS=7
+      - MFA_ISSUER=AssetManagement
+      - AD_SERVER=ldap://ad.company.local
+      - AD_DOMAIN=company.local
+      - AD_BIND_DN=CN=admin,DC=company,DC=local
+      - AD_BIND_PASSWORD=ad_password
+      - AD_SEARCH_BASE=OU=Users,DC=company,DC=local
+      - ENVIRONMENT=development
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - backend
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Asset Service
+  asset-service:
+    build:
+      context: ./services/asset
+      dockerfile: Dockerfile
+    container_name: asset-service
+    environment:
+      - DATABASE_URL=postgresql://admin:secret123@postgres:5432/asset_management
+      - MONGODB_URL=mongodb://admin:secret123@mongodb:27017/
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+      - REDIS_URL=redis://redis:6379
+      - FILE_STORAGE_PATH=/app/uploads
+      - AUTH_SERVICE_URL=http://auth-service:8000
+      - ENVIRONMENT=development
+    volumes:
+      - asset-uploads:/app/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - backend
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Procurement Service
+  procurement-service:
+    build:
+      context: ./services/procurement
+      dockerfile: Dockerfile
+    container_name: procurement-service
+    environment:
+      - DATABASE_URL=postgresql://admin:secret123@postgres:5432/asset_management
+      - MONGODB_URL=mongodb://admin:secret123@mongodb:27017/
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+      - REDIS_URL=redis://redis:6379
+      - AUTH_SERVICE_URL=http://auth-service:8000
+      - ASSET_SERVICE_URL=http://asset-service:8000
+      - ENVIRONMENT=development
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - backend
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Maintenance Service
+  maintenance-service:
+    build:
+      context: ./services/maintenance
+      dockerfile: Dockerfile
+    container_name: maintenance-service
+    environment:
+      - DATABASE_URL=postgresql://admin:secret123@postgres:5432/asset_management
+      - MONGODB_URL=mongodb://admin:secret123@mongodb:27017/
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+      - REDIS_URL=redis://redis:6379
+      - AUTH_SERVICE_URL=http://auth-service:8000
+      - ASSET_SERVICE_URL=http://asset-service:8000
+      - ENVIRONMENT=development
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - backend
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Report Service
+  report-service:
+    build:
+      context: ./services/report
+      dockerfile: Dockerfile
+    container_name: report-service
+    environment:
+      - MONGODB_URL=mongodb://admin:secret123@mongodb:27017/
+      - REDIS_URL=redis://redis:6379
+      - AUTH_SERVICE_URL=http://auth-service:8000
+      - ASSET_SERVICE_URL=http://asset-service:8000
+      - PROCUREMENT_SERVICE_URL=http://procurement-service:8000
+      - MAINTENANCE_SERVICE_URL=http://maintenance-service:8000
+      - ENVIRONMENT=development
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - backend
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Notification Service
+  notification-service:
+    build:
+      context: ./services/notification
+      dockerfile: Dockerfile
+    container_name: notification-service
+    environment:
+      - DATABASE_URL=postgresql://admin:secret123@postgres:5432/asset_management
+      - MONGODB_URL=mongodb://admin:secret123@mongodb:27017/
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+      - REDIS_URL=redis://redis:6379
+      - SMTP_HOST=smtp.gmail.com
+      - SMTP_PORT=587
+      - SMTP_USER=noreply@company.com
+      - SMTP_PASSWORD=smtp_password
+      - SMTP_FROM=noreply@company.com
+      - ENVIRONMENT=development
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - backend
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ======================
+  # FRONTEND
+  # ======================
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: asset-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - nginx
+    networks:
+      - backend
+    restart: unless-stopped
+
+# ======================
+# NETWORKS
+# ======================
+
+networks:
+  backend:
+    driver: bridge
+
+# ======================
+# VOLUMES
+# ======================
+
+volumes:
+  postgres-data:
+    driver: local
+  mongodb-data:
+    driver: local
+  redis-data:
+    driver: local
+  rabbitmq-data:
+    driver: local
+  asset-uploads:
+    driver: local
