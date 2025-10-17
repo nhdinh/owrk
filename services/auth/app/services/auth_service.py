@@ -2,16 +2,26 @@
 Authentication Service - Business Logic for Authentication
 """
 
+import logging
 from typing import Optional, Dict
 from datetime import datetime, timedelta
 
 from app.core.unit_of_work import UnitOfWork
 from app.core.security import (
-    verify_password, hash_password,
-    create_access_token, create_refresh_token, create_temp_token, decode_token,
-    generate_totp_secret, generate_totp_uri, generate_qr_code, verify_totp,
-    generate_backup_codes, hash_backup_code, verify_backup_code,
-    generate_reset_token
+    verify_password,
+    hash_password,
+    create_access_token,
+    create_refresh_token,
+    create_temp_token,
+    decode_token,
+    generate_totp_secret,
+    generate_totp_uri,
+    generate_qr_code,
+    verify_totp,
+    generate_backup_codes,
+    hash_backup_code,
+    verify_backup_code,
+    generate_reset_token,
 )
 from app.core.active_directory import ad_service
 from app.core.config import settings
@@ -47,6 +57,12 @@ class AuthService:
         """
         with UnitOfWork() as uow:
             # Get user by email
+            logger = logging.getLogger(__name__)
+
+            users = uow.users.get_active_users()
+            logger.info("user = ")
+            logger.info(users)
+
             user = uow.users.get_by_email(email)
             if not user:
                 raise ValueError("Invalid email or password")
@@ -62,14 +78,23 @@ class AuthService:
             # Authenticate based on user type
             if user.user_type == "local":
                 # Local user: verify password hash
-                if not user.hashed_password or not verify_password(password, user.hashed_password):
+                if not user.hashed_password or not verify_password(
+                    password, user.hashed_password
+                ):
                     uow.users.increment_failed_attempts(user.id)
 
                     # Lock account if too many failed attempts
-                    if user.failed_login_attempts + 1 >= AuthService.MAX_FAILED_ATTEMPTS:
-                        uow.users.lock_account(user.id, AuthService.LOCKOUT_DURATION_MINUTES)
+                    if (
+                        user.failed_login_attempts + 1
+                        >= AuthService.MAX_FAILED_ATTEMPTS
+                    ):
+                        uow.users.lock_account(
+                            user.id, AuthService.LOCKOUT_DURATION_MINUTES
+                        )
                         uow.commit()
-                        raise ValueError(f"Too many failed attempts. Account locked for {AuthService.LOCKOUT_DURATION_MINUTES} minutes")
+                        raise ValueError(
+                            f"Too many failed attempts. Account locked for {AuthService.LOCKOUT_DURATION_MINUTES} minutes"
+                        )
 
                     uow.commit()
                     raise ValueError("Invalid email or password")
@@ -80,10 +105,17 @@ class AuthService:
                 if not ad_user:
                     uow.users.increment_failed_attempts(user.id)
 
-                    if user.failed_login_attempts + 1 >= AuthService.MAX_FAILED_ATTEMPTS:
-                        uow.users.lock_account(user.id, AuthService.LOCKOUT_DURATION_MINUTES)
+                    if (
+                        user.failed_login_attempts + 1
+                        >= AuthService.MAX_FAILED_ATTEMPTS
+                    ):
+                        uow.users.lock_account(
+                            user.id, AuthService.LOCKOUT_DURATION_MINUTES
+                        )
                         uow.commit()
-                        raise ValueError(f"Too many failed attempts. Account locked for {AuthService.LOCKOUT_DURATION_MINUTES} minutes")
+                        raise ValueError(
+                            f"Too many failed attempts. Account locked for {AuthService.LOCKOUT_DURATION_MINUTES} minutes"
+                        )
 
                     uow.commit()
                     raise ValueError("Active Directory authentication failed")
@@ -102,11 +134,13 @@ class AuthService:
             return LoginResponse(
                 temp_token=temp_token,
                 requires_mfa=user.mfa_enabled,
-                message="OTP required" if user.mfa_enabled else "Login successful"
+                message="OTP required" if user.mfa_enabled else "Login successful",
             )
 
     @staticmethod
-    async def login_step2_mfa(temp_token: str, otp_code: str, ip_address: str, user_agent: str) -> TokenResponse:
+    async def login_step2_mfa(
+        temp_token: str, otp_code: str, ip_address: str, user_agent: str
+    ) -> TokenResponse:
         """
         Step 2 of login: Verify MFA OTP code
         Returns final access and refresh tokens
@@ -139,12 +173,16 @@ class AuthService:
 
             # If MFA is not enabled, skip verification
             if not user.mfa_enabled:
-                return await AuthService._generate_tokens(user, ip_address, user_agent, uow)
+                return await AuthService._generate_tokens(
+                    user, ip_address, user_agent, uow
+                )
 
             # Verify TOTP code
             if user.mfa_secret and verify_totp(user.mfa_secret, otp_code):
                 uow.users.update_last_login(user.id, ip_address)
-                tokens = await AuthService._generate_tokens(user, ip_address, user_agent, uow)
+                tokens = await AuthService._generate_tokens(
+                    user, ip_address, user_agent, uow
+                )
                 uow.commit()
                 return tokens
 
@@ -153,16 +191,22 @@ class AuthService:
             for backup_code in backup_codes:
                 if verify_backup_code(otp_code, backup_code.code_hash):
                     # Mark backup code as used
-                    uow.mfa_backup_codes.mark_code_as_used(user_id, backup_code.code_hash)
+                    uow.mfa_backup_codes.mark_code_as_used(
+                        user_id, backup_code.code_hash
+                    )
                     uow.users.update_last_login(user.id, ip_address)
-                    tokens = await AuthService._generate_tokens(user, ip_address, user_agent, uow)
+                    tokens = await AuthService._generate_tokens(
+                        user, ip_address, user_agent, uow
+                    )
                     uow.commit()
                     return tokens
 
             raise ValueError("Invalid OTP code")
 
     @staticmethod
-    async def _generate_tokens(user: User, ip_address: str, user_agent: str, uow: UnitOfWork) -> TokenResponse:
+    async def _generate_tokens(
+        user: User, ip_address: str, user_agent: str, uow: UnitOfWork
+    ) -> TokenResponse:
         """
         Generate access and refresh tokens for user
 
@@ -176,26 +220,23 @@ class AuthService:
             TokenResponse with tokens and user info
         """
         # Create access token
-        access_token = create_access_token({
-            "sub": user.id,
-            "email": user.email,
-            "type": "access"
-        })
+        access_token = create_access_token(
+            {"sub": user.id, "email": user.email, "type": "access"}
+        )
 
         # Create refresh token
-        refresh_token_str = create_refresh_token({
-            "sub": user.id,
-            "email": user.email,
-            "type": "refresh"
-        })
+        refresh_token_str = create_refresh_token(
+            {"sub": user.id, "email": user.email, "type": "refresh"}
+        )
 
         # Store refresh token in database
         refresh_token = RefreshToken(
             user_id=user.id,
             token=refresh_token_str,
-            expires_at=datetime.utcnow() + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS),
+            expires_at=datetime.utcnow()
+            + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS),
             ip_address=ip_address,
-            user_agent=user_agent
+            user_agent=user_agent,
         )
         uow.refresh_tokens.create(refresh_token)
 
@@ -209,8 +250,8 @@ class AuthService:
                 "email": user.email,
                 "full_name": user.full_name,
                 "user_type": user.user_type,
-                "mfa_enabled": user.mfa_enabled
-            }
+                "mfa_enabled": user.mfa_enabled,
+            },
         )
 
     @staticmethod
@@ -243,11 +284,9 @@ class AuthService:
                 raise ValueError("User not found or inactive")
 
             # Create new access token
-            access_token = create_access_token({
-                "sub": user.id,
-                "email": user.email,
-                "type": "access"
-            })
+            access_token = create_access_token(
+                {"sub": user.id, "email": user.email, "type": "access"}
+            )
 
             return TokenResponse(
                 access_token=access_token,
@@ -259,8 +298,8 @@ class AuthService:
                     "email": user.email,
                     "full_name": user.full_name,
                     "user_type": user.user_type,
-                    "mfa_enabled": user.mfa_enabled
-                }
+                    "mfa_enabled": user.mfa_enabled,
+                },
             )
 
     @staticmethod
@@ -318,17 +357,14 @@ class AuthService:
             uow.mfa_backup_codes.delete_all_user_codes(user_id)
             for code in backup_codes_plain:
                 backup_code = MFABackupCode(
-                    user_id=user_id,
-                    code_hash=hash_backup_code(code)
+                    user_id=user_id, code_hash=hash_backup_code(code)
                 )
                 uow.mfa_backup_codes.create(backup_code)
 
             uow.commit()
 
             return MFASetupResponse(
-                secret=secret,
-                qr_code_url=qr_code_url,
-                backup_codes=backup_codes_plain
+                secret=secret, qr_code_url=qr_code_url, backup_codes=backup_codes_plain
             )
 
     @staticmethod
@@ -363,7 +399,12 @@ class AuthService:
             return True
 
     @staticmethod
-    async def disable_mfa(user_id: int, password: str, otp_code: Optional[str] = None, backup_code: Optional[str] = None) -> bool:
+    async def disable_mfa(
+        user_id: int,
+        password: str,
+        otp_code: Optional[str] = None,
+        backup_code: Optional[str] = None,
+    ) -> bool:
         """
         Disable MFA for user
 
@@ -386,7 +427,9 @@ class AuthService:
 
             # Verify password
             if user.user_type == "local":
-                if not user.hashed_password or not verify_password(password, user.hashed_password):
+                if not user.hashed_password or not verify_password(
+                    password, user.hashed_password
+                ):
                     raise ValueError("Invalid password")
 
             # If MFA is enabled, verify OTP or backup code
@@ -441,7 +484,9 @@ class AuthService:
 
             # Only local users can reset password
             if user.user_type != "local":
-                raise ValueError("Password reset not available for Active Directory users")
+                raise ValueError(
+                    "Password reset not available for Active Directory users"
+                )
 
             # Generate reset token
             token = generate_reset_token()
@@ -453,7 +498,7 @@ class AuthService:
             reset_token = PasswordResetToken(
                 user_id=user.id,
                 token=token,
-                expires_at=datetime.utcnow() + timedelta(hours=1)
+                expires_at=datetime.utcnow() + timedelta(hours=1),
             )
             uow.password_reset_tokens.create(reset_token)
 
@@ -529,7 +574,11 @@ class AuthService:
 
         with UnitOfWork() as uow:
             # Check if user exists by AD sync ID
-            user = uow.users.get_by_ad_sync_id(ad_user_info["ad_sync_id"]) if ad_user_info.get("ad_sync_id") else None
+            user = (
+                uow.users.get_by_ad_sync_id(ad_user_info["ad_sync_id"])
+                if ad_user_info.get("ad_sync_id")
+                else None
+            )
 
             if user:
                 # Update existing user
@@ -550,7 +599,7 @@ class AuthService:
                     department=ad_user_info.get("department"),
                     phone_number=ad_user_info.get("phone_number"),
                     position=ad_user_info.get("position"),
-                    is_active=True
+                    is_active=True,
                 )
                 user = uow.users.create(user)
 

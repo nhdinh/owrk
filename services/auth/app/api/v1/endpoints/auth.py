@@ -4,6 +4,8 @@ Authentication API Endpoints
 
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from typing import Optional
+import logging
+import traceback
 
 from app.schemas.auth_schema import (
     LoginRequest, LoginResponse,
@@ -17,6 +19,7 @@ from app.services.auth_service import AuthService
 from app.core.dependencies import get_current_user, require_role
 from app.models.user import User
 
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -41,7 +44,9 @@ async def login_step1(
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(e))
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Login failed")
+        logger.error(f"Login error for {request.email}: {str(e)}")
+        logger.error(traceback.format_exc())
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Login failed: {str(e)}")
 
 
 @router.post("/verify-otp", response_model=TokenResponse)

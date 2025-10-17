@@ -5,6 +5,28 @@ Configuration settings for Auth Service
 from pydantic_settings import BaseSettings
 from typing import List
 import os
+from urllib.parse import quote_plus
+
+
+# Read secrets from files
+DATABASE_PASSWORD: str = "secret123"
+postgres_passwd_file = os.getenv("POSTGRES_PASSWD_FILE")
+if postgres_passwd_file and os.path.exists(postgres_passwd_file):
+    with open(postgres_passwd_file, "r") as f:
+        DATABASE_PASSWORD = f.read().strip()
+
+# JWT Settings
+JWT_SECRET: str = "your-super-secret-jwt-key-change-in-production"
+jwt_secret_file = os.getenv("JWT_SECRET_KEY_FILE")
+if jwt_secret_file and os.path.exists(jwt_secret_file):
+    with open(jwt_secret_file, "r") as f:
+        JWT_SECRET = f.read().strip()
+
+MONGO_PASSWD: str = "secret123"
+mongo_passwd_file = os.getenv("MONGO_PASSWD_FILE")
+if mongo_passwd_file and os.path.exists(mongo_passwd_file):
+    with open(mongo_passwd_file, "r") as f:
+        MONGO_PASSWD = f.read().strip()
 
 
 class Settings(BaseSettings):
@@ -14,25 +36,40 @@ class Settings(BaseSettings):
 
     # Application
     APP_NAME: str = "Asset Management - Auth Service"
-    ENVIRONMENT: str = "development"
-    DEBUG: bool = True
+    ENVIRONMENT: str = os.getenv("ENVIRONMENT", "development")
+    DEBUG: bool = ENVIRONMENT == "development"
 
     # Database - PostgreSQL (Write DB)
-    DATABASE_URL: str = "postgresql://admin:secret123@localhost:5432/asset_management"
+    DATABASE_USER: str = os.getenv("DATABASE_USER", "admin")
+    DATABASE_NAME: str = os.getenv("DATABASE_NAME", "asset_management")
+    DATABASE_HOST: str = os.getenv("DATABASE_HOST", "postgres")
+    DATABASE_PORT: str = os.getenv("DATABASE_PORT", "5432")
+
+    DATABASE_URL: str = (
+        f"postgresql://{DATABASE_USER}:{quote_plus(DATABASE_PASSWORD)}@{DATABASE_HOST}:{DATABASE_PORT}/{DATABASE_NAME}"
+    )
     DB_SCHEMA: str = "auth_db"
 
     # MongoDB (Read DB for CQRS)
-    MONGODB_URL: str = "mongodb://admin:secret123@localhost:27017/"
+    MONGODB_HOST: str = os.getenv("MONGODB_HOST", "mongodb")
+    MONGODB_PORT: str = os.getenv("MONGODB_PORT", "27017")
+    MONGODB_URL: str = (
+        f"mongodb://admin:{quote_plus(MONGO_PASSWD)}@{MONGODB_HOST}:{MONGODB_PORT}/"
+    )
     MONGODB_DB_NAME: str = "asset_management_read"
 
     # RabbitMQ
-    RABBITMQ_URL: str = "amqp://guest:guest@localhost:5672/"
+    RABBITMQ_HOST: str = os.getenv("RABBITMQ_HOST", "rabbitmq")
+    RABBITMQ_PORT: str = os.getenv("RABBITMQ_PORT", "5672")
+    RABBITMQ_URL: str = f"amqp://guest:guest@{RABBITMQ_HOST}:{RABBITMQ_PORT}/"
 
     # Redis
-    REDIS_URL: str = "redis://localhost:6379"
+    REDIS_HOST: str = os.getenv("REDIS_HOST", "redis")
+    REDIS_PORT: str = os.getenv("REDIS_PORT", "6379")
+    REDIS_URL: str = f"redis://{REDIS_HOST}:{REDIS_PORT}"
 
     # JWT Settings
-    JWT_SECRET: str = "your-super-secret-jwt-key-change-in-production"
+    JWT_SECRET: str = JWT_SECRET  # Use the global variable loaded from file
     JWT_ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 480  # 8 hours
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
@@ -42,7 +79,7 @@ class Settings(BaseSettings):
     MFA_BACKUP_CODES_COUNT: int = 10
 
     # Active Directory Settings
-    AD_SERVER: str = "ldap://ad.company.local"
+    AD_SERVER: str = os.getenv("AD_SERVER", "ldap://ad.company.local")
     AD_DOMAIN: str = "company.local"
     AD_BIND_DN: str = "CN=admin,DC=company,DC=local"
     AD_BIND_PASSWORD: str = "ad_password"

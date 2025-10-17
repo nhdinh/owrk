@@ -1,3 +1,12 @@
+secrets:
+  postgres_passwd:
+    file: ./.secrets/postgres_passwd.txt
+  mongo_passwd:
+    file: ./.secrets/mongo_passwd.txt
+  jwt_secret_key:
+    file: ./.secrets/jwt_secret_key.txt
+    
+
 services:
   # ======================
   # INFRASTRUCTURE SERVICES
@@ -5,18 +14,21 @@ services:
 
   # PostgreSQL - Write Database
   postgres:
-    image: postgres:14-alpine
+    build:
+      context: ./postgres
+      dockerfile: Dockerfile
     container_name: asset_postgres
+    secrets:
+      - postgres_passwd
     environment:
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: secret123
-      POSTGRES_DB: asset_management
+      POSTGRES_USR: ${POSTGRES_USR}
+      POSTGRES_PASSWD_FILE: /run/secrets/postgres_passwd
       POSTGRES_MULTIPLE_DATABASES: auth_db,asset_db,procurement_db,maintenance_db,notification_db
     ports:
       - "5432:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
-      - ./scripts/init-postgres.sh:/docker-entrypoint-initdb.d/init-postgres.sh
+      # - ./scripts/init-postgres.sh:/docker-entrypoint-initdb.d/init-postgres.sh
     networks:
       - backend
     healthcheck:
@@ -29,7 +41,10 @@ services:
   mongodb:
     image: mongo:7
     container_name: asset_mongodb
+    secrets:
+      - mongo_passwd
     environment:
+      MONGO_PASSWD_FILE: /run/secrets/mongo_passwd
       MONGO_INITDB_ROOT_USERNAME: admin
       MONGO_INITDB_ROOT_PASSWORD: secret123
     ports:
@@ -85,25 +100,25 @@ services:
   # API GATEWAY
   # ======================
 
-  nginx:
-    image: nginx:alpine
-    container_name: asset_nginx
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./nginx/ssl:/etc/nginx/ssl:ro
-    depends_on:
-      - auth-service
-      - asset-service
-      - procurement-service
-      - maintenance-service
-      - report-service
-      - notification-service
-    networks:
-      - backend
-    restart: unless-stopped
+  # nginx:
+  #   image: nginx:alpine
+  #   container_name: asset_nginx
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
+  #   volumes:
+  #     - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+  #     - ./nginx/ssl:/etc/nginx/ssl:ro
+  #   depends_on:
+  #     - auth-service
+  #     - asset-service
+  #     - procurement-service
+  #     - maintenance-service
+  #     - report-service
+  #     - notification-service
+  #   networks:
+  #     - backend
+  #   restart: unless-stopped
 
   # ======================
   # MICROSERVICES
@@ -115,22 +130,30 @@ services:
       context: ./services/auth
       dockerfile: Dockerfile
     container_name: auth-service
+    secrets:
+      - jwt_secret_key
+      - postgres_passwd
+      - mongo_passwd
     environment:
-      - DATABASE_URL=postgresql://admin:secret123@postgres:5432/asset_management
-      - MONGODB_URL=mongodb://admin:secret123@mongodb:27017/
-      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
-      - REDIS_URL=redis://redis:6379
-      - JWT_SECRET=your-super-secret-jwt-key-change-in-production
-      - JWT_ALGORITHM=HS256
-      - ACCESS_TOKEN_EXPIRE_MINUTES=480
-      - REFRESH_TOKEN_EXPIRE_DAYS=7
-      - MFA_ISSUER=AssetManagement
-      - AD_SERVER=ldap://ad.company.local
-      - AD_DOMAIN=company.local
-      - AD_BIND_DN=CN=admin,DC=company,DC=local
-      - AD_BIND_PASSWORD=ad_password
-      - AD_SEARCH_BASE=OU=Users,DC=company,DC=local
-      - ENVIRONMENT=development
+      ENVIRONMENT: development
+      DATABASE_USER: ${POSTGRES_USR}
+      POSTGRES_PASSWD_FILE: /run/secrets/postgres_passwd
+      DATABASE_NAME: ${POSTGRES_DB_NAME}
+      MONGO_PASSWD_FILE: /run/secrets/mongo_passwd
+      JWT_SECRET_KEY_FILE: /run/secrets/jwt_secret_key
+      JWT_ALGORITHM: HS256
+      ACCESS_TOKEN_EXPIRE_MINUTES: 480
+      REFRESH_TOKEN_EXPIRE_DAYS: 7
+      MFA_ISSUER: AssetManagement
+      AD_SERVER: ldap://ad.company.local
+      AD_DOMAIN: company.local
+      AD_BIND_DN: CN=admin,DC=company,DC=local
+      AD_BIND_PASSWORD: ad_password
+      AD_SEARCH_BASE: OU=Users,DC=company,DC=local
+    volumes:
+      - ./services/auth/app:/app/app:ro
+    ports:
+      - "8088:8000"
     depends_on:
       postgres:
         condition: service_healthy
@@ -150,175 +173,178 @@ services:
       retries: 3
       start_period: 40s
 
-  # Asset Service
-  asset-service:
+  # Frontend Service (FastAPI + Jinja)
+  frontend-service:
     build:
-      context: ./services/asset
+      context: ./services/frontend
       dockerfile: Dockerfile
-    container_name: asset-service
+    container_name: frontend-service
+    secrets:
+      - jwt_secret_key
     environment:
-      - DATABASE_URL=postgresql://admin:secret123@postgres:5432/asset_management
-      - MONGODB_URL=mongodb://admin:secret123@mongodb:27017/
-      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
-      - REDIS_URL=redis://redis:6379
-      - FILE_STORAGE_PATH=/app/uploads
-      - AUTH_SERVICE_URL=http://auth-service:8000
-      - ENVIRONMENT=development
-    volumes:
-      - asset-uploads:/app/uploads
+      JWT_SECRET_KEY_FILE: /run/secrets/jwt_secret_key
+      API_BASE: http://auth-service:8000/api/v1
+    ports:
+      - "3000:3000"
     depends_on:
-      postgres:
-        condition: service_healthy
-      mongodb:
-        condition: service_healthy
-      rabbitmq:
+      auth-service:
         condition: service_healthy
     networks:
       - backend
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+
+  # Asset Service
+  # asset-service:
+  #   build:
+  #     context: ./services/asset
+  #     dockerfile: Dockerfile
+  #   container_name: asset-service
+  #   environment:
+  #     - DATABASE_URL=postgresql://admin:secret123@postgres:5432/asset_management
+  #     - MONGODB_URL=mongodb://admin:secret123@mongodb:27017/
+  #     - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+  #     - REDIS_URL=redis://redis:6379
+  #     - FILE_STORAGE_PATH=/app/uploads
+  #     - AUTH_SERVICE_URL=http://auth-service:8000
+  #     - ENVIRONMENT=development
+  #   volumes:
+  #     - asset-uploads:/app/uploads
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #     mongodb:
+  #       condition: service_healthy
+  #     rabbitmq:
+  #       condition: service_healthy
+  #   networks:
+  #     - backend
+  #   restart: unless-stopped
+  #   healthcheck:
+  #     test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
 
   # Procurement Service
-  procurement-service:
-    build:
-      context: ./services/procurement
-      dockerfile: Dockerfile
-    container_name: procurement-service
-    environment:
-      - DATABASE_URL=postgresql://admin:secret123@postgres:5432/asset_management
-      - MONGODB_URL=mongodb://admin:secret123@mongodb:27017/
-      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
-      - REDIS_URL=redis://redis:6379
-      - AUTH_SERVICE_URL=http://auth-service:8000
-      - ASSET_SERVICE_URL=http://asset-service:8000
-      - ENVIRONMENT=development
-    depends_on:
-      postgres:
-        condition: service_healthy
-      mongodb:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
-    networks:
-      - backend
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+  # procurement-service:
+  #   build:
+  #     context: ./services/procurement
+  #     dockerfile: Dockerfile
+  #   container_name: procurement-service
+  #   environment:
+  #     - DATABASE_URL=postgresql://admin:secret123@postgres:5432/asset_management
+  #     - MONGODB_URL=mongodb://admin:secret123@mongodb:27017/
+  #     - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+  #     - REDIS_URL=redis://redis:6379
+  #     - AUTH_SERVICE_URL=http://auth-service:8000
+  #     - ASSET_SERVICE_URL=http://asset-service:8000
+  #     - ENVIRONMENT=development
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #     mongodb:
+  #       condition: service_healthy
+  #     rabbitmq:
+  #       condition: service_healthy
+  #   networks:
+  #     - backend
+  #   restart: unless-stopped
+  #   healthcheck:
+  #     test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
 
   # Maintenance Service
-  maintenance-service:
-    build:
-      context: ./services/maintenance
-      dockerfile: Dockerfile
-    container_name: maintenance-service
-    environment:
-      - DATABASE_URL=postgresql://admin:secret123@postgres:5432/asset_management
-      - MONGODB_URL=mongodb://admin:secret123@mongodb:27017/
-      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
-      - REDIS_URL=redis://redis:6379
-      - AUTH_SERVICE_URL=http://auth-service:8000
-      - ASSET_SERVICE_URL=http://asset-service:8000
-      - ENVIRONMENT=development
-    depends_on:
-      postgres:
-        condition: service_healthy
-      mongodb:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
-    networks:
-      - backend
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+  # maintenance-service:
+  #   build:
+  #     context: ./services/maintenance
+  #     dockerfile: Dockerfile
+  #   container_name: maintenance-service
+  #   environment:
+  #     - DATABASE_URL=postgresql://admin:secret123@postgres:5432/asset_management
+  #     - MONGODB_URL=mongodb://admin:secret123@mongodb:27017/
+  #     - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+  #     - REDIS_URL=redis://redis:6379
+  #     - AUTH_SERVICE_URL=http://auth-service:8000
+  #     - ASSET_SERVICE_URL=http://asset-service:8000
+  #     - ENVIRONMENT=development
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #     mongodb:
+  #       condition: service_healthy
+  #     rabbitmq:
+  #       condition: service_healthy
+  #   networks:
+  #     - backend
+  #   restart: unless-stopped
+  #   healthcheck:
+  #     test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
 
   # Report Service
-  report-service:
-    build:
-      context: ./services/report
-      dockerfile: Dockerfile
-    container_name: report-service
-    environment:
-      - MONGODB_URL=mongodb://admin:secret123@mongodb:27017/
-      - REDIS_URL=redis://redis:6379
-      - AUTH_SERVICE_URL=http://auth-service:8000
-      - ASSET_SERVICE_URL=http://asset-service:8000
-      - PROCUREMENT_SERVICE_URL=http://procurement-service:8000
-      - MAINTENANCE_SERVICE_URL=http://maintenance-service:8000
-      - ENVIRONMENT=development
-    depends_on:
-      mongodb:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    networks:
-      - backend
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+  # report-service:
+  #   build:
+  #     context: ./services/report
+  #     dockerfile: Dockerfile
+  #   container_name: report-service
+  #   environment:
+  #     - MONGODB_URL=mongodb://admin:secret123@mongodb:27017/
+  #     - REDIS_URL=redis://redis:6379
+  #     - AUTH_SERVICE_URL=http://auth-service:8000
+  #     - ASSET_SERVICE_URL=http://asset-service:8000
+  #     - PROCUREMENT_SERVICE_URL=http://procurement-service:8000
+  #     - MAINTENANCE_SERVICE_URL=http://maintenance-service:8000
+  #     - ENVIRONMENT=development
+  #   depends_on:
+  #     mongodb:
+  #       condition: service_healthy
+  #     redis:
+  #       condition: service_healthy
+  #   networks:
+  #     - backend
+  #   restart: unless-stopped
+  #   healthcheck:
+  #     test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
 
   # Notification Service
-  notification-service:
-    build:
-      context: ./services/notification
-      dockerfile: Dockerfile
-    container_name: notification-service
-    environment:
-      - DATABASE_URL=postgresql://admin:secret123@postgres:5432/asset_management
-      - MONGODB_URL=mongodb://admin:secret123@mongodb:27017/
-      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
-      - REDIS_URL=redis://redis:6379
-      - SMTP_HOST=smtp.gmail.com
-      - SMTP_PORT=587
-      - SMTP_USER=noreply@company.com
-      - SMTP_PASSWORD=smtp_password
-      - SMTP_FROM=noreply@company.com
-      - ENVIRONMENT=development
-    depends_on:
-      postgres:
-        condition: service_healthy
-      mongodb:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
-    networks:
-      - backend
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
-  # ======================
-  # FRONTEND
-  # ======================
-
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    container_name: asset-frontend
-    ports:
-      - "3000:80"
-    depends_on:
-      - nginx
-    networks:
-      - backend
-    restart: unless-stopped
+  # notification-service:
+  #   build:
+  #     context: ./services/notification
+  #     dockerfile: Dockerfile
+  #   container_name: notification-service
+  #   environment:
+  #     - DATABASE_URL=postgresql://admin:secret123@postgres:5432/asset_management
+  #     - MONGODB_URL=mongodb://admin:secret123@mongodb:27017/
+  #     - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+  #     - REDIS_URL=redis://redis:6379
+  #     - SMTP_HOST=smtp.gmail.com
+  #     - SMTP_PORT=587
+  #     - SMTP_USER=noreply@company.com
+  #     - SMTP_PASSWORD=smtp_password
+  #     - SMTP_FROM=noreply@company.com
+  #     - ENVIRONMENT=development
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #     mongodb:
+  #       condition: service_healthy
+  #     rabbitmq:
+  #       condition: service_healthy
+  #   networks:
+  #     - backend
+  #   restart: unless-stopped
+  #   healthcheck:
+  #     test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
 
 # ======================
 # NETWORKS

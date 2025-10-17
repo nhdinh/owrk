@@ -1,0 +1,33 @@
+Generic single-database configuration for Auth Service.
+
+## Commands
+
+### Create a new migration (auto-generate from models)
+```bash
+alembic revision --autogenerate -m "description of changes"
+```
+
+### Create an empty migration
+```bash
+alembic revision -m "description of changes"
+```
+
+### Apply migrations
+```bash
+alembic upgrade head
+```
+
+### Downgrade one version
+```bash
+alembic downgrade -1
+```
+
+### Show current version
+```bash
+alembic current
+```
+
+### Show migration history
+```bash
+alembic history
+```
