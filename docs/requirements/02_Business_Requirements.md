@@ -1,0 +1,776 @@
+# YÊU CẦU NGHIỆP VỤ CHI TIẾT
+
+## 1. GIỚI THIỆU
+
+### 1.1. Mục đích tài liệu
+
+Tài liệu này mô tả chi tiết các yêu cầu nghiệp vụ cho Hệ thống Quản lý Trang thiết bị Văn phòng, bao gồm các quy trình, nghiệp vụ và yêu cầu chức năng cụ thể.
+
+### 1.2. Đối tượng người đọc
+
+- Product Owner
+- Business Analyst
+- Developers
+- Testers
+- Stakeholders
+
+## 2. PHÂN TÍCH NGHIỆP VỤ
+
+### 2.1. Bối cảnh nghiệp vụ hiện tại
+
+**Vấn đề:**
+
+- Quản lý thiết bị bằng Excel, dễ thất lạc, sai sót
+- Không theo dõi được lịch sử thay đổi
+- Quy trình phê duyệt thủ công, chậm, thiếu minh bạch
+- Khó khăn trong việc kiểm kê, đối chiếu
+- Không có cảnh báo bảo trì, bảo hành
+- Báo cáo thủ công, tốn thời gian
+
+**Nhu cầu:**
+
+- Số hóa toàn bộ quy trình
+- Tự động hóa workflow phê duyệt
+- Theo dõi real-time
+- Cảnh báo thông minh
+- Báo cáo tự động
+
+## 3. YÊU CẦU CHỨC NĂNG CHI TIẾT
+
+### 3.1. Quản lý Người dùng và Phân quyền
+
+#### 3.1.1. Đăng nhập và Xác thực
+
+**FR-AUTH-001**: Đăng nhập
+
+- **Mô tả**: Người dùng đăng nhập bằng email/ username và mật khẩu. Hệ thống hỗ trợ người dùng local và người dùng đồng bộ từ Active Directory Server. Đăng nhập yêu cầu MFA thông qua OTP code (Authenticator)
+- **Input**: Email, Password
+- **Output**: JWT Token (access_token và refresh_token), User Info
+- **Validation**:
+  - Email/ username bắt buộc, đúng định dạng
+  - Password bắt buộc, tối thiểu 8 ký tự
+  - Khóa tài khoản sau 5 lần nhập sai
+- **Business Rules**:
+  - Session timeout sau 8 giờ không hoạt động
+  - Hỗ trợ "Remember me" (7 ngày)
+
+**FR-AUTH-002**: Đăng xuất
+
+- Xóa session, vô hiệu hóa token
+
+**FR-AUTH-003**: Quên mật khẩu
+
+- Gửi email reset password link
+- Link có hiệu lực 30 phút
+
+**FR-AUTH-004**: Đổi mật khẩu
+
+- Yêu cầu mật khẩu cũ
+- Mật khẩu mới khác mật khẩu cũ
+- Validate độ mạnh mật khẩu
+
+#### 3.1.2. Quản lý Người dùng
+
+**FR-USER-001**: Tạo người dùng mới
+
+- **Thông tin bắt buộc**: Họ tên, Email, Phòng ban, Vai trò
+- **Thông tin tùy chọn**: Số điện thoại, Địa chỉ, Chức vụ
+- **Validation**:
+  - Email unique trong hệ thống
+  - Số điện thoại đúng định dạng
+
+**FR-USER-002**: Cập nhật thông tin người dùng
+
+- Admin/Manager cập nhật thông tin người dùng
+- Người dùng tự cập nhật thông tin cá nhân (trừ vai trò)
+
+**FR-USER-003**: Vô hiệu hóa/Kích hoạt người dùng
+
+- Không xóa vĩnh viễn, chỉ deactivate
+- User bị deactivate không thể đăng nhập
+
+**FR-USER-004**: Phân quyền
+
+- **Vai trò**:
+  - **Super Admin**: Full quyền hệ thống
+  - **Admin**: Quản lý thiết bị, người dùng, phê duyệt
+  - **Manager**: Quản lý thiết bị phòng ban, phê duyệt đề xuất
+  - **Staff**: Xem, tạo đề xuất, yêu cầu sửa chữa
+  - **Viewer**: Chỉ xem
+
+### 3.2. Quản lý Phòng ban
+
+**FR-DEPT-001**: Tạo phòng ban
+
+- **Thông tin**: Tên phòng ban, Mã phòng ban, Trưởng phòng, Mô tả
+
+**FR-DEPT-002**: Cập nhật phòng ban
+
+- Thay đổi thông tin, trưởng phòng
+
+**FR-DEPT-003**: Cấu trúc phòng ban
+
+- Hỗ trợ phòng ban cha - con (phòng → tổ)
+
+**FR-DEPT-004**: Xóa phòng ban
+
+- Chỉ xóa được khi không còn nhân viên và thiết bị
+
+### 3.3. Quản lý Danh mục Thiết bị
+
+#### 3.3.1. Loại thiết bị
+
+**FR-CAT-001**: Quản lý nhóm thiết bị
+
+- **Nhóm mặc định**: IT Equipment, Furniture, Electrical, Office Supplies
+- Admin tạo nhóm tùy chỉnh
+
+**FR-CAT-002**: Quản lý danh mục con
+
+- Ví dụ: IT Equipment → Laptop, Desktop, Monitor, Printer...
+
+**FR-CAT-003**: Phân loại thiết bị theo quy định kế toán
+
+- **Loại tài sản**: Tài sản cố định (áp dụng khấu hao)
+- **Loại công cụ**: Công cụ dụng cụ (không áp dụng khấu hao)
+- Tiêu chí phân loại: Dựa vào giá trị theo quy định kế toán
+
+#### 3.3.2. Thông tin thiết bị
+
+**FR-ASSET-001**: Tạo mới thiết bị
+
+- **Thông tin cơ bản**:
+  - Mã tài sản (auto-generate hoặc nhập thủ công)
+  - Tên tài sản/thiết bị
+  - Loại thiết bị (Tài sản cố định / Công cụ dụng cụ)
+  - Nhóm thiết bị (IT, Nội thất, Điện máy, Phương tiện...)
+  - Danh mục con
+  - Nhà sản xuất
+  - Model/Serial Number
+  - Năm sản xuất
+- **Thông tin tài chính**:
+  - Giá mua
+  - Ngày mua
+  - **Áp dụng cho Tài sản cố định**:
+    - Phương thức khấu hao (đường thẳng/số dư giảm dần)
+    - Thời gian khấu hao (năm)
+    - Giá trị thanh lý dự kiến
+    - Giá trị còn lại (tự động tính)
+- **Thông tin bảo hành**:
+  - Ngày bắt đầu bảo hành
+  - Thời hạn bảo hành (tháng)
+  - Nhà cung cấp bảo hành
+- **Thông tin vị trí**:
+  - Phòng ban
+  - Vị trí cụ thể (tầng, phòng)
+  - Người sử dụng
+- **Trạng thái**:
+  - Mới (New)
+  - Đang sử dụng (In Use)
+  - Đang bảo trì (Under Maintenance)
+  - Hỏng (Damaged)
+  - Chờ thanh lý (Pending Disposal)
+  - Đã thanh lý (Disposed)
+
+**FR-ASSET-002**: Cập nhật thông tin thiết bị
+
+- Cho phép cập nhật tất cả các trường
+- Ghi lại lịch sử thay đổi
+
+**FR-ASSET-003**: Xem thông tin thiết bị
+
+- Hiển thị đầy đủ thông tin
+- Lịch sử thay đổi
+- Lịch sử bảo trì
+- Lịch sử cấp phát
+
+**FR-ASSET-004**: Tìm kiếm thiết bị
+
+- Tìm theo: mã tài sản, tên, loại, phòng ban, người dùng, trạng thái
+- Filter: theo giá trị, năm mua, hạn bảo hành
+- Sort: theo tên, giá trị, ngày mua
+
+**FR-ASSET-005**: Import thiết bị hàng loạt
+
+- Upload file Excel/CSV
+- Validate dữ liệu
+- Preview trước khi import
+- Báo lỗi chi tiết
+
+**FR-ASSET-006**: Export danh sách thiết bị
+
+- Export Excel/CSV/PDF
+- Filter trước khi export
+
+**FR-ASSET-007**: In mã QR/Barcode
+
+- Generate QR code chứa thông tin thiết bị
+- In tem dán lên thiết bị
+- Quét QR để tra cứu nhanh
+
+**FR-ASSET-008**: Đính kèm tài liệu
+
+- Upload hóa đơn, giấy tờ bảo hành, hướng dẫn sử dụng
+- Hỗ trợ: PDF, Image, Word, Excel
+- Giới hạn: 10MB/file, tối đa 10 files
+
+### 3.4. Quy trình Mua sắm và Cấp phát
+
+#### 3.4.1. Đề xuất mua sắm
+
+**FR-REQ-001**: Tạo đề xuất mua sắm
+
+- **Người tạo**: Staff trở lên
+- **Thông tin**:
+  - Loại thiết bị
+  - Số lượng
+  - Lý do mua sắm
+  - Ngân sách dự kiến
+  - Độ ưu tiên (Cao/Trung bình/Thấp)
+  - Ngày cần thiết
+  - File đính kèm (báo giá, specifications)
+
+**FR-REQ-002**: Quy trình phê duyệt
+
+- **Luồng phê duyệt**:
+  1. **Nhân viên** tạo đề xuất → Trạng thái: Draft
+  2. Submit → Trạng thái: Pending → Gửi cho Trưởng phòng
+  3. **Trưởng phòng** phê duyệt cấp 1 → Approved_Level1/Rejected
+     - Nếu Approved_Level1 → Gửi cho Phòng HCNS
+     - Nếu Rejected → Kết thúc (có thể sửa và gửi lại)
+  4. **Trưởng phòng HCNS** phê duyệt cấp 2 → Approved_Level2/Rejected
+     - Nếu Approved_Level2 → Gửi cho Ban Giám đốc
+     - Nếu Rejected → Kết thúc
+  5. **Ban Giám đốc (Director)** phê duyệt cấp 3 → Approved/Rejected
+     - Nếu Approved → Phòng HCNS triển khai mua sắm
+     - Nếu Rejected → Kết thúc
+- **Thông báo**: Email/notification cho người phê duyệt ở mỗi cấp
+- **Lưu ý**: Mỗi cấp có thể Reject kèm lý do
+
+**FR-REQ-003**: Sửa đề xuất
+
+- Chỉ sửa khi trạng thái Draft hoặc Rejected
+- Sau khi sửa Rejected → chuyển về Pending
+
+**FR-REQ-004**: Hủy đề xuất
+
+- Người tạo hủy khi Draft/Pending
+- Admin hủy mọi lúc
+
+#### 3.4.2. Quy trình mua sắm (Phòng HCNS)
+
+**FR-PURCH-001**: Kiểm tra hợp đồng khung
+
+- Kiểm tra xem đã có hợp đồng khung với nhà cung cấp cho loại thiết bị này chưa
+- Nếu có → Chuyển sang FR-PURCH-003
+- Nếu chưa → Chuyển sang FR-PURCH-002
+
+**FR-PURCH-002**: Quy trình chào giá (khi chưa có hợp đồng)
+
+- **Bước 1**: Lập Báo cáo đề xuất mua sắm
+  - Tổng hợp từ các đề xuất đã được phê duyệt
+  - Thông số kỹ thuật yêu cầu
+  - Số lượng, ngân sách
+- **Bước 2**: Soạn thư mời chào giá
+  - Gửi cho danh sách nhà cung cấp (tối thiểu 3 nhà)
+  - Thời hạn chào giá
+  - Yêu cầu kỹ thuật, điều khoản
+- **Bước 3**: Nhận và quản lý thư chào giá
+  - Lưu trữ các thư chào giá
+  - Đính kèm file PDF, tài liệu
+  - Tracking trạng thái (Đã gửi mời/Đã nhận chào giá/Chưa phản hồi)
+- **Bước 4**: Đánh giá và chọn nhà cung cấp
+  - So sánh bảng giá
+  - Chọn giá chào thấp nhất (hoặc theo tiêu chí đánh giá)
+  - Ghi nhận lý do chọn
+- **Bước 5**: Ký hợp đồng khung
+  - Thông tin hợp đồng: số hợp đồng, ngày ký, giá trị, thời hạn
+  - Đính kèm file hợp đồng đã ký
+  - Lưu vào hệ thống
+
+**FR-PURCH-003**: Tạo đơn hàng (khi đã có hợp đồng)
+
+- Liên kết với đề xuất đã được duyệt
+- Chọn nhà cung cấp có hợp đồng giá thấp nhất
+- **Thông tin đơn hàng**:
+  - Số đơn hàng (auto-generate)
+  - Nhà cung cấp
+  - Danh sách thiết bị và số lượng
+  - Giá mua (theo hợp đồng)
+  - Ngày đặt hàng
+  - Ngày dự kiến nhận
+  - Ghi chú
+  - File đính kèm
+
+**FR-PURCH-004**: Nhà cung cấp xác nhận đơn hàng
+
+- Trạng thái: Pending Confirmation → Confirmed
+- Ghi nhận ngày xác nhận
+
+**FR-PURCH-005**: Ký hợp đồng hoặc đơn hàng
+
+- Nếu giá trị lớn: Ký hợp đồng riêng
+- Nếu giá trị nhỏ: Ký trên đơn hàng
+- Upload file đã ký
+
+**FR-PURCH-006**: Theo dõi trạng thái đơn hàng
+
+- Ordered → Confirmed → In Transit → Delivered → Received
+
+**FR-PURCH-007**: Nhận hàng và nghiệm thu
+
+- Xác nhận số lượng nhận
+- Kiểm tra chất lượng
+- Tạo biên bản nghiệm thu
+- Tạo thiết bị vào hệ thống
+- Cập nhật trạng thái đơn hàng: Completed
+- Liên kết hóa đơn, chứng từ
+
+#### 3.4.3. Cấp phát thiết bị
+
+**FR-ASSIGN-001**: Cấp phát cho nhân viên
+
+- Chọn thiết bị (trạng thái: New hoặc Available)
+- Chọn nhân viên
+- Ngày cấp phát
+- Ghi chú
+- Tạo biên bản bàn giao (có thể in)
+
+**FR-ASSIGN-002**: Thu hồi thiết bị
+
+- Ghi nhận ngày thu hồi
+- Lý do thu hồi
+- Kiểm tra tình trạng
+- Cập nhật trạng thái thiết bị
+
+**FR-ASSIGN-003**: Chuyển đổi thiết bị
+
+- Thu hồi từ người A
+- Cấp phát cho người B
+- Ghi lại lịch sử
+
+**FR-ASSIGN-004**: Cấp phát cho phòng ban
+
+- Thiết bị dùng chung (máy in, điều hòa...)
+- Không gắn với cá nhân cụ thể
+
+### 3.5. Quản lý Bảo trì và Sửa chữa
+
+**FR-MAINT-001**: Lập lịch bảo trì định kỳ
+
+- **Thông tin**:
+  - Thiết bị/Loại thiết bị
+  - Chu kỳ bảo trì (3 tháng/6 tháng/1 năm)
+  - Nội dung bảo trì
+  - Đơn vị thực hiện (nội bộ/bên ngoài)
+- **Cảnh báo**: Thông báo trước 7 ngày
+
+**FR-MAINT-002**: Tạo yêu cầu sửa chữa
+
+- **Người tạo**: Người đang sử dụng thiết bị
+- **Thông tin**:
+  - Thiết bị
+  - Mô tả lỗi
+  - Mức độ ưu tiên
+  - Ảnh đính kèm
+- **Workflow**:
+  1. User tạo yêu cầu → Pending
+  2. Admin assign cho kỹ thuật viên → In Progress
+  3. Kỹ thuật viên xử lý → Resolved/Need Purchase
+  4. User xác nhận → Closed
+
+**FR-MAINT-003**: Ghi nhận bảo trì/sửa chữa
+
+- Ngày thực hiện
+- Người thực hiện
+- Nội dung công việc
+- Chi phí
+- Phụ tùng thay thế
+- Trạng thái thiết bị sau xử lý
+
+**FR-MAINT-004**: Lịch sử bảo trì
+
+- Xem toàn bộ lịch sử bảo trì của thiết bị
+- Tổng chi phí bảo trì
+- Số lần sửa chữa
+
+### 3.6. Quản lý Nhà cung cấp
+
+**FR-VENDOR-001**: Tạo nhà cung cấp
+
+- **Thông tin**:
+  - Tên công ty
+  - Mã số thuế
+  - Địa chỉ
+  - Người liên hệ
+  - Email, Số điện thoại
+  - Lĩnh vực cung cấp
+  - Đánh giá (1-5 sao)
+
+**FR-VENDOR-002**: Cập nhật thông tin nhà cung cấp
+
+**FR-VENDOR-003**: Xem lịch sử giao dịch với nhà cung cấp
+
+- Danh sách đơn hàng
+- Tổng giá trị
+- Danh sách thiết bị đã mua
+
+### 3.7. Kiểm kê
+
+**FR-AUDIT-001**: Tạo phiếu kiểm kê
+
+- Chọn phạm vi: Toàn công ty/Phòng ban/Loại thiết bị
+- Ngày bắt đầu - kết thúc
+- Người phụ trách
+- Danh sách thiết bị cần kiểm
+
+**FR-AUDIT-002**: Thực hiện kiểm kê
+
+- Quét QR code để check-in
+- Hoặc tick thủ công
+- Ghi nhận tình trạng hiện tại
+- Ghi chú bất thường
+
+**FR-AUDIT-003**: Đối chiếu
+
+- So sánh thực tế vs hệ thống
+- Thiết bị thừa (có thực tế, không có trong hệ thống)
+- Thiết bị thiếu (có trong hệ thống, không tìm thấy)
+- Sai lệch về trạng thái, vị trí
+
+**FR-AUDIT-004**: Báo cáo kiểm kê
+
+- Tỷ lệ chính xác
+- Danh sách thiết bị có vấn đề
+- Đề xuất xử lý
+
+### 3.8. Báo cáo và Thống kê
+
+**FR-REPORT-001**: Dashboard tổng quan
+
+- Tổng số thiết bị
+- Tổng giá trị tài sản
+- Phân bổ theo phòng ban (biểu đồ tròn)
+- Phân bổ theo loại thiết bị
+- Trạng thái thiết bị (biểu đồ cột)
+- Chi phí bảo trì 6 tháng gần nhất
+
+**FR-REPORT-002**: Báo cáo thiết bị theo phòng ban
+
+- Danh sách thiết bị
+- Giá trị
+- Xuất Excel/PDF
+
+**FR-REPORT-003**: Báo cáo khấu hao
+
+- Giá trị còn lại theo năm
+- Dự kiến khấu hao năm tới
+
+**FR-REPORT-004**: Báo cáo bảo trì
+
+- Chi phí bảo trì theo tháng/quý/năm
+- Top thiết bị tốn chi phí bảo trì nhất
+- Tỷ lệ sự cố theo loại thiết bị
+
+**FR-REPORT-005**: Báo cáo cảnh báo
+
+- Thiết bị sắp hết hạn bảo hành (< 30 ngày)
+- Thiết bị cần bảo trì định kỳ
+- Thiết bị lâu không sử dụng (> 6 tháng)
+- Thiết bị hỏng chưa sửa
+
+**FR-REPORT-006**: Báo cáo mua sắm
+
+- Tổng chi phí mua sắm theo tháng/quý
+- Theo phòng ban
+- Theo nhà cung cấp
+
+### 3.9. Thông báo
+
+**FR-NOTIF-001**: Thông báo trong hệ thống
+
+- Icon notification badge
+- Danh sách thông báo
+- Đánh dấu đã đọc
+
+**FR-NOTIF-002**: Email notification
+
+- Có thể bật/tắt trong cài đặt cá nhân
+- **Sự kiện gửi email**:
+  - Đề xuất cần phê duyệt
+  - Đề xuất được duyệt/từ chối
+  - Thiết bị được cấp phát
+  - Yêu cầu sửa chữa được xử lý
+  - Cảnh báo bảo hành/bảo trì
+  - Thiết bị cần thu hồi
+
+**FR-NOTIF-003**: Cấu hình thông báo
+
+- Admin cấu hình template email
+- User cấu hình preference
+
+### 3.10. Cài đặt hệ thống
+
+**FR-CONFIG-001**: Cài đặt chung
+
+- Tên công ty
+- Logo
+- Email hệ thống
+- Múi giờ
+- Ngôn ngữ
+
+**FR-CONFIG-002**: Cấu hình quy trình phê duyệt
+
+- Ngưỡng giá trị cần phê duyệt thêm
+- Người phê duyệt mặc định
+
+**FR-CONFIG-003**: Cấu hình mã tài sản
+
+- Format: Prefix + Number
+- Ví dụ: IT-2025-0001
+
+**FR-CONFIG-004**: Sao lưu và khôi phục
+
+- Sao lưu database tự động
+- Tải xuống file backup
+- Khôi phục từ backup
+
+## 4. YÊU CẦU PHI CHỨC NĂNG
+
+### 4.1. Hiệu năng
+
+- **NFR-PERF-001**: Thời gian tải trang < 2s (mạng 4G)
+- **NFR-PERF-002**: API response time < 500ms (95 percentile)
+- **NFR-PERF-003**: Hỗ trợ 100 concurrent users
+- **NFR-PERF-004**: Database query < 200ms
+
+### 4.2. Bảo mật
+
+- **NFR-SEC-001**: Mã hóa mật khẩu bằng bcrypt (salt rounds >= 10)
+- **NFR-SEC-002**: HTTPS cho mọi kết nối
+- **NFR-SEC-003**: JWT token expires sau 8 giờ
+- **NFR-SEC-004**: Input validation, sanitization (chống XSS, SQL Injection)
+- **NFR-SEC-005**: Rate limiting: 100 requests/phút/IP
+- **NFR-SEC-006**: RBAC (Role-Based Access Control)
+- **NFR-SEC-007**: Audit log cho các thao tác nhạy cảm
+
+### 4.3. Khả dụng
+
+- **NFR-AVAIL-001**: Uptime >= 99.5% (downtime < 43.8h/năm)
+- **NFR-AVAIL-002**: Backup database hàng ngày
+- **NFR-AVAIL-003**: Disaster recovery plan
+
+### 4.4. Tương thích
+
+- **NFR-COMPAT-001**: Hỗ trợ trình duyệt: Chrome, Firefox, Safari, Edge (2 phiên bản gần nhất)
+- **NFR-COMPAT-002**: Responsive design: Desktop, Tablet, Mobile
+- **NFR-COMPAT-003**: Hỗ trợ ngôn ngữ: Tiếng Việt (ưu tiên), Tiếng Anh
+
+### 4.5. Khả năng mở rộng
+
+- **NFR-SCALE-001**: Kiến trúc microservices (hoặc modular monolith)
+- **NFR-SCALE-002**: Horizontal scaling ready
+- **NFR-SCALE-003**: Database optimization (indexing, partitioning)
+
+### 4.6. Bảo trì
+
+- **NFR-MAINT-001**: Code coverage >= 70%
+- **NFR-MAINT-002**: Tài liệu API đầy đủ (Swagger/OpenAPI)
+- **NFR-MAINT-003**: Logging đầy đủ (error, warning, info)
+- **NFR-MAINT-004**: Monitoring và alerting
+
+### 4.7. Trải nghiệm người dùng
+
+- **NFR-UX-001**: UI/UX thân thiện, dễ sử dụng
+- **NFR-UX-002**: Hướng dẫn sử dụng tích hợp (tooltips, tutorials)
+- **NFR-UX-003**: Thông báo lỗi rõ ràng, dễ hiểu
+
+## 5. QUY TRÌNH NGHIỆP VỤ
+
+### 5.1. Quy trình đề xuất và mua sắm thiết bị
+
+```
+[Nhân viên] Tạo đề xuất
+    ↓
+[Hệ thống] Trạng thái: Draft → Submit → Pending
+    ↓
+[Trưởng phòng] Phê duyệt cấp 1
+    ├─→ Reject → Kết thúc (có thể sửa và gửi lại)
+    └─→ Approve → Trạng thái: Approved_Level1
+        ↓
+    [Trưởng phòng HCNS] Phê duyệt cấp 2
+        ├─→ Reject → Kết thúc
+        └─→ Approve → Trạng thái: Approved_Level2
+            ↓
+        [Ban Giám đốc] Phê duyệt cấp 3
+            ├─→ Reject → Kết thúc
+            └─→ Approve → Trạng thái: Approved
+                ↓
+            [Phòng HCNS] Kiểm tra hợp đồng khung
+                ├─→ Chưa có hợp đồng:
+                │   ├─ Lập báo cáo đề xuất mua sắm
+                │   ├─ Gửi thư mời chào giá (≥3 NCC)
+                │   ├─ Nhận và đánh giá chào giá
+                │   ├─ Chọn NCC giá tốt nhất
+                │   └─ Ký hợp đồng khung
+                └─→ Đã có hợp đồng:
+                    └─ Chọn NCC có giá hợp đồng thấp nhất
+                    ↓
+                [Phòng HCNS] Tạo đơn hàng → Gửi NCC
+                    ↓
+                [NCC] Xác nhận đơn hàng
+                    ↓
+                [Phòng HCNS] Ký hợp đồng/đơn hàng
+                    ↓
+                [NCC] Giao hàng
+                    ↓
+                [Phòng HCNS] Nghiệm thu, tạo tài sản vào hệ thống
+                    ↓
+                [Phòng HCNS] Cấp phát cho nhân viên
+```
+
+### 5.2. Quy trình yêu cầu sửa chữa
+
+```
+[User] Tạo yêu cầu sửa chữa
+    ↓
+[Hệ thống] Thông báo cho Admin
+    ↓
+[Admin] Phân công kỹ thuật viên
+    ↓
+[Kỹ thuật viên] Kiểm tra và xử lý
+    ├─→ Sửa được → Ghi nhận chi phí → Resolved
+    └─→ Không sửa được → Đề xuất thanh lý/thay mới
+    ↓
+[User] Xác nhận → Closed
+```
+
+### 5.3. Quy trình kiểm kê
+
+```
+[Admin] Tạo phiếu kiểm kê
+    ↓
+[Hệ thống] Tạo danh sách thiết bị cần kiểm
+    ↓
+[Nhân viên kiểm kê] Quét QR/Check thủ công
+    ↓
+[Hệ thống] Đối chiếu với database
+    ├─→ Chính xác → OK
+    └─→ Sai lệch → Ghi nhận và báo cáo
+    ↓
+[Admin] Xem báo cáo, xử lý sai lệch
+```
+
+## 6. QUY TẮC NGHIỆP VỤ (BUSINESS RULES)
+
+### BR-001: Khấu hao tài sản
+
+- Công thức khấu hao đường thẳng: (Giá mua - Giá trị thanh lý) / Số năm khấu hao
+- Tính khấu hao hàng tháng
+- Giá trị còn lại = Giá mua - Tổng khấu hao
+
+### BR-002: Phê duyệt mua sắm
+
+- Tất cả đề xuất phải qua 3 cấp phê duyệt:
+  1. Trưởng phòng (phòng ban đề xuất)
+  2. Trưởng phòng HCNS
+  3. Ban Giám đốc
+- Bất kỳ cấp nào từ chối → Đề xuất bị từ chối
+- Chỉ khi cả 3 cấp đồng ý → Triển khai mua sắm
+
+### BR-003: Trạng thái thiết bị
+
+- Thiết bị "Đang bảo trì" > 30 ngày → Cảnh báo
+- Thiết bị "Hỏng" > 90 ngày → Đề xuất thanh lý
+
+### BR-004: Bảo hành
+
+- Cảnh báo trước 30 ngày hết hạn bảo hành
+- Thiết bị hết bảo hành: hiển thị label "Out of Warranty"
+
+### BR-005: Bảo trì định kỳ
+
+- Cảnh báo trước 7 ngày đến hạn bảo trì
+- Quá hạn bảo trì: hiển thị cảnh báo màu đỏ
+
+### BR-006: Quyền hạn
+
+- Chỉ Admin và Manager được phê duyệt
+- User chỉ xem thiết bị của phòng mình (trừ Viewer xem tất cả)
+- Admin xem và chỉnh sửa tất cả
+
+### BR-007: Xóa dữ liệu
+
+- Không xóa vĩnh viễn, chỉ soft delete
+- Giữ lại audit trail
+
+## 7. ASSUMPTIONS (GIẢ ĐỊNH)
+
+1. Mỗi thiết bị có duy nhất một mã tài sản (Asset ID)
+2. Một thiết bị chỉ có thể được cấp phát cho một người tại một thời điểm
+3. Người dùng có email duy nhất trong hệ thống
+4. Mỗi phòng ban có duy nhất một trưởng phòng
+5. Giá trị thiết bị được tính bằng VND
+6. Hệ thống chỉ hỗ trợ một công ty (single-tenant)
+
+## 8. CONSTRAINTS (RÀNG BUỘC)
+
+1. **Kỹ thuật**: Sử dụng công nghệ web-based, không native mobile app
+2. **Ngân sách**: Ưu tiên open-source, tránh license fees
+3. **Thời gian**: Hoàn thành Phase 1-3 trong 12-14 tuần
+4. **Nhân lực**: Team 3-4 developers
+5. **Hosting**: On-premise hoặc cloud (AWS/Azure/GCP)
+
+## 9. DEPENDENCIES (PHỤ THUỘC)
+
+1. Dữ liệu thiết bị hiện có (Excel) cần được chuẩn bị để import
+2. SMTP server cho gửi email
+3. Storage cho file uploads
+4. Thông tin phòng ban, nhân viên sẵn có
+
+## 10. ACCEPTANCE CRITERIA (TIÊU CHÍ NGHIỆM THU)
+
+### AC-001: Đăng nhập
+
+- Given: User có tài khoản hợp lệ
+- When: Nhập đúng email và password
+- Then: Đăng nhập thành công, chuyển đến Dashboard
+
+### AC-002: Tạo thiết bị mới
+
+- Given: User có quyền Admin
+- When: Điền đầy đủ thông tin bắt buộc và lưu
+- Then: Thiết bị được tạo, hiển thị trong danh sách
+
+### AC-003: Phê duyệt đề xuất
+
+- Given: Manager nhận được đề xuất từ nhân viên
+- When: Click Approve
+- Then: Trạng thái đổi thành Approved, gửi email thông báo cho người tạo
+
+### AC-004: Cảnh báo bảo hành
+
+- Given: Thiết bị sắp hết hạn bảo hành (< 30 ngày)
+- When: Hệ thống chạy daily job
+- Then: Gửi email cảnh báo cho Admin
+
+### AC-005: Kiểm kê
+
+- Given: Admin tạo phiếu kiểm kê
+- When: Nhân viên kiểm kê quét QR code
+- Then: Thiết bị được đánh dấu đã kiểm, cập nhật vào database
+
+---
+
+**Phiên bản**: 1.1
+**Ngày tạo**: 17/10/2025
+**Người tạo**: Business Analyst
+**Trạng thái**: Draft
+**Tài liệu liên quan**:
+
+- [01. Project_Overview.md](01.%20Project_Overview.md)
+- [03. System_Architecture.md](03.%20System_Architecture.md)
+- [04. Database_Design.md](04.%20Database_Design.md)
+- [05. API_Specification.md](05.%20API_Specification.md)
+- [06. User_Stories.md](06.%20User_Stories.md)
+- [07. Implementation_Plan.md](07.%20Implementation_Plan.md)

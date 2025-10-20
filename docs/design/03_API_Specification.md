@@ -1,0 +1,2253 @@
+# API SPECIFICATION - HỆ THỐNG QUẢN LÝ TRANG THIẾT BỊ
+
+## 1. TỔNG QUAN
+
+### 1.1. Thông tin chung
+- **Base URL**: `https://api.assetmanagement.com`
+- **API Version**: v1
+- **Protocol**: HTTPS
+- **Data Format**: JSON
+- **Authentication**: JWT Bearer Token
+- **Character Encoding**: UTF-8
+
+### 1.2. API Gateway Routing
+```
+/api/v1/auth/*           → Auth Service (Port 8001)
+/api/v1/users/*          → Auth Service
+/api/v1/roles/*          → Auth Service
+/api/v1/assets/*         → Asset Service (Port 8002)
+/api/v1/categories/*     → Asset Service
+/api/v1/purchase-requests/* → Procurement Service (Port 8003)
+/api/v1/quotations/*     → Procurement Service
+/api/v1/contracts/*      → Procurement Service
+/api/v1/purchase-orders/* → Procurement Service
+/api/v1/vendors/*        → Procurement Service
+/api/v1/departments/*    → Procurement Service
+/api/v1/maintenance/*    → Maintenance Service (Port 8004)
+/api/v1/repair-requests/* → Maintenance Service
+/api/v1/reports/*        → Report Service (Port 8005)
+/api/v1/notifications/*  → Notification Service (Port 8006)
+```
+
+### 1.3. Common Response Format
+
+**Success Response:**
+```json
+{
+  "success": true,
+  "data": { ... },
+  "message": "Operation completed successfully",
+  "meta": {
+    "page": 1,
+    "limit": 20,
+    "total": 100,
+    "total_pages": 5
+  }
+}
+```
+
+**Error Response:**
+```json
+{
+  "success": false,
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Validation failed",
+    "details": [
+      {
+        "field": "email",
+        "message": "Email is required"
+      }
+    ]
+  }
+}
+```
+
+### 1.4. HTTP Status Codes
+| Code | Description | Usage |
+|------|-------------|-------|
+| 200 | OK | Successful GET, PUT, PATCH |
+| 201 | Created | Successful POST |
+| 204 | No Content | Successful DELETE |
+| 400 | Bad Request | Validation errors, malformed request |
+| 401 | Unauthorized | Missing or invalid authentication |
+| 403 | Forbidden | Insufficient permissions |
+| 404 | Not Found | Resource not found |
+| 409 | Conflict | Duplicate resource |
+| 422 | Unprocessable Entity | Business logic validation failed |
+| 429 | Too Many Requests | Rate limit exceeded |
+| 500 | Internal Server Error | Server error |
+
+### 1.5. Authentication
+
+**Header:**
+```
+Authorization: Bearer {access_token}
+```
+
+**Token Lifetime:**
+- Access Token: 8 hours
+- Refresh Token: 7 days
+
+---
+
+## 2. AUTH SERVICE APIs
+
+### 2.1. Authentication
+
+#### POST /api/v1/auth/login
+Đăng nhập vào hệ thống (Bước 1: Xác thực email/password)
+
+**Lưu ý**: Hệ thống yêu cầu xác thực 2 bước (MFA) với OTP. Sau khi đăng nhập thành công bước 1, người dùng cần gọi `POST /api/v1/auth/verify-otp` để hoàn tất đăng nhập.
+
+**Request:**
+```json
+{
+  "email": "user@example.com",
+  "password": "password123",
+  "remember_me": false
+}
+```
+
+**Response (200) - MFA Required:**
+```json
+{
+  "success": true,
+  "data": {
+    "mfa_required": true,
+    "mfa_token": "temp_token_for_mfa_verification",
+    "mfa_method": "totp",
+    "message": "Please provide OTP code from your authenticator app"
+  }
+}
+```
+
+**Errors:**
+- 401: Invalid credentials (email or password incorrect)
+- 403: Account is deactivated
+- 403: Account locked due to multiple failed login attempts
+
+---
+
+#### POST /api/v1/auth/verify-otp
+Xác thực OTP (Bước 2: Hoàn tất đăng nhập)
+
+**Request:**
+```json
+{
+  "mfa_token": "temp_token_from_login_step",
+  "otp_code": "123456"
+}
+```
+
+**Response (200) - Success:**
+```json
+{
+  "success": true,
+  "data": {
+    "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "token_type": "Bearer",
+    "expires_in": 28800,
+    "user": {
+      "id": 1,
+      "email": "user@example.com",
+      "full_name": "Nguyen Van A",
+      "role": {
+        "id": 2,
+        "name": "Manager",
+        "permissions": ["asset.view", "asset.create", "request.approve"]
+      },
+      "department": {
+        "id": 1,
+        "name": "Phòng IT"
+      }
+    }
+  }
+}
+```
+
+**Errors:**
+- 401: Invalid OTP code
+- 401: OTP code expired
+- 401: Invalid MFA token
+
+---
+
+#### POST /api/v1/auth/logout
+Đăng xuất
+
+**Headers:**
+```
+Authorization: Bearer {access_token}
+```
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "message": "Logged out successfully"
+}
+```
+
+---
+
+#### POST /api/v1/auth/refresh
+Làm mới access token
+
+**Request:**
+```json
+{
+  "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}
+```
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "data": {
+    "access_token": "new_access_token",
+    "token_type": "Bearer",
+    "expires_in": 28800
+  }
+}
+```
+
+---
+
+#### POST /api/v1/auth/forgot-password
+Quên mật khẩu
+
+**Request:**
+```json
+{
+  "email": "user@example.com"
+}
+```
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "message": "Password reset link sent to your email"
+}
+```
+
+---
+
+#### POST /api/v1/auth/reset-password
+Đặt lại mật khẩu
+
+**Request:**
+```json
+{
+  "token": "reset_token_from_email",
+  "new_password": "newpassword123"
+}
+```
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "message": "Password has been reset successfully"
+}
+```
+
+---
+
+#### GET /api/v1/auth/mfa/setup
+Thiết lập MFA (lấy QR code)
+
+**Headers:**
+```
+Authorization: Bearer {access_token}
+```
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "data": {
+    "secret": "JBSWY3DPEHPK3PXP",
+    "qr_code_url": "otpauth://totp/AssetManagement:user@example.com?secret=JBSWY3DPEHPK3PXP&issuer=AssetManagement",
+    "qr_code_base64": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA...",
+    "backup_codes": [
+      "12345678",
+      "23456789",
+      "34567890",
+      "45678901",
+      "56789012"
+    ],
+    "instructions": "Scan the QR code with your authenticator app (Google Authenticator, Authy, etc.) and save the backup codes in a secure place."
+  }
+}
+```
+
+---
+
+#### POST /api/v1/auth/mfa/enable
+Kích hoạt MFA
+
+**Headers:**
+```
+Authorization: Bearer {access_token}
+```
+
+**Request:**
+```json
+{
+  "secret": "JBSWY3DPEHPK3PXP",
+  "otp_code": "123456"
+}
+```
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "data": {
+    "mfa_enabled": true,
+    "backup_codes": [
+      "12345678",
+      "23456789",
+      "34567890",
+      "45678901",
+      "56789012"
+    ]
+  },
+  "message": "MFA has been enabled successfully. Please save your backup codes."
+}
+```
+
+**Errors:**
+- 401: Invalid OTP code
+- 400: MFA already enabled
+
+---
+
+#### POST /api/v1/auth/mfa/disable
+Vô hiệu hóa MFA
+
+**Headers:**
+```
+Authorization: Bearer {access_token}
+```
+
+**Request:**
+```json
+{
+  "otp_code": "123456",
+  "password": "current_password"
+}
+```
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "data": {
+    "mfa_enabled": false
+  },
+  "message": "MFA has been disabled successfully"
+}
+```
+
+**Errors:**
+- 401: Invalid OTP code or password
+- 400: MFA is not enabled
+
+---
+
+#### POST /api/v1/auth/mfa/verify-backup-code
+Xác thực bằng backup code
+
+**Request:**
+```json
+{
+  "mfa_token": "temp_token_from_login_step",
+  "backup_code": "12345678"
+}
+```
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "data": {
+    "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "token_type": "Bearer",
+    "expires_in": 28800,
+    "user": { /* user data */ },
+    "warning": "This backup code has been used and is no longer valid"
+  }
+}
+```
+
+**Errors:**
+- 401: Invalid or already used backup code
+- 401: Invalid MFA token
+
+---
+
+#### POST /api/v1/auth/sync-ad
+Đồng bộ người dùng từ Active Directory
+
+**Yêu cầu quyền**: Admin only
+
+**Headers:**
+```
+Authorization: Bearer {access_token}
+```
+
+**Request:**
+```json
+{
+  "sync_type": "full",
+  "ou": "OU=Users,DC=company,DC=com"
+}
+```
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "data": {
+    "total_users": 50,
+    "new_users": 5,
+    "updated_users": 10,
+    "deactivated_users": 2,
+    "errors": []
+  },
+  "message": "AD sync completed successfully"
+}
+```
+
+**Errors:**
+- 403: Insufficient permissions
+- 500: AD server connection error
+
+---
+
+### 2.2. User Management
+
+#### GET /api/v1/users
+Lấy danh sách người dùng
+
+**Query Parameters:**
+- `page` (int): Page number (default: 1)
+- `limit` (int): Items per page (default: 20)
+- `search` (string): Search by name or email
+- `department_id` (int): Filter by department
+- `role_id` (int): Filter by role
+- `is_active` (boolean): Filter by active status
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": 1,
+      "email": "user@example.com",
+      "full_name": "Nguyen Van A",
+      "phone": "0901234567",
+      "is_active": true,
+      "role": {
+        "id": 2,
+        "name": "Manager"
+      },
+      "department": {
+        "id": 1,
+        "name": "Phòng IT"
+      },
+      "created_at": "2025-01-15T10:00:00Z",
+      "updated_at": "2025-01-15T10:00:00Z"
+    }
+  ],
+  "meta": {
+    "page": 1,
+    "limit": 20,
+    "total": 50,
+    "total_pages": 3
+  }
+}
+```
+
+---
+
+#### POST /api/v1/users
+Tạo người dùng mới
+
+**Request:**
+```json
+{
+  "email": "newuser@example.com",
+  "full_name": "Tran Thi B",
+  "password": "password123",
+  "phone": "0909876543",
+  "role_id": 3,
+  "department_id": 2,
+  "is_active": true
+}
+```
+
+**Response (201):**
+```json
+{
+  "success": true,
+  "data": {
+    "id": 10,
+    "email": "newuser@example.com",
+    "full_name": "Tran Thi B",
+    "phone": "0909876543",
+    "is_active": true,
+    "role_id": 3,
+    "department_id": 2,
+    "created_at": "2025-10-17T10:00:00Z"
+  },
+  "message": "User created successfully"
+}
+```
+
+**Errors:**
+- 400: Validation error
+- 409: Email already exists
+
+---
+
+#### GET /api/v1/users/{id}
+Lấy thông tin chi tiết người dùng
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "data": {
+    "id": 1,
+    "email": "user@example.com",
+    "full_name": "Nguyen Van A",
+    "phone": "0901234567",
+    "address": "123 ABC Street, District 1, HCMC",
+    "is_active": true,
+    "role": {
+      "id": 2,
+      "name": "Manager",
+      "permissions": ["asset.view", "asset.create"]
+    },
+    "department": {
+      "id": 1,
+      "name": "Phòng IT",
+      "manager_id": 1
+    },
+    "created_at": "2025-01-15T10:00:00Z",
+    "updated_at": "2025-01-15T10:00:00Z"
+  }
+}
+```
+
+---
+
+#### PUT /api/v1/users/{id}
+Cập nhật thông tin người dùng
+
+**Request:**
+```json
+{
+  "full_name": "Nguyen Van A Updated",
+  "phone": "0901111111",
+  "address": "New address",
+  "role_id": 2,
+  "department_id": 1,
+  "is_active": true
+}
+```
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "data": { /* updated user */ },
+  "message": "User updated successfully"
+}
+```
+
+---
+
+#### POST /api/v1/users/{id}/change-password
+Đổi mật khẩu
+
+**Request:**
+```json
+{
+  "current_password": "oldpassword",
+  "new_password": "newpassword123"
+}
+```
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "message": "Password changed successfully"
+}
+```
+
+---
+
+## 3. ASSET SERVICE APIs
+
+### 3.1. Asset Management
+
+#### GET /api/v1/assets
+Lấy danh sách tài sản
+
+**Query Parameters:**
+- `page`, `limit`: Pagination
+- `search`: Tìm theo mã tài sản, tên
+- `category_id`: Lọc theo danh mục
+- `asset_type`: `fixed_asset` | `tool_equipment`
+- `status`: `new` | `in_use` | `under_maintenance` | `damaged` | `disposed`
+- `department_id`: Lọc theo phòng ban
+- `assigned_user_id`: Lọc theo người sử dụng
+- `min_price`, `max_price`: Lọc theo giá
+- `sort`: `name` | `price` | `created_at` | `-created_at`
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": 1,
+      "code": "IT-2025-0001",
+      "name": "Laptop Dell Latitude 7420",
+      "asset_type": "fixed_asset",
+      "category": {
+        "id": 1,
+        "name": "Laptop",
+        "group": "IT Equipment"
+      },
+      "manufacturer": "Dell",
+      "model": "Latitude 7420",
+      "serial_number": "SN123456789",
+      "purchase_price": 25000000,
+      "purchase_date": "2025-01-15",
+      "depreciation_years": 5,
+      "current_value": 22500000,
+      "status": "in_use",
+      "assigned_to": {
+        "user_id": 10,
+        "user_name": "Nguyen Van A",
+        "department_id": 1,
+        "department_name": "Phòng IT"
+      },
+      "warranty_end_date": "2027-01-15",
+      "created_at": "2025-01-15T10:00:00Z"
+    }
+  ],
+  "meta": {
+    "page": 1,
+    "limit": 20,
+    "total": 150
+  }
+}
+```
+
+---
+
+#### POST /api/v1/assets
+Tạo tài sản mới
+
+**Request:**
+```json
+{
+  "code": "IT-2025-0002",
+  "name": "Laptop HP EliteBook 840",
+  "asset_type": "fixed_asset",
+  "category_id": 1,
+  "manufacturer": "HP",
+  "model": "EliteBook 840 G8",
+  "serial_number": "SN987654321",
+  "year_of_manufacture": 2024,
+  "purchase_price": 28000000,
+  "purchase_date": "2025-10-17",
+  "depreciation_method": "straight_line",
+  "depreciation_years": 5,
+  "salvage_value": 2000000,
+  "warranty_start_date": "2025-10-17",
+  "warranty_months": 24,
+  "warranty_provider": "HP Vietnam",
+  "department_id": 1,
+  "location": "Tầng 3, Phòng IT",
+  "status": "new",
+  "notes": "Mua cho nhân viên mới"
+}
+```
+
+**Response (201):**
+```json
+{
+  "success": true,
+  "data": {
+    "id": 100,
+    "code": "IT-2025-0002",
+    /* ... all fields ... */
+    "current_value": 28000000
+  },
+  "message": "Asset created successfully"
+}
+```
+
+---
+
+#### GET /api/v1/assets/{id}
+Lấy chi tiết tài sản
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "data": {
+    "id": 1,
+    "code": "IT-2025-0001",
+    "name": "Laptop Dell Latitude 7420",
+    /* ... all basic fields ... */
+    "files": [
+      {
+        "id": 1,
+        "name": "invoice.pdf",
+        "file_type": "application/pdf",
+        "size": 1024000,
+        "url": "/uploads/2025/10/abc123.pdf",
+        "uploaded_at": "2025-10-17T10:00:00Z"
+      }
+    ],
+    "assignment_history": [
+      {
+        "id": 1,
+        "assigned_to_user": "Nguyen Van A",
+        "assigned_date": "2025-02-01",
+        "reclaimed_date": null,
+        "status": "active"
+      }
+    ],
+    "maintenance_history": [
+      {
+        "id": 1,
+        "type": "Bảo trì định kỳ",
+        "date": "2025-08-15",
+        "cost": 500000,
+        "notes": "Vệ sinh, kiểm tra phần cứng"
+      }
+    ]
+  }
+}
+```
+
+---
+
+#### PUT /api/v1/assets/{id}
+Cập nhật tài sản
+
+**Request:** (Tương tự POST, chỉ cần các field muốn update)
+```json
+{
+  "status": "under_maintenance",
+  "location": "Tầng 2, Phòng bảo trì",
+  "notes": "Đang sửa chữa màn hình"
+}
+```
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "data": { /* updated asset */ },
+  "message": "Asset updated successfully"
+}
+```
+
+---
+
+#### DELETE /api/v1/assets/{id}
+Xóa tài sản (soft delete)
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "message": "Asset deleted successfully"
+}
+```
+
+---
+
+#### POST /api/v1/assets/{id}/assign
+Cấp phát tài sản
+
+**Request:**
+```json
+{
+  "assigned_to_user_id": 10,
+  "assigned_date": "2025-10-17",
+  "notes": "Cấp phát laptop cho nhân viên mới"
+}
+```
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "data": {
+    "assignment_id": 5,
+    "asset_id": 1,
+    "assigned_to_user_id": 10,
+    "assigned_date": "2025-10-17",
+    "status": "active"
+  },
+  "message": "Asset assigned successfully"
+}
+```
+
+---
+
+#### POST /api/v1/assets/{id}/reclaim
+Thu hồi tài sản
+
+**Request:**
+```json
+{
+  "reclaimed_date": "2025-10-17",
+  "condition": "good",
+  "notes": "Thu hồi do nhân viên nghỉ việc"
+}
+```
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "message": "Asset reclaimed successfully"
+}
+```
+
+---
+
+#### GET /api/v1/assets/{id}/qrcode
+Lấy QR code của tài sản
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "data": {
+    "qr_code_url": "/qrcodes/IT-2025-0001.png",
+    "qr_code_base64": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA..."
+  }
+}
+```
+
+---
+
+#### POST /api/v1/assets/import
+Import tài sản từ Excel
+
+**Request:** (multipart/form-data)
+```
+file: assets.xlsx
+```
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "data": {
+    "total_rows": 100,
+    "success_count": 95,
+    "error_count": 5,
+    "errors": [
+      {
+        "row": 10,
+        "field": "purchase_price",
+        "message": "Invalid price format"
+      }
+    ]
+  },
+  "message": "Import completed with 95 success, 5 errors"
+}
+```
+
+---
+
+#### GET /api/v1/assets/export
+Export danh sách tài sản
+
+**Query Parameters:**
+- `format`: `excel` | `csv` | `pdf`
+- Các filter giống GET /api/v1/assets
+
+**Response (200):**
+- File download (application/vnd.openxmlformats-officedocument.spreadsheetml.sheet)
+
+---
+
+### 3.2. Asset Categories
+
+#### GET /api/v1/categories
+Lấy danh sách danh mục
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": 1,
+      "name": "Laptop",
+      "code": "CAT-LAPTOP",
+      "group": "IT Equipment",
+      "parent_id": null,
+      "children": [
+        {
+          "id": 2,
+          "name": "Laptop Dell",
+          "parent_id": 1
+        }
+      ]
+    }
+  ]
+}
+```
+
+---
+
+#### POST /api/v1/categories
+Tạo danh mục mới
+
+**Request:**
+```json
+{
+  "name": "Máy in",
+  "code": "CAT-PRINTER",
+  "group": "IT Equipment",
+  "parent_id": null,
+  "description": "Các loại máy in"
+}
+```
+
+**Response (201):**
+```json
+{
+  "success": true,
+  "data": { /* created category */ },
+  "message": "Category created successfully"
+}
+```
+
+---
+
+#### POST /api/v1/assets/{id}/files
+Upload file đính kèm
+
+**Request:** (multipart/form-data)
+```
+file: invoice.pdf
+file_type: invoice
+```
+
+**Response (201):**
+```json
+{
+  "success": true,
+  "data": {
+    "id": 10,
+    "name": "invoice.pdf",
+    "file_type": "application/pdf",
+    "size": 1024000,
+    "url": "/uploads/2025/10/abc123.pdf"
+  }
+}
+```
+
+---
+
+## 4. PROCUREMENT SERVICE APIs
+
+### 4.1. Purchase Requests
+
+#### GET /api/v1/purchase-requests
+Lấy danh sách đề xuất mua sắm
+
+**Query Parameters:**
+- `page`, `limit`
+- `status`: `draft` | `pending` | `approved_level1` | `approved_level2` | `approved` | `rejected`
+- `requester_id`: Filter by requester
+- `department_id`: Filter by department
+- `from_date`, `to_date`: Filter by created date
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": 1,
+      "request_number": "PR-2025-001",
+      "requester": {
+        "id": 10,
+        "name": "Nguyen Van A",
+        "department": "Phòng IT"
+      },
+      "category_name": "Laptop",
+      "quantity": 2,
+      "estimated_budget": 50000000,
+      "priority": "high",
+      "reason": "Mua laptop cho nhân viên mới",
+      "required_date": "2025-11-01",
+      "status": "approved_level1",
+      "current_approver": {
+        "id": 5,
+        "name": "Tran Thi B",
+        "role": "HR Manager"
+      },
+      "created_at": "2025-10-15T10:00:00Z"
+    }
+  ],
+  "meta": {
+    "page": 1,
+    "limit": 20,
+    "total": 30
+  }
+}
+```
+
+---
+
+#### POST /api/v1/purchase-requests
+Tạo đề xuất mua sắm
+
+**Request:**
+```json
+{
+  "category_id": 1,
+  "category_name": "Laptop",
+  "quantity": 2,
+  "estimated_budget": 50000000,
+  "priority": "high",
+  "reason": "Mua laptop cho nhân viên mới vào tháng 11",
+  "required_date": "2025-11-01",
+  "specifications": "CPU i7, RAM 16GB, SSD 512GB",
+  "attachments": [
+    {
+      "file_name": "quotation.pdf",
+      "file_url": "/uploads/quotation.pdf"
+    }
+  ]
+}
+```
+
+**Response (201):**
+```json
+{
+  "success": true,
+  "data": {
+    "id": 10,
+    "request_number": "PR-2025-010",
+    "status": "draft",
+    /* ... */
+  },
+  "message": "Purchase request created successfully"
+}
+```
+
+---
+
+#### POST /api/v1/purchase-requests/{id}/submit
+Submit đề xuất để phê duyệt
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "data": {
+    "id": 10,
+    "status": "pending",
+    "submitted_at": "2025-10-17T10:00:00Z"
+  },
+  "message": "Purchase request submitted for approval"
+}
+```
+
+---
+
+#### POST /api/v1/purchase-requests/{id}/approve
+Phê duyệt đề xuất
+
+**Request:**
+```json
+{
+  "comments": "Approved. Proceed to next level."
+}
+```
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "data": {
+    "id": 10,
+    "status": "approved_level1",
+    "approval_history": [
+      {
+        "approver_id": 5,
+        "approver_name": "Tran Van C",
+        "level": 1,
+        "action": "approved",
+        "comments": "Approved. Proceed to next level.",
+        "approved_at": "2025-10-17T11:00:00Z"
+      }
+    ]
+  },
+  "message": "Purchase request approved"
+}
+```
+
+---
+
+#### POST /api/v1/purchase-requests/{id}/reject
+Từ chối đề xuất
+
+**Request:**
+```json
+{
+  "reason": "Ngân sách không đủ"
+}
+```
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "data": {
+    "id": 10,
+    "status": "rejected"
+  },
+  "message": "Purchase request rejected"
+}
+```
+
+---
+
+### 4.2. Quotations (Chào giá)
+
+#### POST /api/v1/quotations/requests
+Tạo thư mời chào giá
+
+**Request:**
+```json
+{
+  "purchase_request_ids": [1, 2, 3],
+  "vendor_ids": [10, 11, 12],
+  "deadline": "2025-10-30",
+  "specifications": "CPU i7, RAM 16GB, SSD 512GB, Warranty 2 years",
+  "terms": "Thanh toán sau 30 ngày kể từ ngày nhận hàng"
+}
+```
+
+**Response (201):**
+```json
+{
+  "success": true,
+  "data": {
+    "id": 5,
+    "quotation_request_number": "QR-2025-005",
+    "vendor_count": 3,
+    "deadline": "2025-10-30",
+    "status": "sent"
+  }
+}
+```
+
+---
+
+#### POST /api/v1/quotations
+Nhận và lưu chào giá từ nhà cung cấp
+
+**Request:**
+```json
+{
+  "quotation_request_id": 5,
+  "vendor_id": 10,
+  "items": [
+    {
+      "item_name": "Laptop Dell Latitude 7420",
+      "quantity": 2,
+      "unit_price": 25000000,
+      "total": 50000000,
+      "warranty_months": 24,
+      "delivery_days": 7
+    }
+  ],
+  "total_amount": 50000000,
+  "valid_until": "2025-11-30",
+  "payment_terms": "Thanh toán 50% trước, 50% sau khi nhận hàng",
+  "attachments": [
+    {
+      "file_name": "quotation_vendor_10.pdf",
+      "file_url": "/uploads/quotations/vendor_10.pdf"
+    }
+  ]
+}
+```
+
+**Response (201):**
+```json
+{
+  "success": true,
+  "data": {
+    "id": 15,
+    "quotation_number": "QT-2025-015",
+    /* ... */
+  }
+}
+```
+
+---
+
+#### GET /api/v1/quotations/compare
+So sánh các chào giá
+
+**Query Parameters:**
+- `quotation_request_id`: ID của thư mời chào giá
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "data": {
+    "quotation_request_id": 5,
+    "quotations": [
+      {
+        "vendor": {
+          "id": 10,
+          "name": "Công ty TNHH ABC"
+        },
+        "total_amount": 50000000,
+        "unit_price": 25000000,
+        "warranty_months": 24,
+        "delivery_days": 7,
+        "rank": 1
+      },
+      {
+        "vendor": {
+          "id": 11,
+          "name": "Công ty TNHH XYZ"
+        },
+        "total_amount": 52000000,
+        "unit_price": 26000000,
+        "warranty_months": 36,
+        "delivery_days": 10,
+        "rank": 2
+      }
+    ],
+    "recommendation": {
+      "vendor_id": 10,
+      "reason": "Giá thấp nhất"
+    }
+  }
+}
+```
+
+---
+
+#### POST /api/v1/quotations/{id}/select
+Chọn chào giá
+
+**Request:**
+```json
+{
+  "selection_reason": "Giá cạnh tranh nhất và thời gian giao hàng nhanh"
+}
+```
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "data": {
+    "id": 15,
+    "status": "selected"
+  },
+  "message": "Quotation selected successfully"
+}
+```
+
+---
+
+### 4.3. Contracts (Hợp đồng)
+
+#### POST /api/v1/contracts
+Tạo hợp đồng khung
+
+**Request:**
+```json
+{
+  "contract_number": "HD-2025-001",
+  "vendor_id": 10,
+  "quotation_id": 15,
+  "contract_type": "framework",
+  "start_date": "2025-11-01",
+  "end_date": "2026-10-31",
+  "total_value": 500000000,
+  "payment_terms": "Thanh toán trong 30 ngày",
+  "delivery_terms": "FOB HCMC",
+  "items": [
+    {
+      "item_name": "Laptop Dell Latitude 7420",
+      "unit_price": 25000000,
+      "warranty_months": 24
+    }
+  ],
+  "attachments": [
+    {
+      "file_name": "contract_signed.pdf",
+      "file_url": "/uploads/contracts/hd_001.pdf"
+    }
+  ]
+}
+```
+
+**Response (201):**
+```json
+{
+  "success": true,
+  "data": {
+    "id": 1,
+    "contract_number": "HD-2025-001",
+    "status": "active",
+    /* ... */
+  }
+}
+```
+
+---
+
+#### GET /api/v1/contracts
+Lấy danh sách hợp đồng
+
+**Query Parameters:**
+- `vendor_id`: Filter by vendor
+- `status`: `draft` | `active` | `expired` | `terminated`
+- `contract_type`: `framework` | `one_time`
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": 1,
+      "contract_number": "HD-2025-001",
+      "vendor": {
+        "id": 10,
+        "name": "Công ty TNHH ABC"
+      },
+      "contract_type": "framework",
+      "start_date": "2025-11-01",
+      "end_date": "2026-10-31",
+      "total_value": 500000000,
+      "status": "active"
+    }
+  ]
+}
+```
+
+---
+
+### 4.4. Purchase Orders (Đơn hàng)
+
+#### POST /api/v1/purchase-orders
+Tạo đơn hàng
+
+**Request:**
+```json
+{
+  "purchase_request_ids": [1, 2],
+  "vendor_id": 10,
+  "contract_id": 1,
+  "order_date": "2025-10-17",
+  "expected_delivery_date": "2025-10-24",
+  "items": [
+    {
+      "asset_category_id": 1,
+      "item_name": "Laptop Dell Latitude 7420",
+      "quantity": 2,
+      "unit_price": 25000000,
+      "total": 50000000
+    }
+  ],
+  "subtotal": 50000000,
+  "tax": 5000000,
+  "total_amount": 55000000,
+  "notes": "Giao hàng trong giờ hành chính"
+}
+```
+
+**Response (201):**
+```json
+{
+  "success": true,
+  "data": {
+    "id": 20,
+    "order_number": "PO-2025-020",
+    "status": "pending_confirmation",
+    /* ... */
+  }
+}
+```
+
+---
+
+#### POST /api/v1/purchase-orders/{id}/confirm
+Nhà cung cấp xác nhận đơn hàng
+
+**Request:**
+```json
+{
+  "confirmed_delivery_date": "2025-10-25",
+  "notes": "Đơn hàng đã được xác nhận"
+}
+```
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "data": {
+    "id": 20,
+    "status": "confirmed"
+  }
+}
+```
+
+---
+
+#### POST /api/v1/purchase-orders/{id}/receive
+Nhận hàng và nghiệm thu
+
+**Request:**
+```json
+{
+  "received_date": "2025-10-25",
+  "received_items": [
+    {
+      "item_id": 1,
+      "quantity_received": 2,
+      "quality_status": "good",
+      "notes": "Hàng nguyên vẹn"
+    }
+  ],
+  "receiver_name": "Nguyen Van D",
+  "acceptance_notes": "Đã kiểm tra và nghiệm thu đầy đủ",
+  "attachments": [
+    {
+      "file_name": "bien_ban_nghiem_thu.pdf",
+      "file_url": "/uploads/acceptance/bbnt_001.pdf"
+    }
+  ]
+}
+```
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "data": {
+    "id": 20,
+    "status": "completed",
+    "received_date": "2025-10-25"
+  },
+  "message": "Purchase order received and completed"
+}
+```
+
+---
+
+### 4.5. Vendors
+
+#### GET /api/v1/vendors
+Lấy danh sách nhà cung cấp
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": 10,
+      "name": "Công ty TNHH ABC",
+      "tax_code": "0123456789",
+      "address": "123 Nguyen Hue, Q1, HCMC",
+      "contact_person": "Nguyen Van E",
+      "phone": "0281234567",
+      "email": "contact@abc.com",
+      "rating": 4.5,
+      "total_contracts": 5,
+      "total_orders": 20,
+      "total_value": 500000000
+    }
+  ]
+}
+```
+
+---
+
+#### POST /api/v1/vendors
+Tạo nhà cung cấp mới
+
+**Request:**
+```json
+{
+  "name": "Công ty TNHH XYZ",
+  "tax_code": "0987654321",
+  "address": "456 Le Loi, Q1, HCMC",
+  "contact_person": "Tran Thi F",
+  "phone": "0289876543",
+  "email": "info@xyz.com",
+  "website": "https://xyz.com",
+  "business_areas": ["IT Equipment", "Office Furniture"]
+}
+```
+
+**Response (201):**
+```json
+{
+  "success": true,
+  "data": { /* created vendor */ }
+}
+```
+
+---
+
+### 4.6. Departments
+
+#### GET /api/v1/departments
+Lấy danh sách phòng ban
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": 1,
+      "code": "IT",
+      "name": "Phòng IT",
+      "manager": {
+        "id": 5,
+        "name": "Nguyen Van Manager"
+      },
+      "parent_id": null,
+      "employee_count": 15,
+      "asset_count": 30,
+      "children": [
+        {
+          "id": 2,
+          "code": "IT-DEV",
+          "name": "Tổ Phát triển",
+          "parent_id": 1
+        }
+      ]
+    }
+  ]
+}
+```
+
+---
+
+#### POST /api/v1/departments
+Tạo phòng ban mới
+
+**Request:**
+```json
+{
+  "code": "HR",
+  "name": "Phòng Hành chính Nhân sự",
+  "manager_id": 10,
+  "parent_id": null,
+  "description": "Quản lý nhân sự và hành chính"
+}
+```
+
+**Response (201):**
+```json
+{
+  "success": true,
+  "data": { /* created department */ }
+}
+```
+
+---
+
+## 5. MAINTENANCE SERVICE APIs
+
+### 5.1. Maintenance Schedules
+
+#### POST /api/v1/maintenance/schedules
+Tạo lịch bảo trì định kỳ
+
+**Request:**
+```json
+{
+  "asset_id": 1,
+  "schedule_type": "periodic",
+  "frequency": "quarterly",
+  "next_maintenance_date": "2025-11-15",
+  "maintenance_tasks": "Vệ sinh, kiểm tra phần cứng, cập nhật phần mềm",
+  "assigned_to_user_id": 20,
+  "estimated_cost": 500000
+}
+```
+
+**Response (201):**
+```json
+{
+  "success": true,
+  "data": {
+    "id": 10,
+    "schedule_number": "MS-2025-010",
+    /* ... */
+  }
+}
+```
+
+---
+
+#### GET /api/v1/maintenance/schedules
+Lấy danh sách lịch bảo trì
+
+**Query Parameters:**
+- `asset_id`: Filter by asset
+- `status`: `scheduled` | `overdue` | `completed`
+- `from_date`, `to_date`
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": 10,
+      "asset": {
+        "id": 1,
+        "code": "IT-2025-0001",
+        "name": "Laptop Dell"
+      },
+      "next_maintenance_date": "2025-11-15",
+      "maintenance_tasks": "Vệ sinh, kiểm tra",
+      "status": "scheduled",
+      "days_until_due": 29
+    }
+  ]
+}
+```
+
+---
+
+### 5.2. Repair Requests
+
+#### POST /api/v1/repair-requests
+Tạo yêu cầu sửa chữa
+
+**Request:**
+```json
+{
+  "asset_id": 1,
+  "problem_description": "Màn hình bị sọc dọc, không hiển thị rõ",
+  "priority": "high",
+  "reporter_id": 10,
+  "attachments": [
+    {
+      "file_name": "photo_issue.jpg",
+      "file_url": "/uploads/repair/photo_issue.jpg"
+    }
+  ]
+}
+```
+
+**Response (201):**
+```json
+{
+  "success": true,
+  "data": {
+    "id": 25,
+    "request_number": "RR-2025-025",
+    "status": "pending",
+    "created_at": "2025-10-17T10:00:00Z"
+  }
+}
+```
+
+---
+
+#### GET /api/v1/repair-requests
+Lấy danh sách yêu cầu sửa chữa
+
+**Query Parameters:**
+- `status`: `pending` | `in_progress` | `resolved` | `closed`
+- `priority`: `low` | `medium` | `high`
+- `asset_id`, `reporter_id`
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": 25,
+      "request_number": "RR-2025-025",
+      "asset": {
+        "id": 1,
+        "code": "IT-2025-0001",
+        "name": "Laptop Dell"
+      },
+      "reporter": {
+        "id": 10,
+        "name": "Nguyen Van A"
+      },
+      "problem_description": "Màn hình bị sọc",
+      "priority": "high",
+      "status": "pending",
+      "created_at": "2025-10-17T10:00:00Z"
+    }
+  ]
+}
+```
+
+---
+
+#### POST /api/v1/repair-requests/{id}/assign
+Phân công kỹ thuật viên
+
+**Request:**
+```json
+{
+  "assigned_to_user_id": 30,
+  "estimated_completion_date": "2025-10-20",
+  "notes": "Ưu tiên xử lý"
+}
+```
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "data": {
+    "id": 25,
+    "status": "in_progress",
+    "assigned_to": {
+      "id": 30,
+      "name": "Technician A"
+    }
+  }
+}
+```
+
+---
+
+#### POST /api/v1/repair-requests/{id}/resolve
+Hoàn thành sửa chữa
+
+**Request:**
+```json
+{
+  "resolution": "Đã thay thế màn hình mới",
+  "cost": 5000000,
+  "parts_replaced": "Màn hình LCD 14 inch",
+  "completed_date": "2025-10-19",
+  "asset_status_after_repair": "in_use"
+}
+```
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "data": {
+    "id": 25,
+    "status": "resolved"
+  }
+}
+```
+
+---
+
+### 5.3. Maintenance Records
+
+#### POST /api/v1/maintenance/records
+Ghi nhận bảo trì
+
+**Request:**
+```json
+{
+  "asset_id": 1,
+  "maintenance_type": "preventive",
+  "maintenance_date": "2025-10-17",
+  "performed_by_user_id": 30,
+  "tasks_performed": "Vệ sinh bên trong, thay keo tản nhiệt, cập nhật BIOS",
+  "cost": 500000,
+  "parts_used": [
+    {
+      "part_name": "Keo tản nhiệt Arctic MX-4",
+      "quantity": 1,
+      "cost": 150000
+    }
+  ],
+  "next_maintenance_date": "2026-01-17"
+}
+```
+
+**Response (201):**
+```json
+{
+  "success": true,
+  "data": {
+    "id": 40,
+    "record_number": "MR-2025-040",
+    /* ... */
+  }
+}
+```
+
+---
+
+#### GET /api/v1/assets/{id}/maintenance-history
+Lấy lịch sử bảo trì của tài sản
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "data": {
+    "asset_id": 1,
+    "total_maintenance_count": 5,
+    "total_maintenance_cost": 2500000,
+    "history": [
+      {
+        "id": 40,
+        "maintenance_date": "2025-10-17",
+        "maintenance_type": "preventive",
+        "performed_by": "Technician A",
+        "tasks_performed": "Vệ sinh, thay keo tản nhiệt",
+        "cost": 500000
+      }
+    ]
+  }
+}
+```
+
+---
+
+## 6. REPORT SERVICE APIs
+
+### 6.1. Dashboard
+
+#### GET /api/v1/reports/dashboard
+Lấy dữ liệu tổng quan
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "data": {
+    "summary": {
+      "total_assets": 150,
+      "total_value": 3500000000,
+      "assets_in_use": 120,
+      "assets_under_maintenance": 10,
+      "assets_damaged": 5
+    },
+    "by_department": [
+      {
+        "department_id": 1,
+        "department_name": "Phòng IT",
+        "asset_count": 50,
+        "total_value": 1500000000
+      }
+    ],
+    "by_status": [
+      {
+        "status": "in_use",
+        "count": 120,
+        "percentage": 80
+      }
+    ],
+    "maintenance_costs_6months": [
+      {
+        "month": "2025-05",
+        "cost": 5000000
+      },
+      {
+        "month": "2025-06",
+        "cost": 7000000
+      }
+    ],
+    "upcoming_warranty_expiry": [
+      {
+        "asset_id": 10,
+        "asset_name": "Laptop HP",
+        "warranty_end_date": "2025-11-30",
+        "days_remaining": 44
+      }
+    ]
+  }
+}
+```
+
+---
+
+### 6.2. Reports
+
+#### GET /api/v1/reports/assets-by-department
+Báo cáo tài sản theo phòng ban
+
+**Query Parameters:**
+- `department_id`: Optional, specific department
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "data": {
+    "report_title": "Báo cáo tài sản theo phòng ban",
+    "generated_at": "2025-10-17T10:00:00Z",
+    "departments": [
+      {
+        "department_id": 1,
+        "department_name": "Phòng IT",
+        "total_assets": 50,
+        "total_value": 1500000000,
+        "by_category": [
+          {
+            "category": "Laptop",
+            "count": 30,
+            "value": 900000000
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+---
+
+#### GET /api/v1/reports/depreciation
+Báo cáo khấu hao
+
+**Query Parameters:**
+- `year`: Year to report (default: current year)
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "data": {
+    "year": 2025,
+    "total_depreciation": 150000000,
+    "by_category": [
+      {
+        "category": "Laptop",
+        "original_value": 900000000,
+        "depreciation_2025": 90000000,
+        "remaining_value": 810000000
+      }
+    ]
+  }
+}
+```
+
+---
+
+#### GET /api/v1/reports/maintenance-costs
+Báo cáo chi phí bảo trì
+
+**Query Parameters:**
+- `from_date`, `to_date`
+- `group_by`: `month` | `quarter` | `category`
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "data": {
+    "total_cost": 50000000,
+    "by_month": [
+      {
+        "month": "2025-10",
+        "cost": 10000000,
+        "maintenance_count": 15
+      }
+    ],
+    "top_expensive_assets": [
+      {
+        "asset_id": 5,
+        "asset_name": "Máy chủ Dell R740",
+        "total_cost": 5000000,
+        "maintenance_count": 3
+      }
+    ]
+  }
+}
+```
+
+---
+
+#### POST /api/v1/reports/export
+Export báo cáo
+
+**Request:**
+```json
+{
+  "report_type": "assets_by_department",
+  "format": "excel",
+  "filters": {
+    "department_id": 1,
+    "from_date": "2025-01-01",
+    "to_date": "2025-10-17"
+  }
+}
+```
+
+**Response (200):**
+- File download (Excel/PDF)
+
+---
+
+## 7. NOTIFICATION SERVICE APIs
+
+### 7.1. Notifications
+
+#### GET /api/v1/notifications
+Lấy danh sách thông báo
+
+**Query Parameters:**
+- `is_read`: `true` | `false`
+- `type`: `purchase_request` | `asset_assigned` | `maintenance_due` | etc.
+- `page`, `limit`
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": 100,
+      "type": "purchase_request_approved",
+      "title": "Đề xuất mua sắm đã được phê duyệt",
+      "message": "Đề xuất PR-2025-001 đã được Ban Giám đốc phê duyệt",
+      "is_read": false,
+      "created_at": "2025-10-17T10:00:00Z",
+      "data": {
+        "purchase_request_id": 1,
+        "purchase_request_number": "PR-2025-001"
+      }
+    }
+  ],
+  "meta": {
+    "unread_count": 5
+  }
+}
+```
+
+---
+
+#### PUT /api/v1/notifications/{id}/read
+Đánh dấu đã đọc
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "message": "Notification marked as read"
+}
+```
+
+---
+
+#### PUT /api/v1/notifications/read-all
+Đánh dấu tất cả đã đọc
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "message": "All notifications marked as read"
+}
+```
+
+---
+
+### 7.2. Notification Preferences
+
+#### GET /api/v1/notification-preferences
+Lấy cài đặt thông báo
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "data": {
+    "email_notifications": true,
+    "in_app_notifications": true,
+    "notification_types": {
+      "purchase_request_approved": {
+        "email": true,
+        "in_app": true
+      },
+      "asset_assigned": {
+        "email": true,
+        "in_app": true
+      },
+      "maintenance_due": {
+        "email": false,
+        "in_app": true
+      }
+    }
+  }
+}
+```
+
+---
+
+#### PUT /api/v1/notification-preferences
+Cập nhật cài đặt thông báo
+
+**Request:**
+```json
+{
+  "email_notifications": true,
+  "notification_types": {
+    "purchase_request_approved": {
+      "email": true,
+      "in_app": true
+    },
+    "maintenance_due": {
+      "email": true,
+      "in_app": true
+    }
+  }
+}
+```
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "message": "Notification preferences updated"
+}
+```
+
+---
+
+## 8. ERROR CODES
+
+| Code | Message | Description |
+|------|---------|-------------|
+| VALIDATION_ERROR | Validation failed | Request validation error |
+| UNAUTHORIZED | Unauthorized | Missing or invalid token |
+| FORBIDDEN | Forbidden | Insufficient permissions |
+| NOT_FOUND | Resource not found | Resource does not exist |
+| DUPLICATE | Resource already exists | Duplicate email, code, etc. |
+| INVALID_CREDENTIALS | Invalid credentials | Wrong email/password |
+| TOKEN_EXPIRED | Token expired | Access token expired |
+| INVALID_TOKEN | Invalid token | Token is malformed |
+| BUSINESS_LOGIC_ERROR | Business logic error | Workflow violation |
+| INTERNAL_ERROR | Internal server error | Server error |
+
+---
+
+## 9. RATE LIMITING
+
+- **Limit**: 100 requests per minute per IP
+- **Response khi vượt limit (429):**
+```json
+{
+  "success": false,
+  "error": {
+    "code": "RATE_LIMIT_EXCEEDED",
+    "message": "Too many requests. Please try again later.",
+    "retry_after": 60
+  }
+}
+```
+
+---
+
+## 10. PAGINATION
+
+**Query Parameters:**
+- `page`: Page number (default: 1)
+- `limit`: Items per page (default: 20, max: 100)
+
+**Response Meta:**
+```json
+{
+  "meta": {
+    "page": 1,
+    "limit": 20,
+    "total": 150,
+    "total_pages": 8
+  }
+}
+```
+
+---
+
+## 11. FILTERING & SORTING
+
+**Filtering:**
+- Query parameters với tên field: `?status=active&department_id=1`
+
+**Sorting:**
+- `sort`: Field name (ascending) hoặc `-field_name` (descending)
+- Example: `?sort=created_at` hoặc `?sort=-created_at`
+
+---
+
+## 12. WEBHOOKS (Optional - Future)
+
+Hệ thống có thể gửi webhook khi có sự kiện quan trọng:
+- Purchase request approved
+- Asset assigned
+- Maintenance due
+
+**Webhook Payload:**
+```json
+{
+  "event": "purchase_request.approved",
+  "timestamp": "2025-10-17T10:00:00Z",
+  "data": {
+    "purchase_request_id": 1,
+    "purchase_request_number": "PR-2025-001",
+    "approver_id": 5
+  }
+}
+```
+
+---
+
+**Phiên bản**: 1.0
+**Ngày tạo**: 17/10/2025
+**Người tạo**: API Architect
+**Trạng thái**: Draft
+**Tài liệu liên quan**:
+- [01. Project_Overview.md](01.%20Project_Overview.md)
+- [02. Business_Requirements.md](02.%20Business_Requirements.md)
+- [03. System_Architecture.md](03.%20System_Architecture.md)
+- [04. Database_Design.md](04.%20Database_Design.md)
+- [06. User_Stories.md](06.%20User_Stories.md)
+- [07. Implementation_Plan.md](07.%20Implementation_Plan.md)

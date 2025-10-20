@@ -227,7 +227,7 @@ docker-compose restart auth-service
 
 ## 📝 Files Modified
 
-1. `services/auth/app/core/config.py`
+1. `services/auth-api/app/core/config.py`
    - Fixed secret reading logic
    - Changed all URLs from localhost to container hostnames
    - Added URL encoding for passwords

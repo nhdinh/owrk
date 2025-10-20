@@ -113,18 +113,18 @@ Content-Type: application/json
 ### 4. Alembic Configuration Missing
 - **Lỗi**: Alembic files không được copy vào Docker image
 - **Sửa**: Cập nhật Dockerfile để COPY alembic.ini và folder alembic
-- **File**: [services/auth/Dockerfile](services/auth/Dockerfile)
+- **File**: [services/auth-api/Dockerfile](services/auth-api/Dockerfile)
 
 ### 5. Model-Migration Mismatch
 - **Lỗi**: User model có thêm 6 fields không có trong migration 001
 - **Sửa**: Tạo migration 002 để thêm các fields còn thiếu
-- **File**: [services/auth/alembic/versions/002_add_user_fields.py](services/auth/alembic/versions/002_add_user_fields.py)
+- **File**: [services/auth-api/alembic/versions/002_add_user_fields.py](services/auth-api/alembic/versions/002_add_user_fields.py)
 - **Fields added**: `is_superuser`, `email_verified`, `password_changed_at`, `require_password_change`, `department_id`, `address`
 
 ### 6. Bcrypt Compatibility
 - **Lỗi**: passlib và bcrypt version conflicts
 - **Sửa**: Pin bcrypt version to 4.0.1
-- **File**: [services/auth/requirements.txt](services/auth/requirements.txt)
+- **File**: [services/auth-api/requirements.txt](services/auth-api/requirements.txt)
 
 ### 7. Password Hash Error
 - **Lỗi**: "hash could not be identified" khi login
@@ -288,8 +288,8 @@ SELECT * FROM auth_db.users;
 
 ## 📚 Documentation
 
-- **Complete Guide**: [services/auth/README.md](services/auth/README.md)
-- **Testing Guide**: [services/auth/TESTING_GUIDE.md](services/auth/TESTING_GUIDE.md)
+- **Complete Guide**: [services/auth-api/README.md](services/auth-api/README.md)
+- **Testing Guide**: [services/auth-api/TESTING_GUIDE.md](services/auth-api/TESTING_GUIDE.md)
 - **Sprint Summary**: [docs/deliveries/SPRINT2_COMPLETE.md](docs/deliveries/SPRINT2_COMPLETE.md)
 - **API Docs**: http://localhost:8000/docs
 

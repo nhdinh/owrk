@@ -29,7 +29,7 @@ Response:
 ## 🔧 All Issues Fixed (8 Issues)
 
 ### 1. ✅ Secret File Reading Logic
-**File**: `services/auth/app/core/config.py` (Lines 11-29)
+**File**: `services/auth-api/app/core/config.py` (Lines 11-29)
 
 **Problem**:
 ```python
@@ -47,7 +47,7 @@ if postgres_passwd_file and os.path.exists(postgres_passwd_file):
 ```
 
 ### 2. ✅ Connection URLs Using Localhost
-**File**: `services/auth/app/core/config.py` (Lines 42-69)
+**File**: `services/auth-api/app/core/config.py` (Lines 42-69)
 
 **Problem**:
 - All services used `localhost` which doesn't work inside Docker containers
@@ -73,7 +73,7 @@ REDIS_URL: str = f"redis://{REDIS_HOST}:{REDIS_PORT}"
 ```
 
 ### 3. ✅ MongoDB Password URL Encoding
-**File**: `services/auth/app/core/config.py` (Line 8, 56-57)
+**File**: `services/auth-api/app/core/config.py` (Line 8, 56-57)
 
 **Problem**:
 - MongoDB passwords with special characters must be URL-encoded per RFC 3986
@@ -143,7 +143,7 @@ docker exec auth-service alembic upgrade head
 - ✅ Seeded roles and permissions
 
 ### 8. ✅ JWT_SECRET Not in Settings Class
-**File**: `services/auth/app/core/config.py` (Line 72)
+**File**: `services/auth-api/app/core/config.py` (Line 72)
 
 **Problem**:
 - `JWT_SECRET` was a global variable but `security.py` tried to access it as `settings.JWT_SECRET`
@@ -260,7 +260,7 @@ $ docker exec asset_postgres psql -U admin -d asset_management -c "SELECT 1"
 
 ## 📝 Files Modified
 
-### 1. `services/auth/app/core/config.py`
+### 1. `services/auth-api/app/core/config.py`
 **Changes**:
 - Fixed secret file reading logic (lines 11-29)
 - Changed all connection URLs from localhost to container hostnames (lines 42-69)
@@ -268,7 +268,7 @@ $ docker exec asset_postgres psql -U admin -d asset_management -c "SELECT 1"
 - Added `JWT_SECRET` as Settings class attribute (line 72)
 - Added environment variable support for all hosts and ports
 
-### 2. `services/auth/app/api/v1/endpoints/auth.py`
+### 2. `services/auth-api/app/api/v1/endpoints/auth.py`
 **Changes**:
 - Added logging import (line 7-8)
 - Added logger instance (line 22)

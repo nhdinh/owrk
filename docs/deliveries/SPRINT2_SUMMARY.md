@@ -123,7 +123,7 @@ POST /api/v1/auth/sync-ad
 #### 4. Alembic Migrations
 ```bash
 # Initialize Alembic
-cd services/auth
+cd services/auth-api
 alembic init alembic
 
 # Create initial migration
@@ -191,7 +191,7 @@ class AuditLog(Base):
 
 ### Step 1: Complete Repositories (30 mins)
 ```bash
-cd services/auth/app/repositories
+cd services/auth-api/app/repositories
 # Create user_repository.py
 # Create role_repository.py
 # Create refresh_token_repository.py
@@ -199,13 +199,13 @@ cd services/auth/app/repositories
 
 ### Step 2: Implement Auth Service (1-2 hours)
 ```bash
-cd services/auth/app/services
+cd services/auth-api/app/services
 # Create auth_service.py with all authentication logic
 ```
 
 ### Step 3: Create API Endpoints (1-2 hours)
 ```bash
-cd services/auth/app/api/v1/endpoints
+cd services/auth-api/app/api/v1/endpoints
 # Create auth.py with all auth endpoints
 # Create users.py with user CRUD endpoints
 # Update router.py to include new endpoints
@@ -213,7 +213,7 @@ cd services/auth/app/api/v1/endpoints
 
 ### Step 4: Database Migrations (30 mins)
 ```bash
-cd services/auth
+cd services/auth-api
 pip install alembic
 alembic init alembic
 # Edit alembic.ini and alembic/env.py
@@ -223,7 +223,7 @@ alembic upgrade head
 
 ### Step 5: Testing (1-2 hours)
 ```bash
-cd services/auth
+cd services/auth-api
 pytest tests/ -v --cov=app
 ```
 

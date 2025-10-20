@@ -1,38 +1,36 @@
 secrets:
-  postgres_passwd:
-    file: ./.secrets/postgres_passwd.txt
+  mysql_passwd:
+    file: ./.secrets/mysql_passwd.txt
   mongo_passwd:
     file: ./.secrets/mongo_passwd.txt
   jwt_secret_key:
     file: ./.secrets/jwt_secret_key.txt
-    
 
 services:
   # ======================
   # INFRASTRUCTURE SERVICES
   # ======================
 
-  # PostgreSQL - Write Database
-  postgres:
-    build:
-      context: ./postgres
-      dockerfile: Dockerfile
-    container_name: asset_postgres
+  # MySQL - Write Database
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
     secrets:
-      - postgres_passwd
+      - mysql_passwd
     environment:
-      POSTGRES_USR: ${POSTGRES_USR}
-      POSTGRES_PASSWD_FILE: /run/secrets/postgres_passwd
-      POSTGRES_MULTIPLE_DATABASES: auth_db,asset_db,procurement_db,maintenance_db,notification_db
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-secret1123@}
+      MYSQL_PASSWORD_FILE: /run/secrets/mysql_passwd
+      MYSQL_USER: ${MYSQL_USER:-admin}
     ports:
-      - "5432:5432"
+      - "3306:3306"
     volumes:
-      - postgres-data:/var/lib/postgresql/data
-      # - ./scripts/init-postgres.sh:/docker-entrypoint-initdb.d/init-postgres.sh
+      - ./.mysql_db:/var/lib/mysql
+      - ./scripts/init-mysql.sh:/docker-entrypoint-initdb.d/init-mysql.sh
     networks:
       - backend
+    command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U admin"]
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-secret1123@}" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -40,7 +38,7 @@ services:
   # MongoDB - Read Database (for CQRS)
   mongodb:
     image: mongo:7
-    container_name: asset_mongodb
+    container_name: mongodb
     secrets:
       - mongo_passwd
     environment:
@@ -50,7 +48,7 @@ services:
     ports:
       - "27017:27017"
     volumes:
-      - mongodb-data:/data/db
+      - ./.mongo_db:/data/db
     networks:
       - backend
     healthcheck:
@@ -62,15 +60,15 @@ services:
   # Redis - Caching & Session Store
   redis:
     image: redis:7-alpine
-    container_name: asset_redis
+    container_name: redis
     ports:
       - "6379:6379"
     volumes:
-      - redis-data:/data
+      - ./.redis_data:/data
     networks:
       - backend
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: [ "CMD", "redis-cli", "ping" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -79,15 +77,15 @@ services:
   # RabbitMQ - Message Queue (for CQRS & Event-Driven)
   rabbitmq:
     image: rabbitmq:3-management-alpine
-    container_name: asset_rabbitmq
+    container_name: rabbitmq
     environment:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
     ports:
-      - "5672:5672"      # AMQP port
-      - "15672:15672"    # Management UI
+      - "5672:5672" # AMQP port
+      - "15672:15672" # Management UI
     volumes:
-      - rabbitmq-data:/var/lib/rabbitmq
+      - ./.rabbit_data:/var/lib/rabbitmq
     networks:
       - backend
     healthcheck:
@@ -102,7 +100,7 @@ services:
 
   # nginx:
   #   image: nginx:alpine
-  #   container_name: asset_nginx
+  #   container_name: offwrk_nginx
   #   ports:
   #     - "80:80"
   #     - "443:443"
@@ -125,20 +123,22 @@ services:
   # ======================
 
   # Auth Service
-  auth-service:
+  auth-api:
     build:
-      context: ./services/auth
+      context: ./services/auth-api
       dockerfile: Dockerfile
-    container_name: auth-service
+    container_name: auth-api
     secrets:
       - jwt_secret_key
-      - postgres_passwd
+      - mysql_passwd
       - mongo_passwd
     environment:
       ENVIRONMENT: development
-      DATABASE_USER: ${POSTGRES_USR}
-      POSTGRES_PASSWD_FILE: /run/secrets/postgres_passwd
-      DATABASE_NAME: ${POSTGRES_DB_NAME}
+      DATABASE_USER: ${MYSQL_USER:-admin}
+      DATABASE_PASSWORD_FILE: /run/secrets/mysql_passwd
+      DATABASE_NAME: auth_db
+      DATABASE_HOST: mysql
+      DATABASE_PORT: 3306
       MONGO_PASSWD_FILE: /run/secrets/mongo_passwd
       JWT_SECRET_KEY_FILE: /run/secrets/jwt_secret_key
       JWT_ALGORITHM: HS256
@@ -151,11 +151,11 @@ services:
       AD_BIND_PASSWORD: ad_password
       AD_SEARCH_BASE: OU=Users,DC=company,DC=local
     volumes:
-      - ./services/auth/app:/app/app:ro
+      - ./services/auth-api/:/app/:ro
     ports:
       - "8088:8000"
     depends_on:
-      postgres:
+      mysql:
         condition: service_healthy
       mongodb:
         condition: service_healthy
@@ -167,40 +167,124 @@ services:
       - backend
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      interval: 30s
+      test: [ "CMD", "curl", "-f", "http://localhost:8000/health" ]
+      interval: 1m
       timeout: 10s
       retries: 3
       start_period: 40s
 
   # Frontend Service (FastAPI + Jinja)
-  frontend-service:
+  auth-fe:
     build:
-      context: ./services/frontend
+      context: ./services/auth-frontend
       dockerfile: Dockerfile
-    container_name: frontend-service
+    container_name: auth-fe
     secrets:
       - jwt_secret_key
     environment:
       JWT_SECRET_KEY_FILE: /run/secrets/jwt_secret_key
-      API_BASE: http://auth-service:8000/api/v1
+      API_BASE: http://auth-api:8000/api/v1
+    volumes:
+      - ./services/auth-frontend/:/app/:ro
     ports:
       - "3000:3000"
     depends_on:
-      auth-service:
+      auth-api:
         condition: service_healthy
     networks:
       - backend
     restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:3000/health" ]
+      interval: 1m
+      timeout: 10s
+      retries: 5
+      start_period: 30s
 
   # Asset Service
-  # asset-service:
+  asset-api:
+    build:
+      context: ./services/asset-api
+      dockerfile: Dockerfile
+    container_name: asset-api
+    secrets:
+      - jwt_secret_key
+      - mysql_passwd
+      - mongo_passwd
+    environment:
+      ENVIRONMENT: development
+      DATABASE_USER: ${MYSQL_USER:-admin}
+      DATABASE_PASSWORD_FILE: /run/secrets/mysql_passwd
+      DATABASE_NAME: asset_db
+      DATABASE_HOST: mysql
+      DATABASE_PORT: 3306
+      MONGO_PASSWD_FILE: /run/secrets/mongo_passwd
+      JWT_SECRET_KEY_FILE: /run/secrets/jwt_secret_key
+      JWT_ALGORITHM: HS256
+      UPLOAD_DIR: /uploads
+      MAX_UPLOAD_SIZE: 10485760
+      DEPRECIATION_DAY_OF_MONTH: 1
+      AUTH_SERVICE_URL: http://auth-api:8000
+    volumes:
+      - ./services/asset-api/:/app/:ro
+      - asset-uploads:/uploads
+    ports:
+      - "8089:8000"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - backend
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8000/health" ]
+      interval: 1m
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Asset Frontend (FastAPI + Jinja2)
+  asset-fe:
+    build:
+      context: ./services/asset-frontend
+      dockerfile: Dockerfile
+    container_name: asset-fe
+    secrets:
+      - jwt_secret_key
+    environment:
+      JWT_SECRET_KEY_FILE: /run/secrets/jwt_secret_key
+      ASSET_API_URL: http://asset-api:8000/api/v1
+    volumes:
+      - ./services/asset-frontend/:/app/:ro
+    ports:
+      - "3001:3001"
+    depends_on:
+      asset-api:
+        condition: service_healthy
+    networks:
+      - backend
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:3001/health" ]
+      interval: 1m
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  # Asset Service (old commented out)
+  # asset-service-old:
   #   build:
   #     context: ./services/asset
   #     dockerfile: Dockerfile
   #   container_name: asset-service
   #   environment:
-  #     - DATABASE_URL=postgresql://admin:secret123@postgres:5432/asset_management
+  #     - DATABASE_URL=postgresql://admin:secret123@postgres:5432/offwrk_management
   #     - MONGODB_URL=mongodb://admin:secret123@mongodb:27017/
   #     - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
   #     - REDIS_URL=redis://redis:6379
@@ -232,12 +316,12 @@ services:
   #     dockerfile: Dockerfile
   #   container_name: procurement-service
   #   environment:
-  #     - DATABASE_URL=postgresql://admin:secret123@postgres:5432/asset_management
+  #     - DATABASE_URL=postgresql://admin:secret123@postgres:5432/offwrk_management
   #     - MONGODB_URL=mongodb://admin:secret123@mongodb:27017/
   #     - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
   #     - REDIS_URL=redis://redis:6379
   #     - AUTH_SERVICE_URL=http://auth-service:8000
-  #     - ASSET_SERVICE_URL=http://asset-service:8000
+  #     - offwrk_SERVICE_URL=http://asset-service:8000
   #     - ENVIRONMENT=development
   #   depends_on:
   #     postgres:
@@ -262,12 +346,12 @@ services:
   #     dockerfile: Dockerfile
   #   container_name: maintenance-service
   #   environment:
-  #     - DATABASE_URL=postgresql://admin:secret123@postgres:5432/asset_management
+  #     - DATABASE_URL=postgresql://admin:secret123@postgres:5432/offwrk_management
   #     - MONGODB_URL=mongodb://admin:secret123@mongodb:27017/
   #     - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
   #     - REDIS_URL=redis://redis:6379
   #     - AUTH_SERVICE_URL=http://auth-service:8000
-  #     - ASSET_SERVICE_URL=http://asset-service:8000
+  #     - offwrk_SERVICE_URL=http://asset-service:8000
   #     - ENVIRONMENT=development
   #   depends_on:
   #     postgres:
@@ -295,7 +379,7 @@ services:
   #     - MONGODB_URL=mongodb://admin:secret123@mongodb:27017/
   #     - REDIS_URL=redis://redis:6379
   #     - AUTH_SERVICE_URL=http://auth-service:8000
-  #     - ASSET_SERVICE_URL=http://asset-service:8000
+  #     - offwrk_SERVICE_URL=http://asset-service:8000
   #     - PROCUREMENT_SERVICE_URL=http://procurement-service:8000
   #     - MAINTENANCE_SERVICE_URL=http://maintenance-service:8000
   #     - ENVIRONMENT=development
@@ -320,7 +404,7 @@ services:
   #     dockerfile: Dockerfile
   #   container_name: notification-service
   #   environment:
-  #     - DATABASE_URL=postgresql://admin:secret123@postgres:5432/asset_management
+  #     - DATABASE_URL=postgresql://admin:secret123@postgres:5432/offwrk_management
   #     - MONGODB_URL=mongodb://admin:secret123@mongodb:27017/
   #     - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
   #     - REDIS_URL=redis://redis:6379
@@ -346,9 +430,9 @@ services:
   #     timeout: 10s
   #     retries: 3
 
-# ======================
-# NETWORKS
-# ======================
+  # ======================
+  # NETWORKS
+  # ======================
 
 networks:
   backend:
@@ -359,13 +443,5 @@ networks:
 # ======================
 
 volumes:
-  postgres-data:
-    driver: local
-  mongodb-data:
-    driver: local
-  redis-data:
-    driver: local
-  rabbitmq-data:
-    driver: local
   asset-uploads:
     driver: local

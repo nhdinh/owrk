@@ -87,7 +87,7 @@ docker-compose restart auth-service
 1. **[AUTH_SERVICE_FIXED.md](AUTH_SERVICE_FIXED.md)** - All fixes
 2. **[COMPREHENSIVE_API_TESTING.md](COMPREHENSIVE_API_TESTING.md)** - API tests
 3. **[INTEGRATION_COMPLETE.md](INTEGRATION_COMPLETE.md)** - Integration summary
-4. **[services/auth/TESTING_GUIDE.md](services/auth/TESTING_GUIDE.md)** - Full testing guide
+4. **[services/auth-api/TESTING_GUIDE.md](services/auth-api/TESTING_GUIDE.md)** - Full testing guide
 
 ---
 

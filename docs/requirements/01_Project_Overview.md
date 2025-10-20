@@ -1,0 +1,193 @@
+# HỆ THỐNG QUẢN LÝ TRANG THIẾT BỊ VĂN PHÒNG
+
+## 1. TỔNG QUAN DỰ ÁN
+
+### 1.1. Mục tiêu
+
+Xây dựng hệ thống số hóa quy trình quản lý trang thiết bị văn phòng nhằm:
+
+- Tối ưu hóa quy trình quản lý tài sản văn phòng
+- Theo dõi vòng đời thiết bị từ lúc mua đến khi thanh lý
+- Quản lý bảo trì, sửa chữa thiết bị
+- Tự động hóa quy trình đề xuất, phê duyệt mua sắm
+- Báo cáo và phân tích hiệu quả sử dụng thiết bị
+
+### 1.2. Phạm vi
+
+**Trong phạm vi:**
+
+- Quản lý danh mục thiết bị (máy tính, bàn ghế, máy in, điều hòa, phương tiện xe cơ giới v.v.)
+- Quản lý thông tin thiết bị (trạng thái, vị trí, người sử dụng)
+- Quản lý quy trình mua sắm, cấp phát, thu hồi
+- Quản lý, lập kế hoạch và thực hiện việc bảo trì, sửa chữa
+- Quản lý phòng ban và nhân viên
+- Báo cáo và thống kê
+- Quản lý nhà cung cấp
+- Lịch sử thay đổi và kiểm kê
+
+**Ngoài phạm vi:**
+
+- Quản lý tài chính chi tiết (kế toán)
+- Quản lý nhân sự đầy đủ
+- Quản lý dự án
+
+### 1.3. Đối tượng sử dụng
+
+1. **Admin/Quản trị viên**: Quản lý toàn bộ hệ thống
+2. **Quản lý thiết bị**: Quản lý danh mục, cấp phát, bảo trì
+3. **Quản lý phòng ban**: Phê duyệt đề xuất, xem báo cáo
+4. **Nhân viên**: Đề xuất mua sắm, yêu cầu sửa chữa
+
+### 1.4. Lợi ích
+
+- **Tăng hiệu quả quản lý**: Giảm thời gian tra cứu, cập nhật thông tin
+- **Minh bạch**: Theo dõi rõ ràng trạng thái, vị trí thiết bị
+- **Tiết kiệm chi phí**: Tối ưu hóa bảo trì, tránh thất thoát
+- **Tuân thủ quy trình**: Chuẩn hóa quy trình mua sắm, cấp phát
+- **Hỗ trợ quyết định**: Báo cáo, phân tích dữ liệu
+
+## 2. TÍNH NĂNG CHÍNH
+
+### 2.1. Quản lý danh mục thiết bị
+
+- Phân loại thiết bị theo nhóm (IT, nội thất, điện máy...)
+- Phân loại trang thiết bị theo loại (Tài sản, công cụ dụng cụ) theo quy định kế toán về giá trị.
+- Thông tin chi tiết: mã tài sản, tên tài sản, model, nhà sản xuất, năm sản xuất...
+- Thông tin tài chính: giá mua, khấu hao (chỉ áp dụng đối với tài sản), thời gian sử dụng, giá trị còn lại...
+- Tài liệu đính kèm: hóa đơn, bảo hành, hướng dẫn sử dụng...
+
+### 2.2. Quản lý vòng đời thiết bị
+
+- **Đề xuất mua sắm**: Nhân viên tạo đề xuất, sau khi qua các bước phê duyệt sẽ chuyển về Bộ phận phụ trách mua sắm.
+- **Mua sắm**: Trong trường hợp sẵn có thiết bị tương tự trong kho thì không cần qua bước mua sắm mà có thể cấp phát trực tiếp. Trường hợp không có thiết bị trong kho thì mới qua bước mua sắm.
+- **Cấp phát**: Gán thiết bị cho nhân viên/ phòng ban
+- **Sử dụng**: Theo dõi trạng thái (đang dùng, hỏng, bảo trì)
+- **Thu hồi**: Chuyển đổi người dùng hoặc lưu kho
+- **Thanh lý**: Ghi nhận thiết bị hết hạn sử dụng
+
+### 2.3. Quản lý bảo trì và sửa chữa
+
+- Lập lịch bảo trì định kỳ
+- Yêu cầu sửa chữa từ người dùng
+- Theo dõi lịch sử bảo trì
+- Chi phí bảo trì theo thiết bị
+- Theo dõi, quản lý nhà cung cấp dịch vụ bảo trì
+
+### 2.4. Quản lý kiểm kê
+
+- Tạo phiếu kiểm kê theo kỳ
+- Đối chiếu thực tế với hệ thống
+- Báo cáo chênh lệch
+
+### 2.5. Quản lý Nhà cung cấp và các hợp đồng
+
+- Quản lý thông tin nhà cung cấp
+- Quản lý hợp đồng mua sắm, bảo trì
+- Theo dõi thời hạn hợp đồng
+- Đánh giá hiệu quả nhà cung cấp
+- Quản lý các hạng mục thiết bị và đơn giá tương ứng do nhà cung cấp cung cấp
+
+### 2.6. Báo cáo và thống kê
+
+- Tổng quan tài sản theo phòng ban
+- Báo cáo tình trạng thiết bị
+- Báo cáo chi phí bảo trì
+- Báo cáo khấu hao
+- Báo cáo thiết bị sắp hết hạn bảo hành
+
+## 3. CÔNG NGHỆ DỰ KIẾN
+
+### 3.1. Frontend
+
+- **Framework**: FastAPI
+- **Theme**: https://demo.dashboardpack.com/admindek-html/
+
+### 3.2. Backend
+
+- **Framework**: FastAPI
+- **ORM**: SqlAlchemy
+- **Authentication**: JWT + Refresh Token
+
+### 3.3. Database
+
+- **Primary DB**: PostgreSQL (for writing operations)
+- **Secondary DB**: MongoDB (for reading operations)
+- **Cache**: Redis
+- **File Storage**: MinIO
+
+### 3.4. DevOps
+
+- **Version Control**: Git
+- **CI/CD**: GitHub Actions hoặc GitLab CI
+- **Containerization**: Docker
+- **Deployment**: Docker Compose
+
+## 4. TIMELINE Dự KIẾN
+
+### Phase 1: Chuẩn bị và Thiết kế (2 tuần)
+
+- Phân tích yêu cầu chi tiết
+- Thiết kế database
+- Thiết kế UI/UX
+- Thiết kế API
+
+### Phase 2: Phát triển Core Features (6-8 tuần)
+
+- Sprint 1: Authentication, Authorization, User Management
+- Sprint 2: Quản lý danh mục thiết bị
+- Sprint 3: Quy trình mua sắm và cấp phát
+- Sprint 4: Quản lý bảo trì và sửa chữa
+
+### Phase 3: Tính năng nâng cao (4 tuần)
+
+- Sprint 5: Kiểm kê và báo cáo
+- Sprint 6: Notification, Email
+- Sprint 7: Dashboard và Analytics
+
+### Phase 4: Testing và Deployment (2 tuần)
+
+- Unit Testing
+- Integration Testing
+- UAT (User Acceptance Testing)
+- Production Deployment
+
+### Phase 5: Vận hành và Bảo trì
+
+- Theo dõi và sửa lỗi
+- Tối ưu hóa hiệu năng
+- Thu thập feedback và cải tiến
+
+## 5. RИСКИ VÀ ĐỐI SÁCH
+
+| Rủi ro                       | Mức độ     | Đối sách                                             |
+| ---------------------------- | ---------- | ---------------------------------------------------- |
+| Thay đổi yêu cầu giữa chừng  | Cao        | Agile methodology, sprint review thường xuyên        |
+| Thiếu nhân lực kỹ thuật      | Trung bình | Training, tài liệu hóa tốt                           |
+| Dữ liệu ban đầu không đầy đủ | Cao        | Có chức năng import linh hoạt, cho phép cập nhật dần |
+| Người dùng kháng cự thay đổi | Trung bình | Training, UI/UX thân thiện, hỗ trợ tích cực          |
+
+## 6. TIÊU CHÍ THÀNH CÔNG
+
+1. **Chức năng**: 100% tính năng core hoạt động ổn định
+2. **Hiệu năng**: Thời gian phản hồi < 2s cho các thao tác thông thường
+3. **Độ tin cậy**: Uptime ≥ 99.5%
+4. **Bảo mật**: Vượt qua security audit, không lỗ hổng nghiêm trọng
+5. **Người dùng**: ≥ 80% người dùng hài lòng với hệ thống
+6. **ROI**: Giảm ≥ 30% thời gian quản lý thiết bị so với thủ công
+
+## 7. TÀI LIỆU THAM KHẢO
+
+- `01. Project_Overview.md`: Tài liệu tổng quan hệ thống (Tài liệu này)
+- `02. Business_Requirements.md`: Yêu cầu nghiệp vụ chi tiết
+- `03. System_Architecture.md`: Kiến trúc hệ thống
+- `04. Database_Design.md`: Thiết kế cơ sở dữ liệu
+- `05. API_Specification.md`: Đặc tả API
+- `06. User_Stories.md`: User stories và use cases
+- `07. Implementation_Plan.md`: Kế hoạch triển khai chi tiết
+
+---
+
+**Phiên bản**: 1.1
+**Ngày tạo**: 17/10/2025
+**Người tạo**: System Analyst
+**Trạng thái**: Draft

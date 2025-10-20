@@ -1,0 +1,246 @@
+{% extends "base.html" %}
+
+{% block title %}{{ asset.name }} - Asset Management{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/assets/">Assets</a></li>
+            <li class="breadcrumb-item active">{{ asset.asset_code }}</li>
+        </ol>
+    </nav>
+</div>
+
+<div class="row">
+    <!-- Asset Details -->
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5><i class="bi bi-box-seam"></i> Asset Details</h5>
+                <div>
+                    <a href="/assets/{{ asset.id }}/edit" class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-pencil"></i> Edit
+                    </a>
+                    {% if asset.status == 'AVAILABLE' %}
+                    <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#assignModal">
+                        <i class="bi bi-person-plus"></i> Assign
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <p><strong>Asset Code:</strong> {{ asset.asset_code }}</p>
+                        <p><strong>Name:</strong> {{ asset.name }}</p>
+                        <p><strong>Category:</strong> {{ asset.category.name if asset.category else '-' }}</p>
+                        <p><strong>Type:</strong>
+                            {% if asset.asset_type == 'FIXED' %}
+                            <span class="badge bg-primary">Fixed Asset</span>
+                            {% else %}
+                            <span class="badge bg-secondary">Tool</span>
+                            {% endif %}
+                        </p>
+                        <p><strong>Status:</strong>
+                            {% if asset.status == 'AVAILABLE' %}
+                            <span class="badge bg-success">Available</span>
+                            {% elif asset.status == 'IN_USE' %}
+                            <span class="badge bg-info">In Use</span>
+                            {% elif asset.status == 'MAINTENANCE' %}
+                            <span class="badge bg-warning">Maintenance</span>
+                            {% else %}
+                            <span class="badge bg-danger">{{ asset.status }}</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Purchase Price:</strong> ${{ "{:,.2f}".format(asset.purchase_price) }}</p>
+                        <p><strong>Current Value:</strong> ${{ "{:,.2f}".format(asset.current_value) if asset.current_value else "-" }}</p>
+                        <p><strong>Purchase Date:</strong> {{ asset.purchase_date }}</p>
+                        <p><strong>Warranty Until:</strong> {{ asset.warranty_expiry if asset.warranty_expiry else '-' }}</p>
+                        <p><strong>Supplier:</strong> {{ asset.supplier if asset.supplier else '-' }}</p>
+                    </div>
+                </div>
+
+                {% if asset.description %}
+                <div class="mb-3">
+                    <strong>Description:</strong>
+                    <p class="text-muted">{{ asset.description }}</p>
+                </div>
+                {% endif %}
+
+                {% if asset.specifications %}
+                <div class="mb-3">
+                    <strong>Specifications:</strong>
+                    <pre class="bg-light p-3 rounded">{{ asset.specifications }}</pre>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Assignment History -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5><i class="bi bi-clock-history"></i> Assignment History</h5>
+            </div>
+            <div class="card-body">
+                {% if history %}
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Assigned Date</th>
+                                <th>Returned Date</th>
+                                <th>Condition</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in history %}
+                            <tr>
+                                <td>{{ item.user.full_name if item.user else '-' }}</td>
+                                <td>{{ item.assigned_date }}</td>
+                                <td>{{ item.returned_date if item.returned_date else '-' }}</td>
+                                <td>{{ item.return_condition if item.return_condition else '-' }}</td>
+                                <td>
+                                    {% if item.status == 'ACTIVE' %}
+                                    <span class="badge bg-success">Active</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">{{ item.status }}</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted text-center py-3">No assignment history</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Depreciation Records -->
+        {% if depreciation %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5><i class="bi bi-graph-down"></i> Depreciation History</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Period</th>
+                                <th>Opening Value</th>
+                                <th>Depreciation</th>
+                                <th>Closing Value</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for dep in depreciation %}
+                            <tr>
+                                <td>{{ dep.period_month }}</td>
+                                <td>${{ "{:,.2f}".format(dep.opening_value) }}</td>
+                                <td>${{ "{:,.2f}".format(dep.depreciation_amount) }}</td>
+                                <td>${{ "{:,.2f}".format(dep.closing_value) }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Sidebar -->
+    <div class="col-md-4">
+        <!-- QR Code -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5><i class="bi bi-qr-code"></i> QR Code</h5>
+            </div>
+            <div class="card-body text-center">
+                {% if asset.qr_code_url %}
+                <img src="{{ asset.qr_code_url }}" alt="QR Code" class="img-fluid qr-code mb-3">
+                <br>
+                <button class="btn btn-sm btn-outline-secondary" onclick="printQR()">
+                    <i class="bi bi-printer"></i> Print
+                </button>
+                {% else %}
+                <p class="text-muted">QR code not generated</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="bi bi-lightning"></i> Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    {% if asset.status == 'AVAILABLE' %}
+                    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#assignModal">
+                        <i class="bi bi-person-plus"></i> Assign Asset
+                    </button>
+                    {% elif asset.status == 'IN_USE' %}
+                    <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#returnModal">
+                        <i class="bi bi-arrow-return-left"></i> Return Asset
+                    </button>
+                    {% endif %}
+                    <button class="btn btn-info" data-bs-toggle="modal" data-bs-target="#uploadModal">
+                        <i class="bi bi-cloud-upload"></i> Upload Document
+                    </button>
+                    <a href="/maintenance/create?asset_id={{ asset.id }}" class="btn btn-secondary">
+                        <i class="bi bi-tools"></i> Request Maintenance
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Assign Modal -->
+<div class="modal fade" id="assignModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" action="/assets/{{ asset.id }}/assign">
+                <div class="modal-header">
+                    <h5 class="modal-title">Assign Asset</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="user_id" class="form-label">Assign To</label>
+                        <select class="form-select" id="user_id" name="user_id" required>
+                            <option value="">Select User...</option>
+                            <!-- User list would be populated from API -->
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="notes" class="form-label">Notes</label>
+                        <textarea class="form-control" id="notes" name="notes" rows="3"></textarea>
+                    </div>
+                    <input type="hidden" name="assigned_by" value="1">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success">Assign</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+function printQR() {
+    window.print();
+}
+</script>
+{% endblock %}
+{% endblock %}

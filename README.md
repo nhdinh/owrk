@@ -152,12 +152,10 @@ Hệ thống Quản lý Trang thiết bị Văn phòng là giải pháp số hó
   - Password hashing (passlib + bcrypt)
 
 ### Frontend
-- **Framework**: React.js 18+ / Vue.js 3+ (TBD)
-- **Language**: TypeScript
-- **UI Library**: Tailwind CSS / Ant Design
-- **State Management**: Redux Toolkit / Pinia
-- **HTTP Client**: Axios
-- **Real-time**: Socket.io / WebSocket
+- **Framework**: FastAPI (Python 3.11+)
+- **Template Engine**: Jinja2
+- **Styling**: CSS/Bootstrap (served via static files)
+- **Authentication**: Session-based with JWT tokens
 
 ### DevOps
 - **Containerization**: Docker + Docker Compose
@@ -198,7 +196,6 @@ Toàn bộ tài liệu dự án được lưu trong thư mục [`docs/v1/`](docs
 - Docker 20.10+
 - Docker Compose 2.0+
 - Python 3.11+ (for local development)
-- Node.js 18+ (for frontend)
 - Git
 
 ### Quick Start
@@ -249,18 +246,20 @@ docker-compose exec auth-service python scripts/create_admin.py
 
 #### Backend (FastAPI)
 ```bash
-cd services/auth-service
+cd services/auth-api
 python -m venv venv
 source venv/bin/activate  # Windows: venv\Scripts\activate
 pip install -r requirements.txt
 uvicorn app.main:app --reload --port 8001
 ```
 
-#### Frontend (React/Vue)
+#### Frontend (FastAPI)
 ```bash
-cd frontend
-npm install
-npm run dev
+cd services/auth-frontend
+python -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
+pip install -r requirements.txt
+uvicorn app.main:app --reload --port 3000
 ```
 
 ---
@@ -441,7 +440,7 @@ Phát hiện sự cố → Tạo yêu cầu bảo trì
 ### Core Team
 - **Tech Lead**: [Tên] - System Architecture, Code Review
 - **Backend Developers**: [Tên 1], [Tên 2], [Tên 3] - Microservices Development
-- **Frontend Developers**: [Tên 1], [Tên 2] - React/Vue Development
+- **Frontend Developers**: [Tên 1], [Tên 2] - FastAPI Frontend Development
 - **DevOps Engineer**: [Tên] - Infrastructure, CI/CD
 - **QA Engineer**: [Tên] - Testing, Quality Assurance
 - **Business Analyst**: [Tên] - Requirements, Documentation
@@ -546,7 +545,7 @@ locust -f tests/load/locustfile.py
 
 ### Code Style
 - Python: Black + Flake8 + mypy
-- JavaScript/TypeScript: ESLint + Prettier
+- HTML/CSS: Consistent formatting
 - Commit messages: Conventional Commits
 
 ### Pull Request Guidelines
@@ -567,7 +566,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - FastAPI team for the amazing framework
 - PostgreSQL community
-- React/Vue.js communities
+- Jinja2 template engine
 - All contributors
 
 ---

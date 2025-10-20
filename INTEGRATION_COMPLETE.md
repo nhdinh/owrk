@@ -64,7 +64,7 @@ Auth Service backend is **fully operational** and ready for frontend integration
 ### 5. [SPRINT_2_COMPLETE.md](SPRINT_2_COMPLETE.md)
 **Content**: Sprint 2 completion summary
 - Backend implementation (100% complete)
-- Frontend implementation (100% complete - React version)
+- Frontend implementation (100% complete - FastAPI + Jinja2)
 - Features delivered
 - Metrics and statistics
 
@@ -162,37 +162,25 @@ curl -X POST http://localhost:8088/api/v1/auth/login \
   -d '{"email":"admin@example.com","password":"admin123"}'
 ```
 
-### 3. Frontend Options
+### 3. Start Frontend Service
 
-#### Option A: FastAPI + Jinja2 Frontend (in docker-compose)
 ```bash
-# The frontend-service is defined in docker-compose.yml
-# Located at: services/frontend/
-# Needs implementation
+# The auth-frontend-service is defined in docker-compose.yml
+# Located at: services/auth-frontend/
+# FastAPI + Jinja2 templates
 
-docker-compose up -d frontend-service
+docker-compose up -d auth-frontend-service
 # Access at: http://localhost:3000
 ```
 
-#### Option B: React Frontend (already created)
-```bash
-# React frontend with Vite is ready in: frontend/
-# Full implementation with 7 pages, 8 components
-
-cd frontend
-npm install
-npm run dev
-# Access at: http://localhost:3000
-```
-
-**Recommendation**: Use React frontend (Option B) as it's already 100% complete with:
+**Frontend Features** (FastAPI + Jinja2):
 - Login page with 2-step auth
-- MFA setup page
+- MFA setup page with QR code
 - Password reset flow
 - User profile management
 - Security settings
 - Dashboard
-- Responsive UI with TailwindCSS
+- Server-side rendered templates
 
 ---
 
@@ -274,7 +262,7 @@ See [COMPREHENSIVE_API_TESTING.md](COMPREHENSIVE_API_TESTING.md) for all 24 endp
 ## 🎯 Next Steps
 
 ### Immediate Actions:
-1. ✅ Choose frontend approach (React vs FastAPI+Jinja2)
+1. ✅ Frontend using FastAPI+Jinja2
 2. ⏸️ Start frontend service
 3. ⏸️ Test frontend-backend integration
 4. ⏸️ Complete comprehensive API testing
@@ -283,11 +271,11 @@ See [COMPREHENSIVE_API_TESTING.md](COMPREHENSIVE_API_TESTING.md) for all 24 endp
 7. ⏸️ Document any issues found
 
 ### Frontend Integration Checklist:
-- [ ] Install frontend dependencies (if React)
+- [ ] Start frontend service (FastAPI + Jinja2)
 - [ ] Configure API base URL
 - [ ] Update CORS settings if needed
 - [ ] Test login from frontend
-- [ ] Test token refresh
+- [ ] Test session management
 - [ ] Test protected routes
 - [ ] Test MFA setup
 - [ ] Test password management
@@ -342,16 +330,16 @@ See [COMPREHENSIVE_API_TESTING.md](COMPREHENSIVE_API_TESTING.md) for all 24 endp
 ### Documentation:
 - **API Docs (Swagger)**: http://localhost:8088/docs
 - **API Docs (ReDoc)**: http://localhost:8088/redoc
-- **Testing Guide**: [services/auth/TESTING_GUIDE.md](services/auth/TESTING_GUIDE.md)
+- **Testing Guide**: [services/auth-api/TESTING_GUIDE.md](services/auth-api/TESTING_GUIDE.md)
 - **Implementation Plan**: [docs/07. Implementation_Plan.md](docs/07.%20Implementation_Plan.md)
 - **System Architecture**: [docs/03. System_Architecture.md](docs/03.%20System_Architecture.md)
 
 ### Code References:
-- **Auth Service**: [services/auth/](services/auth/)
-- **Models**: [services/auth/app/models/](services/auth/app/models/)
-- **API Endpoints**: [services/auth/app/api/v1/endpoints/](services/auth/app/api/v1/endpoints/)
-- **Migrations**: [services/auth/alembic/versions/](services/auth/alembic/versions/)
-- **React Frontend**: [frontend/](frontend/)
+- **Auth API Service**: [services/auth-api/](services/auth-api/)
+- **Models**: [services/auth-api/app/models/](services/auth-api/app/models/)
+- **API Endpoints**: [services/auth-api/app/api/v1/endpoints/](services/auth-api/app/api/v1/endpoints/)
+- **Migrations**: [services/auth-api/alembic/versions/](services/auth-api/alembic/versions/)
+- **Auth Frontend**: [services/auth-frontend/](services/auth-frontend/)
 
 ### Docker Commands:
 ```bash
@@ -414,8 +402,7 @@ docker-compose up -d --build
 - [x] Integration summary
 
 ### Frontend:
-- [x] React frontend (7 pages, 8 components) - Ready
-- [ ] FastAPI+Jinja2 frontend - Needs implementation
+- [x] FastAPI+Jinja2 frontend (templates ready)
 - [ ] Frontend-backend integration - Pending
 - [ ] End-to-end testing - Pending
 
@@ -430,14 +417,14 @@ docker-compose up -d --build
 4. ✅ **Database** initialized with seed data
 5. ✅ **JWT authentication** working
 6. ✅ **24 API endpoints** ready for use
-7. ✅ **Complete React frontend** with 7 pages
+7. ✅ **FastAPI frontend** with Jinja2 templates
 8. ✅ **Comprehensive documentation** (6 documents)
 
 ### Lines of Code:
-- Backend: ~3,500 lines (Python)
-- Frontend: ~2,800 lines (TypeScript + React)
+- Backend API: ~3,500 lines (Python)
+- Frontend Service: ~1,500 lines (Python + Jinja2)
 - Documentation: ~2,000 lines (Markdown)
-- **Total**: ~8,300 lines
+- **Total**: ~7,000 lines
 
 ### Time Investment:
 - Debug session: ~2 hours
@@ -454,7 +441,7 @@ docker-compose up -d --build
 The authentication backend is production-ready and waiting for frontend integration and comprehensive testing.
 
 **Recommended Next Steps**:
-1. Start React frontend (`cd frontend && npm run dev`)
+1. Start frontend service (`docker-compose up -d auth-frontend-service`)
 2. Test login from browser
 3. Test all authentication flows
 4. Complete API endpoint testing

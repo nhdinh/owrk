@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+
+{% block title %}{{ action }} Asset - Asset Management{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/assets/">Assets</a></li>
+            <li class="breadcrumb-item active">{{ action }} Asset</li>
+        </ol>
+    </nav>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h4><i class="bi bi-box-seam"></i> {{ action }} Asset</h4>
+            </div>
+            <div class="card-body">
+                <form method="post" action="{% if asset %}/assets/{{ asset.id }}/edit{% else %}/assets/create{% endif %}">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="asset_code" class="form-label">Asset Code *</label>
+                            <input type="text" class="form-control" id="asset_code" name="asset_code"
+                                   value="{{ asset.asset_code if asset else '' }}" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="name" class="form-label">Asset Name *</label>
+                            <input type="text" class="form-control" id="name" name="name"
+                                   value="{{ asset.name if asset else '' }}" required>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="category_id" class="form-label">Category *</label>
+                            <select class="form-select" id="category_id" name="category_id" required>
+                                <option value="">Select Category...</option>
+                                {% for cat in categories %}
+                                <option value="{{ cat.id }}"
+                                        {% if asset and asset.category_id == cat.id %}selected{% endif %}>
+                                    {{ cat.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="asset_type" class="form-label">Asset Type *</label>
+                            <select class="form-select" id="asset_type" name="asset_type" required>
+                                <option value="FIXED" {% if asset and asset.asset_type == 'FIXED' %}selected{% endif %}>
+                                    Fixed Asset
+                                </option>
+                                <option value="TOOL" {% if asset and asset.asset_type == 'TOOL' %}selected{% endif %}>
+                                    Tool/Equipment
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="purchase_price" class="form-label">Purchase Price *</label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input type="number" class="form-control" id="purchase_price" name="purchase_price"
+                                       step="0.01" value="{{ asset.purchase_price if asset else '' }}" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="purchase_date" class="form-label">Purchase Date *</label>
+                            <input type="date" class="form-control" id="purchase_date" name="purchase_date"
+                                   value="{{ asset.purchase_date if asset else '' }}" required>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="supplier" class="form-label">Supplier</label>
+                            <input type="text" class="form-control" id="supplier" name="supplier"
+                                   value="{{ asset.supplier if asset else '' }}">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="warranty_expiry" class="form-label">Warranty Expiry</label>
+                            <input type="date" class="form-control" id="warranty_expiry" name="warranty_expiry"
+                                   value="{{ asset.warranty_expiry if asset else '' }}">
+                        </div>
+                    </div>
+
+                    <div id="depreciationSection" class="mb-3">
+                        <h5 class="mb-3">Depreciation Settings (For Fixed Assets)</h5>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="depreciation_method" class="form-label">Method</label>
+                                <select class="form-select" id="depreciation_method" name="depreciation_method">
+                                    <option value="">No Depreciation</option>
+                                    <option value="STRAIGHT_LINE"
+                                            {% if asset and asset.depreciation_method == 'STRAIGHT_LINE' %}selected{% endif %}>
+                                        Straight Line
+                                    </option>
+                                    <option value="DECLINING_BALANCE"
+                                            {% if asset and asset.depreciation_method == 'DECLINING_BALANCE' %}selected{% endif %}>
+                                        Declining Balance
+                                    </option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="useful_life_months" class="form-label">Useful Life (Months)</label>
+                                <input type="number" class="form-control" id="useful_life_months" name="useful_life_months"
+                                       value="{{ asset.useful_life_months if asset else '' }}">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="residual_value" class="form-label">Residual Value ($)</label>
+                                <input type="number" class="form-control" id="residual_value" name="residual_value"
+                                       step="0.01" value="{{ asset.residual_value if asset else '0' }}">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="3">{{ asset.description if asset else '' }}</textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="specifications" class="form-label">Specifications</label>
+                        <textarea class="form-control" id="specifications" name="specifications" rows="4">{{ asset.specifications if asset else '' }}</textarea>
+                        <div class="form-text">Technical specifications, model number, serial number, etc.</div>
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <a href="/assets/" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save"></i> {{ action }} Asset
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+// Show/hide depreciation section based on asset type
+document.getElementById('asset_type').addEventListener('change', function() {
+    const depSection = document.getElementById('depreciationSection');
+    if (this.value === 'FIXED') {
+        depSection.style.display = 'block';
+    } else {
+        depSection.style.display = 'none';
+    }
+});
+
+// Initial state
+document.addEventListener('DOMContentLoaded', function() {
+    const assetType = document.getElementById('asset_type').value;
+    const depSection = document.getElementById('depreciationSection');
+    if (assetType !== 'FIXED') {
+        depSection.style.display = 'none';
+    }
+});
+</script>
+{% endblock %}
+{% endblock %}
