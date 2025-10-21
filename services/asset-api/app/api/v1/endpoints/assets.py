@@ -188,3 +188,23 @@ async def get_statistics(current_user: dict = Depends(get_current_user)):
         return stats
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
+
+@router.get("/{asset_id}/qrcode")
+async def get_asset_qrcode(
+    asset_id: int,
+    current_user: dict = Depends(get_current_user)
+):
+    """Get QR code for asset"""
+    try:
+        from app.core.security import generate_qr_code
+        asset = await AssetService.get_asset(asset_id)
+        if not asset.qr_code:
+            # Generate QR code if not exists
+            qr_code = generate_qr_code(asset.asset_code)
+            return {"qr_code": qr_code, "asset_code": asset.asset_code}
+        return {"qr_code": asset.qr_code, "asset_code": asset.asset_code}
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")

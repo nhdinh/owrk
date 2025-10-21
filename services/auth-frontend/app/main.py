@@ -9,8 +9,7 @@ from .routers import auth, pages
 
 # Configure logging
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 
@@ -38,6 +37,6 @@ app.include_router(auth.router, prefix="", tags=["auth"])
 app.include_router(pages.router, prefix="", tags=["pages"])
 
 
-@app.get("/health")
+@app.get("/auth/health")
 async def health():
     return {"status": "ok"}

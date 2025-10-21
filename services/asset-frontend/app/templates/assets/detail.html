@@ -222,14 +222,113 @@
                         </select>
                     </div>
                     <div class="mb-3">
-                        <label for="notes" class="form-label">Notes</label>
-                        <textarea class="form-control" id="notes" name="notes" rows="3"></textarea>
+                        <label for="department_id" class="form-label">Department</label>
+                        <select class="form-select" id="department_id" name="department_id">
+                            <option value="">Select Department...</option>
+                        </select>
                     </div>
-                    <input type="hidden" name="assigned_by" value="1">
+                    <div class="mb-3">
+                        <label for="location" class="form-label">Location</label>
+                        <input type="text" class="form-control" id="location" name="location"
+                               placeholder="e.g., Office 3rd Floor">
+                    </div>
+                    <div class="mb-3">
+                        <label for="notes" class="form-label">Notes</label>
+                        <textarea class="form-control" id="notes" name="notes" rows="3"
+                                  placeholder="Additional notes about the assignment..."></textarea>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-success">Assign</button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-check-lg"></i> Assign Asset
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Return Modal -->
+<div class="modal fade" id="returnModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" action="/assets/{{ asset.id }}/return">
+                <div class="modal-header">
+                    <h5 class="modal-title">Return Asset</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i>
+                        Returning: <strong>{{ asset.name }}</strong> ({{ asset.asset_code }})
+                    </div>
+                    <div class="mb-3">
+                        <label for="return_condition" class="form-label">Condition on Return</label>
+                        <select class="form-select" id="return_condition" name="return_condition" required>
+                            <option value="">Select Condition...</option>
+                            <option value="GOOD">Good</option>
+                            <option value="MINOR_WEAR">Minor Wear</option>
+                            <option value="DAMAGED">Damaged</option>
+                            <option value="NEEDS_REPAIR">Needs Repair</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="return_notes" class="form-label">Return Notes</label>
+                        <textarea class="form-control" id="return_notes" name="return_notes" rows="3" required
+                                  placeholder="Describe the condition and any issues..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-warning">
+                        <i class="bi bi-arrow-return-left"></i> Return Asset
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Upload Document Modal -->
+<div class="modal fade" id="uploadModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" action="/assets/{{ asset.id }}/upload" enctype="multipart/form-data">
+                <div class="modal-header">
+                    <h5 class="modal-title">Upload Document</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="file_type" class="form-label">Document Type</label>
+                        <select class="form-select" id="file_type" name="file_type" required>
+                            <option value="">Select Type...</option>
+                            <option value="INVOICE">Invoice</option>
+                            <option value="WARRANTY">Warranty Document</option>
+                            <option value="MANUAL">User Manual</option>
+                            <option value="PHOTO">Photo</option>
+                            <option value="OTHER">Other</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="file" class="form-label">File</label>
+                        <input type="file" class="form-control" id="file" name="file" required
+                               accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx"
+                               onchange="handleFileSelect(event)">
+                        <small class="text-muted">
+                            Allowed types: PDF, Images, Word, Excel. Max size: 10MB
+                        </small>
+                    </div>
+                    <div id="file-preview" class="alert alert-secondary d-none">
+                        <!-- File preview will be shown here -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-cloud-upload"></i> Upload
+                    </button>
                 </div>
             </form>
         </div>
@@ -240,6 +339,31 @@
 <script>
 function printQR() {
     window.print();
+}
+
+function handleFileSelect(event) {
+    const file = event.target.files[0];
+    const preview = document.getElementById('file-preview');
+
+    if (file) {
+        const fileSize = (file.size / 1024 / 1024).toFixed(2); // MB
+        preview.classList.remove('d-none');
+        preview.innerHTML = `
+            <strong>Selected File:</strong><br>
+            Name: ${file.name}<br>
+            Size: ${fileSize} MB<br>
+            Type: ${file.type}
+        `;
+
+        // Check file size (10MB max)
+        if (file.size > 10 * 1024 * 1024) {
+            preview.classList.remove('alert-secondary');
+            preview.classList.add('alert-danger');
+            preview.innerHTML += '<br><strong>Error:</strong> File size exceeds 10MB limit';
+        }
+    } else {
+        preview.classList.add('d-none');
+    }
 }
 </script>
 {% endblock %}
