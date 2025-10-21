@@ -262,27 +262,9 @@ body {
 }
 
 /* ============================================
-   Dark Mode Support (Optional)
+   Dark Mode Support - DISABLED
    ============================================ */
-@media (prefers-color-scheme: dark) {
-    body {
-        background-color: #1a1a1a;
-        color: #ffffff;
-    }
-
-    .card {
-        background-color: #2d2d2d;
-        color: #ffffff;
-    }
-
-    .table {
-        color: #ffffff;
-    }
-
-    .table thead th {
-        background-color: #3d3d3d;
-    }
-}
+/* Dark mode has been disabled to ensure consistent light theme across all devices */
 
 /* ============================================
    Animation Classes
