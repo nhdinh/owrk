@@ -500,3 +500,134 @@ async def debug_test_otp(email: str, otp_code: str):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Debug test failed: {str(e)}",
         )
+
+
+@router.post("/debug/get-mfa-secret")
+async def debug_get_mfa_secret(email: str):
+    """
+    DEBUG ONLY: Get MFA secret and QR code for a user
+    This endpoint should be removed or disabled in production!
+
+    Args:
+        email: User email
+
+    Returns:
+        Secret key and QR code URL for re-setup
+    """
+    from app.core.unit_of_work import UnitOfWork
+    import pyotp
+    import urllib.parse
+
+    try:
+        with UnitOfWork() as uow:
+            user = uow.users.get_by_email(email)
+            if not user:
+                raise HTTPException(status_code=404, detail="User not found")
+
+            if not user.mfa_secret:
+                return {
+                    "status": "NO_SECRET",
+                    "message": "User has no MFA secret configured",
+                    "email": user.email,
+                }
+
+            # Generate QR code URL
+            totp = pyotp.TOTP(user.mfa_secret)
+            provisioning_uri = totp.provisioning_uri(
+                name=user.email,
+                issuer_name="Asset Management"
+            )
+
+            # Generate QR code URL (using Google Charts API)
+            qr_code_url = f"https://chart.googleapis.com/chart?chs=200x200&chld=M|0&cht=qr&chl={urllib.parse.quote(provisioning_uri)}"
+
+            # Generate current valid code for verification
+            current_code = totp.now()
+
+            return {
+                "status": "SUCCESS",
+                "user": {
+                    "email": user.email,
+                    "mfa_enabled": user.mfa_enabled,
+                },
+                "mfa_setup": {
+                    "secret_key": user.mfa_secret,
+                    "qr_code_url": qr_code_url,
+                    "provisioning_uri": provisioning_uri,
+                    "current_valid_code": current_code,
+                },
+                "instructions": [
+                    "1. Delete the OLD entry in your authenticator app",
+                    "2. Scan the QR code OR manually enter the secret key",
+                    "3. Verify the code matches 'current_valid_code' shown above",
+                    "4. Try logging in again",
+                ],
+            }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Debug get MFA secret error: {str(e)}")
+        logger.error(traceback.format_exc())
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Debug failed: {str(e)}",
+        )
+
+
+@router.post("/debug/disable-mfa")
+async def debug_disable_mfa(email: str):
+    """
+    DEBUG ONLY: Disable MFA for a user without requiring password/OTP
+    This endpoint should be removed or disabled in production!
+
+    Args:
+        email: User email
+
+    Returns:
+        Confirmation message
+    """
+    from app.core.unit_of_work import UnitOfWork
+
+    try:
+        with UnitOfWork() as uow:
+            user = uow.users.get_by_email(email)
+            if not user:
+                raise HTTPException(status_code=404, detail="User not found")
+
+            was_enabled = user.mfa_enabled
+
+            # Disable MFA
+            user.mfa_enabled = False
+            user.mfa_secret = None
+            uow.users.update(user)
+
+            # Delete all backup codes
+            uow.mfa_backup_codes.delete_all_for_user(user.id)
+
+            uow.commit()
+
+            return {
+                "status": "SUCCESS",
+                "message": f"MFA disabled for {email}",
+                "user": {
+                    "email": user.email,
+                    "mfa_was_enabled": was_enabled,
+                    "mfa_now_enabled": False,
+                },
+                "next_steps": [
+                    "1. You can now login without OTP",
+                    "2. To re-enable MFA, login and go to Security Settings",
+                    "3. Setup MFA again with a fresh QR code",
+                ],
+            }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Debug disable MFA error: {str(e)}")
+        logger.error(traceback.format_exc())
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Debug failed: {str(e)}",
+        )
