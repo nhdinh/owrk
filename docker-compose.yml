@@ -1,6 +1,8 @@
 secrets:
-  mysql_passwd:
-    file: ./.secrets/mysql_passwd.txt
+  mysql_user_passwd:
+    file: ./.secrets/mysql_user_passwd.txt
+  mysql_root_passwd:
+    file: ./.secrets/mysql_user_passwd.txt
   mongo_passwd:
     file: ./.secrets/mongo_passwd.txt
   jwt_secret_key:
@@ -16,22 +18,27 @@ services:
     image: mysql:8.0
     container_name: mysql
     secrets:
-      - mysql_passwd
+      - mysql_root_passwd
+      - mysql_user_passwd
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-secret1123@}
-      MYSQL_PASSWORD_FILE: /run/secrets/mysql_passwd
-      MYSQL_USER: ${MYSQL_USER:-admin}
+      MYSQL_RANDOM_ROOT_PASSWORD: yes
+      MYSQL_ONETIME_PASSWORD: 1
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/mysql_root_passwd
+      MYSQL_USER_PASSWORD_FILE: /run/secrets/mysql_user_passwd
+      MYSQL_USER: ${MYSQL_USER:-officework_dbu}
+      MYSQL_INITDB_SKIP_TZINFO: 1
     ports:
       - "3306:3306"
     volumes:
       - ./.mysql_db:/var/lib/mysql
       - ./scripts/init-mysql.sh:/docker-entrypoint-initdb.d/init-mysql.sh
+      - ./scripts/.init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - backend
-    command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    command: --default-authentication-plugin=caching_sha2_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     healthcheck:
-      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-secret1123@}" ]
-      interval: 10s
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-123}" ]
+      interval: 30s
       timeout: 5s
       retries: 5
 
@@ -53,7 +60,7 @@ services:
       - backend
     healthcheck:
       test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
-      interval: 10s
+      interval: 30s
       timeout: 5s
       retries: 5
 
@@ -69,7 +76,7 @@ services:
       - backend
     healthcheck:
       test: [ "CMD", "redis-cli", "ping" ]
-      interval: 10s
+      interval: 30s
       timeout: 5s
       retries: 5
     command: redis-server --appendonly yes
@@ -90,7 +97,7 @@ services:
       - backend
     healthcheck:
       test: rabbitmq-diagnostics -q ping
-      interval: 10s
+      interval: 30s
       timeout: 5s
       retries: 5
 
@@ -130,12 +137,12 @@ services:
     container_name: auth-api
     secrets:
       - jwt_secret_key
-      - mysql_passwd
+      - mysql_user_passwd
       - mongo_passwd
     environment:
       ENVIRONMENT: development
-      DATABASE_USER: ${MYSQL_USER:-admin}
-      DATABASE_PASSWORD_FILE: /run/secrets/mysql_passwd
+      DATABASE_USER: ${MYSQL_USER:-officework_dbu}
+      DATABASE_PASSWORD_FILE: /run/secrets/mysql_user_passwd
       DATABASE_NAME: auth_db
       DATABASE_HOST: mysql
       DATABASE_PORT: 3306
@@ -209,12 +216,12 @@ services:
     container_name: asset-api
     secrets:
       - jwt_secret_key
-      - mysql_passwd
+      - mysql_user_passwd
       - mongo_passwd
     environment:
       ENVIRONMENT: development
-      DATABASE_USER: ${MYSQL_USER:-admin}
-      DATABASE_PASSWORD_FILE: /run/secrets/mysql_passwd
+      DATABASE_USER: ${MYSQL_USER:-officework_dbu}
+      DATABASE_PASSWORD_FILE: /run/secrets/mysql_user_passwd
       DATABASE_NAME: asset_db
       DATABASE_HOST: mysql
       DATABASE_PORT: 3306
