@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'layouts/base.html' %}
 {% block title %}Đăng nhập - Asset Management{% endblock %}
 
 {% block content %}
@@ -15,7 +15,7 @@
                     </div>
 
                     <!-- Login Form -->
-                    <form method="post" action="/login">
+                    <form method="post" action="{{ prefixes.auth }}/login">
                         <div class="mb-3">
                             <label for="email" class="form-label">
                                 <i class="bi bi-envelope me-1"></i>Email
@@ -68,7 +68,7 @@
                         </div>
 
                         <div class="text-center">
-                            <a href="/forgot-password" class="text-decoration-none">
+                            <a href="{{ prefixes.auth }}/forgot-password" class="text-decoration-none">
                                 <i class="bi bi-question-circle me-1"></i>Quên mật khẩu?
                             </a>
                         </div>
@@ -91,7 +91,7 @@
 
             <!-- Footer Links -->
             <div class="text-center mt-4 text-muted">
-                <small>Cần hỗ trợ? <a href="/support">Liên hệ IT</a></small>
+                <small>Cần hỗ trợ? <a href="{{ prefixes.auth }}/support">Liên hệ IT</a></small>
             </div>
         </div>
     </div>

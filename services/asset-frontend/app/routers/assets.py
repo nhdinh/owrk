@@ -6,16 +6,17 @@ import httpx
 import logging
 from fastapi import APIRouter, Request, Form, UploadFile, File, HTTPException
 from fastapi.responses import HTMLResponse, RedirectResponse
-from fastapi.templating import Jinja2Templates
 from typing import Optional
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
-templates = Jinja2Templates(directory="app/templates")
 
 # Asset API base URL
 ASSET_API_URL = os.getenv("ASSET_API_URL", "http://asset-api:8000/api/v1")
+
+# Import templates from main module (configured with common templates)
+from ..main import templates
 
 
 async def get_api_client():

@@ -40,7 +40,9 @@
       "Bash(bash tests/test_all_endpoints.sh)",
       "Bash(tee /tmp/login.json)",
       "Bash(docker compose restart auth-api)",
-      "Bash(docker compose:*)"
+      "Bash(docker compose:*)",
+      "Bash(mkdir:*)",
+      "Bash(winpty docker exec:*)"
     ],
     "deny": [],
     "ask": []

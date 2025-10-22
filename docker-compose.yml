@@ -9,6 +9,7 @@ secrets:
     file: ./.secrets/jwt_secret_key.txt
 
 services:
+
   # ======================
   # INFRASTRUCTURE SERVICES
   # ======================
@@ -115,6 +116,7 @@ services:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./nginx/ssl:/etc/nginx/ssl:ro
       - ./nginx/html:/usr/share/nginx/html:ro
+      - ./common-ui:/usr/share/nginx/common-ui:ro
     depends_on:
       auth-api:
         condition: service_healthy
@@ -133,6 +135,29 @@ services:
   # ======================
   # MICROSERVICES
   # ======================
+
+  # Shared UI Service - Serves templates and static files
+  shared-ui:
+    build:
+      context: ./services/shared-ui-service
+      dockerfile: Dockerfile
+    container_name: shared-ui
+    environment:
+      ENVIRONMENT: development
+    volumes:
+      - ./services/shared-ui-service/:/app/:ro
+      - ./common-ui:/shared-ui:ro
+    networks:
+      - backend
+    ports:
+      - 5000:5000
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:5000/health" ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
   # Auth Service
   auth-api:
@@ -194,10 +219,19 @@ services:
     environment:
       JWT_SECRET_KEY_FILE: /run/secrets/jwt_secret_key
       API_BASE: http://auth-api:8000/api/v1
+      AUTH_PREFIX: ${AUTH_PREFIX}
+      ASSET_PREFIX: ${ASSET_PREFIX}
+      SHARED_UI_URL: http://shared-ui:5000
+      REDIS_URL: redis://redis:6379
     volumes:
       - ./services/auth-frontend/:/app/:ro
+      - ./common-ui:/common-ui:ro
     depends_on:
       auth-api:
+        condition: service_healthy
+      shared-ui:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     networks:
       - backend
@@ -266,10 +300,17 @@ services:
     environment:
       JWT_SECRET_KEY_FILE: /run/secrets/jwt_secret_key
       ASSET_API_URL: http://asset-api:8000/api/v1
+      SHARED_UI_URL: http://shared-ui:5000
+      REDIS_URL: redis://redis:6379
     volumes:
       - ./services/asset-frontend/:/app/:ro
+      - ./common-ui:/common-ui:ro
     depends_on:
       asset-api:
+        condition: service_healthy
+      shared-ui:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     networks:
       - backend
@@ -280,38 +321,6 @@ services:
       timeout: 10s
       retries: 5
       start_period: 30s
-
-  # Asset Service (old commented out)
-  # asset-service-old:
-  #   build:
-  #     context: ./services/asset
-  #     dockerfile: Dockerfile
-  #   container_name: asset-service
-  #   environment:
-  #     - DATABASE_URL=postgresql://admin:secret123@postgres:5432/offwrk_management
-  #     - MONGODB_URL=mongodb://admin:secret123@mongodb:27017/
-  #     - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
-  #     - REDIS_URL=redis://redis:6379
-  #     - FILE_STORAGE_PATH=/app/uploads
-  #     - AUTH_SERVICE_URL=http://auth-service:8000
-  #     - ENVIRONMENT=development
-  #   volumes:
-  #     - asset-uploads:/app/uploads
-  #   depends_on:
-  #     postgres:
-  #       condition: service_healthy
-  #     mongodb:
-  #       condition: service_healthy
-  #     rabbitmq:
-  #       condition: service_healthy
-  #   networks:
-  #     - backend
-  #   restart: unless-stopped
-  #   healthcheck:
-  #     test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-  #     interval: 30s
-  #     timeout: 10s
-  #     retries: 3
 
   # Procurement Service
   # procurement-service:

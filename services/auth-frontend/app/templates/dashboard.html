@@ -1,323 +1,172 @@
-{% extends 'base.html' %}
+{% extends 'layouts/dashboard.html' %}
 {% block title %}Dashboard - Asset Management{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
 
-{% block navbar %}
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top">
-    <div class="container-fluid">
-        <a class="navbar-brand d-flex align-items-center" href="/auth/dashboard">
-            <i class="bi bi-box-seam me-2"></i>
-            Asset Management
-        </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-            <span class="navbar-toggler-icon"></span>
+{% block page_actions %}
+<div class="btn-toolbar mb-2 mb-md-0">
+    <div class="btn-group me-2">
+        <button type="button" class="btn btn-sm btn-outline-secondary">
+            <i class="bi bi-share"></i> Chia sẻ
         </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ms-auto">
-                <li class="nav-item">
-                    <a class="nav-link" href="/auth/dashboard">
-                        <i class="bi bi-speedometer2"></i> Dashboard
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/notifications">
-                        <i class="bi bi-bell"></i>
-                        <span class="badge bg-danger">3</span>
-                    </a>
-                </li>
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
-                        <i class="bi bi-person-circle"></i> {{ user.full_name if user else 'User' }}
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-end">
-                        <li><a class="dropdown-item" href="/auth/profile"><i class="bi bi-person me-2"></i>Hồ sơ</a></li>
-                        <li><a class="dropdown-item" href="/auth/security-settings"><i class="bi bi-shield-lock me-2"></i>Bảo mật</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item" href="/auth/logout"><i class="bi bi-box-arrow-right me-2"></i>Đăng xuất</a></li>
-                    </ul>
-                </li>
-            </ul>
-        </div>
+        <button type="button" class="btn btn-sm btn-outline-secondary">
+            <i class="bi bi-download"></i> Xuất
+        </button>
     </div>
-</nav>
+    <button type="button" class="btn btn-sm btn-primary">
+        <i class="bi bi-calendar-event"></i> Tuần này
+    </button>
+</div>
 {% endblock %}
 
-{% block content %}
-<div class="container-fluid">
-    <div class="row">
-        <!-- Sidebar -->
-        <nav class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse" id="sidebarMenu">
-            <div class="position-sticky pt-3">
-                <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
-                    <span>MENU CHÍNH</span>
-                </h6>
-                <ul class="nav flex-column mb-2">
-                    <li class="nav-item">
-                        <a class="nav-link active" href="/auth/dashboard">
-                            <i class="bi bi-speedometer2 me-2"></i>Dashboard
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/assets">
-                            <i class="bi bi-box-seam me-2"></i>Tài sản
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/procurement">
-                            <i class="bi bi-cart me-2"></i>Mua sắm
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/maintenance">
-                            <i class="bi bi-tools me-2"></i>Bảo trì
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/reports">
-                            <i class="bi bi-graph-up me-2"></i>Báo cáo
-                        </a>
-                    </li>
-                </ul>
-
-                <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
-                    <span>QUẢN TRỊ</span>
-                </h6>
-                <ul class="nav flex-column mb-2">
-                    <li class="nav-item">
-                        <a class="nav-link" href="/auth/users">
-                            <i class="bi bi-people me-2"></i>Người dùng
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/departments">
-                            <i class="bi bi-building me-2"></i>Phòng ban
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/auth/settings">
-                            <i class="bi bi-gear me-2"></i>Cài đặt
-                        </a>
-                    </li>
-                </ul>
-            </div>
-        </nav>
-
-        <!-- Main content -->
-        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
-            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                <h1 class="h2">Dashboard</h1>
-                <div class="btn-toolbar mb-2 mb-md-0">
-                    <div class="btn-group me-2">
-                        <button type="button" class="btn btn-sm btn-outline-secondary">
-                            <i class="bi bi-share"></i> Chia sẻ
-                        </button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary">
-                            <i class="bi bi-download"></i> Xuất
-                        </button>
-                    </div>
-                    <button type="button" class="btn btn-sm btn-primary">
-                        <i class="bi bi-calendar-event"></i> Tuần này
-                    </button>
-                </div>
-            </div>
-
-            <!-- Statistics Cards -->
-            <div class="row mb-4">
-                <div class="col-xl-3 col-md-6 mb-4">
-                    <div class="card border-left-primary shadow h-100 py-2">
-                        <div class="card-body">
-                            <div class="row no-gutters align-items-center">
-                                <div class="col mr-2">
-                                    <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                        Tổng tài sản
-                                    </div>
-                                    <div class="h5 mb-0 font-weight-bold text-gray-800">1,248</div>
-                                </div>
-                                <div class="col-auto">
-                                    <i class="bi bi-box-seam fa-2x text-gray-300"></i>
-                                </div>
-                            </div>
+{% block page_content %}
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-primary shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                            Tổng tài sản
                         </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">1,248</div>
                     </div>
-                </div>
-
-                <div class="col-xl-3 col-md-6 mb-4">
-                    <div class="card border-left-success shadow h-100 py-2">
-                        <div class="card-body">
-                            <div class="row no-gutters align-items-center">
-                                <div class="col mr-2">
-                                    <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                                        Đang sử dụng
-                                    </div>
-                                    <div class="h5 mb-0 font-weight-bold text-gray-800">1,089</div>
-                                </div>
-                                <div class="col-auto">
-                                    <i class="bi bi-check-circle fa-2x text-gray-300"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-xl-3 col-md-6 mb-4">
-                    <div class="card border-left-warning shadow h-100 py-2">
-                        <div class="card-body">
-                            <div class="row no-gutters align-items-center">
-                                <div class="col mr-2">
-                                    <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                                        Cần bảo trì
-                                    </div>
-                                    <div class="h5 mb-0 font-weight-bold text-gray-800">42</div>
-                                </div>
-                                <div class="col-auto">
-                                    <i class="bi bi-exclamation-triangle fa-2x text-gray-300"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-xl-3 col-md-6 mb-4">
-                    <div class="card border-left-danger shadow h-100 py-2">
-                        <div class="card-body">
-                            <div class="row no-gutters align-items-center">
-                                <div class="col mr-2">
-                                    <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
-                                        Hư hỏng
-                                    </div>
-                                    <div class="h5 mb-0 font-weight-bold text-gray-800">15</div>
-                                </div>
-                                <div class="col-auto">
-                                    <i class="bi bi-x-circle fa-2x text-gray-300"></i>
-                                </div>
-                            </div>
-                        </div>
+                    <div class="col-auto">
+                        <i class="bi bi-box-seam fa-2x text-gray-300"></i>
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
 
-            <!-- Charts Row -->
-            <div class="row mb-4">
-                <div class="col-lg-8">
-                    <div class="card shadow mb-4">
-                        <div class="card-header py-3">
-                            <h6 class="m-0 font-weight-bold text-primary">Tổng quan tài sản</h6>
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-success shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                            Đang sử dụng
                         </div>
-                        <div class="card-body">
-                            <canvas id="assetChart" height="100"></canvas>
-                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">1,089</div>
                     </div>
-                </div>
-
-                <div class="col-lg-4">
-                    <div class="card shadow mb-4">
-                        <div class="card-header py-3">
-                            <h6 class="m-0 font-weight-bold text-primary">Phân loại tài sản</h6>
-                        </div>
-                        <div class="card-body">
-                            <canvas id="categoryChart"></canvas>
-                        </div>
+                    <div class="col-auto">
+                        <i class="bi bi-check-circle fa-2x text-gray-300"></i>
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
 
-            <!-- Recent Activities -->
-            <div class="card shadow mb-4">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">Hoạt động gần đây</h6>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Thời gian</th>
-                                    <th>Người dùng</th>
-                                    <th>Hoạt động</th>
-                                    <th>Tài sản</th>
-                                    <th>Trạng thái</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>10:30 AM</td>
-                                    <td>Nguyễn Văn A</td>
-                                    <td>Thêm tài sản mới</td>
-                                    <td>Laptop Dell XPS 15</td>
-                                    <td><span class="badge bg-success">Hoàn thành</span></td>
-                                </tr>
-                                <tr>
-                                    <td>09:15 AM</td>
-                                    <td>Trần Thị B</td>
-                                    <td>Yêu cầu bảo trì</td>
-                                    <td>Máy in HP LaserJet</td>
-                                    <td><span class="badge bg-warning">Đang xử lý</span></td>
-                                </tr>
-                                <tr>
-                                    <td>08:45 AM</td>
-                                    <td>Lê Văn C</td>
-                                    <td>Chuyển tài sản</td>
-                                    <td>Màn hình Samsung 27"</td>
-                                    <td><span class="badge bg-success">Hoàn thành</span></td>
-                                </tr>
-                            </tbody>
-                        </table>
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-warning shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                            Cần bảo trì
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">42</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="bi bi-exclamation-triangle fa-2x text-gray-300"></i>
                     </div>
                 </div>
             </div>
-        </main>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-danger shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                            Hư hỏng
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">15</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="bi bi-x-circle fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row -->
+<div class="row mb-4">
+    <div class="col-lg-8">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Tổng quan tài sản</h6>
+            </div>
+            <div class="card-body">
+                <canvas id="assetChart" height="100"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Phân loại tài sản</h6>
+            </div>
+            <div class="card-body">
+                <canvas id="categoryChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activities -->
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Hoạt động gần đây</h6>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Thời gian</th>
+                        <th>Người dùng</th>
+                        <th>Hoạt động</th>
+                        <th>Tài sản</th>
+                        <th>Trạng thái</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>10:30 AM</td>
+                        <td>Nguyễn Văn A</td>
+                        <td>Thêm tài sản mới</td>
+                        <td>Laptop Dell XPS 15</td>
+                        <td><span class="badge bg-success">Hoàn thành</span></td>
+                    </tr>
+                    <tr>
+                        <td>09:15 AM</td>
+                        <td>Trần Thị B</td>
+                        <td>Yêu cầu bảo trì</td>
+                        <td>Máy in HP LaserJet</td>
+                        <td><span class="badge bg-warning">Đang xử lý</span></td>
+                    </tr>
+                    <tr>
+                        <td>08:45 AM</td>
+                        <td>Lê Văn C</td>
+                        <td>Chuyển tài sản</td>
+                        <td>Màn hình Samsung 27"</td>
+                        <td><span class="badge bg-success">Hoàn thành</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 {% endblock %}
 
 {% block extra_css %}
-<style>
-    .sidebar {
-        position: fixed;
-        top: 56px;
-        bottom: 0;
-        left: 0;
-        z-index: 100;
-        padding: 48px 0 0;
-        box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
-    }
-
-    .sidebar-heading {
-        font-size: .75rem;
-        text-transform: uppercase;
-    }
-
-    .sidebar .nav-link {
-        font-weight: 500;
-        color: #333;
-        padding: 0.75rem 1rem;
-    }
-
-    .sidebar .nav-link.active {
-        color: #007bff;
-        background-color: rgba(0, 123, 255, 0.1);
-    }
-
-    .sidebar .nav-link:hover {
-        color: #007bff;
-        background-color: rgba(0, 123, 255, 0.05);
-    }
-
-    .border-left-primary {
-        border-left: 4px solid #4e73df !important;
-    }
-
-    .border-left-success {
-        border-left: 4px solid #1cc88a !important;
-    }
-
-    .border-left-warning {
-        border-left: 4px solid #f6c23e !important;
-    }
-
-    .border-left-danger {
-        border-left: 4px solid #e74a3b !important;
-    }
-</style>
+<!-- Dashboard-specific styles are now in /common/static/css/dashboard.css -->
 {% endblock %}
 
 {% block extra_js %}
@@ -330,10 +179,10 @@
         data: {
             labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
             datasets: [{
-                label: 'Tài sản mới',
-                data: [12, 19, 15, 25, 22, 30],
-                borderColor: 'rgb(75, 192, 192)',
-                tension: 0.1
+    label: 'Tài sản mới',
+    data: [12, 19, 15, 25, 22, 30],
+    borderColor: 'rgb(75, 192, 192)',
+    tension: 0.1
             }]
         }
     });
@@ -345,14 +194,14 @@
         data: {
             labels: ['Laptop', 'Desktop', 'Màn hình', 'Bàn ghế', 'Khác'],
             datasets: [{
-                data: [300, 150, 200, 250, 100],
-                backgroundColor: [
-                    'rgb(255, 99, 132)',
-                    'rgb(54, 162, 235)',
-                    'rgb(255, 205, 86)',
-                    'rgb(75, 192, 192)',
-                    'rgb(153, 102, 255)'
-                ]
+    data: [300, 150, 200, 250, 100],
+    backgroundColor: [
+        'rgb(255, 99, 132)',
+        'rgb(54, 162, 235)',
+        'rgb(255, 205, 86)',
+        'rgb(75, 192, 192)',
+        'rgb(153, 102, 255)'
+    ]
             }]
         }
     });

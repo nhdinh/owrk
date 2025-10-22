@@ -1,47 +1,13 @@
-{% extends 'base.html' %}
+{% extends 'layouts/base.html' %}
 {% block title %}Cài đặt bảo mật - Asset Management{% endblock %}
-
-{% block navbar %}
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top">
-    <div class="container-fluid">
-        <a class="navbar-brand d-flex align-items-center" href="/dashboard">
-            <i class="bi bi-box-seam me-2"></i>
-            Asset Management
-        </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ms-auto">
-                <li class="nav-item">
-                    <a class="nav-link" href="/dashboard">
-                        <i class="bi bi-speedometer2"></i> Dashboard
-                    </a>
-                </li>
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
-                        <i class="bi bi-person-circle"></i> User
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-end">
-                        <li><a class="dropdown-item" href="/profile"><i class="bi bi-person me-2"></i>Hồ sơ</a></li>
-                        <li><a class="dropdown-item active" href="/profile/security"><i class="bi bi-shield-lock me-2"></i>Bảo mật</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item" href="/logout"><i class="bi bi-box-arrow-right me-2"></i>Đăng xuất</a></li>
-                    </ul>
-                </li>
-            </ul>
-        </div>
-    </div>
-</nav>
-{% endblock %}
 
 {% block content %}
 <div class="container mt-4">
     <!-- Breadcrumb -->
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="/dashboard">Dashboard</a></li>
-            <li class="breadcrumb-item"><a href="/profile">Hồ sơ</a></li>
+            <li class="breadcrumb-item"><a href="{{ prefixes.auth }}/dashboard">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{{ prefixes.auth }}/profile">Hồ sơ</a></li>
             <li class="breadcrumb-item active">Cài đặt bảo mật</li>
         </ol>
     </nav>
@@ -54,7 +20,7 @@
             </h2>
             <p class="text-muted mb-0">Quản lý mật khẩu và xác thực hai yếu tố</p>
         </div>
-        <a href="/profile" class="btn btn-outline-secondary">
+        <a href="{{ prefixes.auth }}/profile" class="btn btn-outline-secondary">
             <i class="bi bi-arrow-left me-1"></i>Quay lại
         </a>
     </div>
@@ -102,7 +68,7 @@
                         Đảm bảo tài khoản của bạn sử dụng mật khẩu dài, ngẫu nhiên để duy trì bảo mật.
                     </p>
 
-                    <form method="post" action="/change-password" id="changePasswordForm">
+                    <form method="post" action="{{ prefixes.auth }}/change-password" id="changePasswordForm">
                         <div class="mb-3">
                             <label for="current_password" class="form-label">
                                 <i class="bi bi-lock me-1"></i>Mật khẩu hiện tại
@@ -222,7 +188,7 @@
                             Sử dụng ứng dụng authenticator (Google Authenticator, Microsoft Authenticator, Authy) để tạo mã OTP.
                         </p>
                         <div class="d-grid">
-                            <a href="/mfa-setup" class="btn btn-success">
+                            <a href="{{ prefixes.auth }}/mfa-setup" class="btn btn-success">
                                 <i class="bi bi-shield-check me-1"></i>Thiết lập MFA
                             </a>
                         </div>
@@ -239,7 +205,7 @@
                             Chỉ sử dụng nếu bạn không còn truy cập vào thiết bị xác thực.
                         </p>
 
-                        <form method="post" action="/mfa-disable">
+                        <form method="post" action="{{ prefixes.auth }}/mfa-disable">
                             <div class="mb-3">
                                 <label for="mfa_password" class="form-label">
                                     <i class="bi bi-lock me-1"></i>Mật khẩu

@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'layouts/base.html' %}
 {% block title %}Thiết lập MFA - Asset Management{% endblock %}
 
 {% block content %}
@@ -192,7 +192,7 @@
                                 Nhập mã 6 số từ ứng dụng authenticator để hoàn tất thiết lập
                             </p>
 
-                            <form method="post" action="/mfa-setup" id="verifyOtpForm">
+                            <form method="post" action="{{ prefixes.auth }}/mfa-setup" id="verifyOtpForm">
                                 <div class="mb-3">
                                     <label for="otp_code" class="form-label fw-bold">
                                         <i class="bi bi-123 me-1"></i>Mã OTP
@@ -220,7 +220,7 @@
                                     <button type="submit" class="btn btn-success btn-lg">
                                         <i class="bi bi-shield-check me-2"></i>Kích hoạt MFA
                                     </button>
-                                    <a href="/profile" class="btn btn-outline-secondary">
+                                    <a href="{{ prefixes.auth }}/profile" class="btn btn-outline-secondary">
                                         <i class="bi bi-arrow-left me-1"></i>Hủy bỏ
                                     </a>
                                 </div>

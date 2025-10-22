@@ -1,14 +1,16 @@
-from fastapi import APIRouter, Request, Depends, Form, status
+from fastapi import APIRouter, Request, Form, status
 from fastapi.responses import HTMLResponse, RedirectResponse
-from fastapi.templating import Jinja2Templates
 import httpx
 import os
-from config import AUTH_PREFIX
+from ..common import prefixes, get_logger
 
 API_BASE: str = os.getenv("API_BASE", "http://auth-service:8000/api/v1")
 
-router = APIRouter()
-templates = Jinja2Templates(directory="app/templates")
+router = APIRouter(prefix="")
+logger = get_logger(__name__)
+
+# Import templates from main module (configured with common templates)
+from ..main import templates
 
 
 def set_auth_cookies(response: RedirectResponse, access_token: str, refresh_token: str):
@@ -19,7 +21,7 @@ def set_auth_cookies(response: RedirectResponse, access_token: str, refresh_toke
 @router.get("/login", response_class=HTMLResponse)
 async def get_login(request: Request):
     return templates.TemplateResponse(
-        "auth/login.html", {"request": request, "error": None}
+        "auth/login.html", {"request": request, "prefixes": prefixes, "error": None}
     )
 
 
@@ -41,7 +43,7 @@ async def post_login(
     if data.get("requires_mfa"):
         request.session["temp_token"] = data["temp_token"]
         return RedirectResponse(
-            url=f"/{AUTH_PREFIX}verify-otp", status_code=status.HTTP_302_FOUND
+            url=f"{prefixes['auth']}/verify-otp", status_code=status.HTTP_302_FOUND
         )
     # No MFA: simulate step 2 with dummy otp (backend will skip when mfa_enabled False)
     async with httpx.AsyncClient() as client:
@@ -57,7 +59,7 @@ async def post_login(
         )
     td = r2.json()
     resp = RedirectResponse(
-        url=f"/{AUTH_PREFIX}dashboard", status_code=status.HTTP_302_FOUND
+        url=f"{prefixes['auth']}/dashboard", status_code=status.HTTP_302_FOUND
     )
     set_auth_cookies(resp, td["access_token"], td["refresh_token"])
     return resp
@@ -67,7 +69,7 @@ async def post_login(
 async def get_verify_otp(request: Request):
     if not request.session.get("temp_token"):
         return RedirectResponse(
-            url=f"/{AUTH_PREFIX}login", status_code=status.HTTP_302_FOUND
+            url=f"{prefixes['auth']}/login", status_code=status.HTTP_302_FOUND
         )
     return templates.TemplateResponse(
         "auth/verify_otp.html", {"request": request, "error": None}
@@ -79,7 +81,7 @@ async def post_verify_otp(request: Request, otp_code: str = Form(...)):
     temp_token = request.session.get("temp_token")
     if not temp_token:
         return RedirectResponse(
-            url=f"/{AUTH_PREFIX}login", status_code=status.HTTP_302_FOUND
+            url=f"{prefixes['auth']}/login", status_code=status.HTTP_302_FOUND
         )
     async with httpx.AsyncClient() as client:
         r = await client.post(
@@ -94,7 +96,7 @@ async def post_verify_otp(request: Request, otp_code: str = Form(...)):
         )
     data = r.json()
     resp = RedirectResponse(
-        url=f"/{AUTH_PREFIX}dashboard", status_code=status.HTTP_302_FOUND
+        url=f"{prefixes['auth']}/dashboard", status_code=status.HTTP_302_FOUND
     )
     set_auth_cookies(resp, data["access_token"], data["refresh_token"])
     request.session.pop("temp_token", None)
@@ -104,7 +106,7 @@ async def post_verify_otp(request: Request, otp_code: str = Form(...)):
 @router.get("/logout")
 async def logout():
     resp = RedirectResponse(
-        url=f"/{AUTH_PREFIX}login", status_code=status.HTTP_302_FOUND
+        url=f"{prefixes['auth']}/login", status_code=status.HTTP_302_FOUND
     )
     resp.delete_cookie("access_token")
     resp.delete_cookie("refresh_token")
@@ -200,7 +202,7 @@ async def get_mfa_setup(request: Request):
     headers = _auth_headers_from_cookies(request)
     if not headers:
         return RedirectResponse(
-            url=f"/{AUTH_PREFIX}login", status_code=status.HTTP_302_FOUND
+            url=f"{prefixes['auth']}/login", status_code=status.HTTP_302_FOUND
         )
     async with httpx.AsyncClient() as client:
         r = await client.get(f"{API_BASE}/auth/mfa/setup", headers=headers)
@@ -212,7 +214,8 @@ async def get_mfa_setup(request: Request):
         )
     data = r.json()
     return templates.TemplateResponse(
-        "auth/mfa_setup.html", {"request": request, "error": None, "data": data}
+        "auth/mfa_setup.html",
+        {"request": request, "prefixes": prefixes, "error": None, "data": data},
     )
 
 
@@ -221,7 +224,7 @@ async def post_mfa_enable(request: Request, otp_code: str = Form(...)):
     headers = _auth_headers_from_cookies(request)
     if not headers:
         return RedirectResponse(
-            url=f"/{AUTH_PREFIX}login", status_code=status.HTTP_302_FOUND
+            url=f"{prefixes['auth']}/login", status_code=status.HTTP_302_FOUND
         )
     async with httpx.AsyncClient() as client:
         r = await client.post(
@@ -238,7 +241,7 @@ async def post_mfa_enable(request: Request, otp_code: str = Form(...)):
             status_code=status.HTTP_400_BAD_REQUEST,
         )
     return RedirectResponse(
-        url=f"/{AUTH_PREFIX}profile", status_code=status.HTTP_302_FOUND
+        url=f"{prefixes['auth']}/profile", status_code=status.HTTP_302_FOUND
     )
 
 
@@ -254,7 +257,7 @@ async def change_password(
     headers = _auth_headers_from_cookies(request)
     if not headers:
         return RedirectResponse(
-            url=f"/{AUTH_PREFIX}login", status_code=status.HTTP_302_FOUND
+            url=f"{prefixes['auth']}/login", status_code=status.HTTP_302_FOUND
         )
     payload = {"current_password": current_password, "new_password": new_password}
     async with httpx.AsyncClient() as client:
@@ -263,11 +266,11 @@ async def change_password(
         )
     if r.status_code != 200:
         return RedirectResponse(
-            url=f"/{AUTH_PREFIX}/profile/security?error=change",
+            url="/profile/security?error=change",
             status_code=status.HTTP_302_FOUND,
         )
     return RedirectResponse(
-        url=f"/{AUTH_PREFIX}/profile/security?ok=change",
+        url="/profile/security?ok=change",
         status_code=status.HTTP_302_FOUND,
     )
 
@@ -282,7 +285,7 @@ async def mfa_disable(
     headers = _auth_headers_from_cookies(request)
     if not headers:
         return RedirectResponse(
-            url=f"/{AUTH_PREFIX}login", status_code=status.HTTP_302_FOUND
+            f"/{AUTH_PREFIX}/login", status_code=status.HTTP_302_FOUND
         )
     payload = {"password": password, "otp_code": otp_code, "backup_code": backup_code}
     async with httpx.AsyncClient() as client:
@@ -291,9 +294,9 @@ async def mfa_disable(
         )
     if r.status_code != 200:
         return RedirectResponse(
-            url=f"/{AUTH_PREFIX}/profile/security?error=mfa",
+            url="/profile/security?error=mfa",
             status_code=status.HTTP_302_FOUND,
         )
     return RedirectResponse(
-        url=f"/{AUTH_PREFIX}/profile/security?ok=mfa", status_code=status.HTTP_302_FOUND
+        url="/profile/security?ok=mfa", status_code=status.HTTP_302_FOUND
     )

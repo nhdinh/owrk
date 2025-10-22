@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'layouts/base.html' %}
 {% block title %}Xác thực OTP - Asset Management{% endblock %}
 
 {% block content %}
@@ -36,7 +36,7 @@
                     {% endif %}
 
                     <!-- OTP Verification Form -->
-                    <form method="post" action="/verify-otp" id="otpForm">
+                    <form method="post" action="{{ prefixes.auth }}/verify-otp" id="otpForm">
                         <div class="mb-4">
                             <label for="otp_code" class="form-label fw-bold text-center d-block">
                                 <i class="bi bi-123 me-2"></i>Mã xác thực (OTP)
@@ -85,7 +85,7 @@
 
                         <!-- Back to Login Link -->
                         <div class="text-center">
-                            <a href="/login" class="text-decoration-none">
+                            <a href="{{ prefixes.auth }}/login" class="text-decoration-none">
                                 <i class="bi bi-arrow-left me-1"></i>Quay lại đăng nhập
                             </a>
                         </div>
@@ -147,7 +147,7 @@
                     <strong>Lưu ý:</strong> Mỗi mã dự phòng chỉ có thể sử dụng một lần.
                 </div>
 
-                <form method="post" action="/verify-otp" id="backupCodeForm">
+                <form method="post" action="{{ prefixes.auth }}/verify-otp" id="backupCodeForm">
                     <div class="mb-3">
                         <label for="backup_otp_code" class="form-label fw-bold">
                             <i class="bi bi-file-earmark-text me-1"></i>Mã dự phòng

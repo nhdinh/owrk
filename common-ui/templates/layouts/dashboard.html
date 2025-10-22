@@ -1,0 +1,32 @@
+{% extends "layouts/base.html" %}
+
+{% block body_class %}dashboard-layout{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        {% block sidebar %}
+        {% include 'components/sidebar.html' %}
+        {% endblock %}
+
+        <!-- Main Content -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <!-- Page Header -->
+            {% block page_header %}
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">{% block page_title %}Dashboard{% endblock %}</h1>
+                {% block page_actions %}{% endblock %}
+            </div>
+            {% endblock %}
+
+            <!-- Page Content -->
+            {% block page_content %}{% endblock %}
+        </main>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/common-ui/static/css/dashboard.css">
+{% endblock %}
