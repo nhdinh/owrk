@@ -2,6 +2,7 @@
 Redis-backed Jinja2 Template Loader
 Fetches templates from shared-ui-service and caches them in Redis
 """
+
 import logging
 import json
 from typing import Optional, Tuple
@@ -24,7 +25,7 @@ class RedisTemplateLoader(BaseLoader):
         shared_ui_url: str,
         redis_client: redis.Redis,
         cache_ttl: int = 3600,  # 1 hour default
-        fallback_to_local: bool = True
+        fallback_to_local: bool = True,
     ):
         """
         Initialize the Redis template loader
@@ -35,13 +36,15 @@ class RedisTemplateLoader(BaseLoader):
             cache_ttl: Time to live for cached templates in seconds
             fallback_to_local: Whether to fallback to local filesystem if service unavailable
         """
-        self.shared_ui_url = shared_ui_url.rstrip('/')
+        self.shared_ui_url = shared_ui_url.rstrip("/")
         self.redis_client = redis_client
         self.cache_ttl = cache_ttl
         self.fallback_to_local = fallback_to_local
         self.http_client = httpx.Client(timeout=10.0)
 
-        logger.info(f"Initialized RedisTemplateLoader with shared-ui at {self.shared_ui_url}")
+        logger.info(
+            f"Initialized RedisTemplateLoader with shared-ui at {self.shared_ui_url}"
+        )
 
     def _get_cache_key(self, template_name: str) -> str:
         """Generate Redis cache key for a template"""
@@ -51,7 +54,9 @@ class RedisTemplateLoader(BaseLoader):
         """Generate Redis cache key for a template's ETag"""
         return f"template:etag:{template_name}"
 
-    def _fetch_template_from_service(self, template_name: str) -> Optional[Tuple[str, str]]:
+    def _fetch_template_from_service(
+        self, template_name: str
+    ) -> Optional[Tuple[str, str]]:
         """
         Fetch template from shared-ui-service
 
@@ -71,11 +76,13 @@ class RedisTemplateLoader(BaseLoader):
             response.raise_for_status()
             data = response.json()
 
-            content = data.get('content')
-            etag = data.get('etag')
+            content = data.get("content")
+            etag = data.get("etag")
 
             if not content or not etag:
-                logger.error(f"Invalid response from shared-ui-service for {template_name}")
+                logger.error(
+                    f"Invalid response from shared-ui-service for {template_name}"
+                )
                 return None
 
             logger.info(f"Successfully fetched template {template_name} (etag: {etag})")
@@ -104,7 +111,7 @@ class RedisTemplateLoader(BaseLoader):
 
             if content and etag:
                 logger.debug(f"Template {template_name} found in cache")
-                return (content.decode('utf-8'), etag.decode('utf-8'))
+                return (content.decode("utf-8"), etag.decode("utf-8"))
 
             return None
 
@@ -119,8 +126,8 @@ class RedisTemplateLoader(BaseLoader):
             etag_key = self._get_etag_key(template_name)
 
             # Store content and etag with TTL
-            self.redis_client.setex(cache_key, self.cache_ttl, content.encode('utf-8'))
-            self.redis_client.setex(etag_key, self.cache_ttl, etag.encode('utf-8'))
+            self.redis_client.setex(cache_key, self.cache_ttl, content.encode("utf-8"))
+            self.redis_client.setex(etag_key, self.cache_ttl, etag.encode("utf-8"))
 
             logger.debug(f"Cached template {template_name} with TTL {self.cache_ttl}s")
 
@@ -168,7 +175,7 @@ class RedisTemplateLoader(BaseLoader):
         try:
             cached_etag = self.redis_client.get(self._get_etag_key(template_name))
             if cached_etag:
-                return cached_etag.decode('utf-8') == current_etag
+                return cached_etag.decode("utf-8") == current_etag
             return False
         except Exception as e:
             logger.error(f"Error checking template freshness: {e}")
@@ -186,9 +193,9 @@ class RedisTemplateLoader(BaseLoader):
             response.raise_for_status()
 
             data = response.json()
-            templates = data.get('templates', [])
+            templates = data.get("templates", [])
 
-            return [t['path'] for t in templates]
+            return [t["path"] for t in templates]
 
         except Exception as e:
             logger.error(f"Error listing templates: {e}")
@@ -206,7 +213,7 @@ class RedisTemplateLoader(BaseLoader):
                 # Invalidate specific template
                 self.redis_client.delete(
                     self._get_cache_key(template_name),
-                    self._get_etag_key(template_name)
+                    self._get_etag_key(template_name),
                 )
                 logger.info(f"Invalidated cache for template: {template_name}")
             else:
@@ -225,3 +232,6 @@ class RedisTemplateLoader(BaseLoader):
             self.http_client.close()
         except Exception as e:
             logger.error(f"Error closing HTTP client: {e}")
+
+    def __repr__(self) -> str:
+        return f"RedisTemplateLoader('{self.shared_ui_url}')"

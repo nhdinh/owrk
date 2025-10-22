@@ -1,11 +1,18 @@
 import os
+from typing import List
 from fastapi import FastAPI, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 import httpx
 from starlette.middleware.sessions import SessionMiddleware
 from pathlib import Path
-from jinja2 import ChoiceLoader, FileSystemLoader, Environment, select_autoescape
+from jinja2 import (
+    BaseLoader,
+    ChoiceLoader,
+    FileSystemLoader,
+    Environment,
+    select_autoescape,
+)
 from .common import get_logger
 import redis
 
@@ -45,10 +52,7 @@ app.mount("/static", remote_static)
 # Initialize Redis client for template caching
 REDIS_URL = os.getenv("REDIS_URL", "redis://redis:6379")
 SHARED_UI_URL = os.getenv("SHARED_UI_URL", "http://shared-ui:5000")
-USE_REDIS_LOADER = (
-    os.getenv("USE_REDIS_LOADER", "true").lower() == "true"
-    and os.getenv("ENVIRONMENT", "development").lower() == "production"
-)
+USE_REDIS_LOADER = os.getenv("USE_REDIS_LOADER", "true").lower() == "true"
 
 redis_client = None
 try:
@@ -60,7 +64,7 @@ except Exception as e:
     USE_REDIS_LOADER = False
 
 # Create Jinja2 environment with ChoiceLoader to search multiple template directories
-loaders = []
+loaders: List[BaseLoader] = [FileSystemLoader(str(TEMPLATES_DIR))]
 
 # Add Redis-backed loader for shared templates (if enabled)
 if USE_REDIS_LOADER and redis_client:
@@ -76,14 +80,8 @@ if USE_REDIS_LOADER and redis_client:
         logger.info("Enabled Redis template loader for shared-ui templates")
     except Exception as e:
         logger.warning(f"Could not initialize Redis template loader: {e}")
-
-# Add local filesystem loaders (fallback)
-loaders.extend(
-    [
-        FileSystemLoader(str(TEMPLATES_DIR)),
-        FileSystemLoader(str(COMMONUI_TEMPLATES_DIR)),
-    ]
-)
+else:
+    loaders.append(FileSystemLoader(str(COMMONUI_TEMPLATES_DIR)))
 
 jinja_loader = ChoiceLoader(loaders)
 jinja_env = Environment(
@@ -95,6 +93,8 @@ templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 templates.env = jinja_env
 
 logger.info(f"Template loaders configured: {len(loaders)} loaders")
+for k, l in enumerate(loaders):
+    logger.info(f"Loader {k} = {l}")
 
 # Import routers after templates is configured
 from .routers import auth, pages
