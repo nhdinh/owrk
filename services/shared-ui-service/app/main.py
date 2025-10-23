@@ -4,6 +4,7 @@ Serves templates and static files over HTTP for other frontend services
 """
 
 import logging
+from typing import Optional
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import JSONResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -158,9 +159,10 @@ async def list_static_files():
 
 
 @app.get("/api/static/{file_path:path}")
-async def get_static_file(file_path: str):
+async def get_static_file(file_path: str, etag: Optional[str] = None):
     """Get a specific static file"""
     static_file = STATIC_DIR / file_path
+    logger.info(f"Requesting static: {file_path}?{etag}")
 
     # Security check: ensure the file is within static directory
     try:
@@ -235,4 +237,19 @@ async def get_manifest():
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run(app, host="0.0.0.0", port=5000)
+    logger.info("Run uvicorn")
+
+    uvicorn.run(
+        app,
+        host="0.0.0.0",
+        port=5000,
+        reload=True,
+        reload_dirs=[
+            "/app/app/*",
+            "/shared-ui/static/css/*",
+            "/shared-ui/static/js/*",
+            "/shared-ui/static/images/*",
+            "/shared-ui/templates/components/*",
+            "/shared-ui/templates/layouts/*",
+        ],
+    )

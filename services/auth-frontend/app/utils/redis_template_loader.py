@@ -4,12 +4,10 @@ Fetches templates from shared-ui-service and caches them in Redis
 """
 
 import logging
-import json
 from typing import Optional, Tuple
 from jinja2 import BaseLoader, TemplateNotFound
 import httpx
 import redis
-import os
 
 logger = logging.getLogger(__name__)
 
@@ -182,7 +180,7 @@ class RedisTemplateLoader(BaseLoader):
             cached_etag = self.redis_client.get(self._get_etag_key(template_name))
             if cached_etag:
                 return cached_etag.decode("utf-8") == current_etag
-            
+
             return False
         except Exception as e:
             logger.error(f"Error checking template freshness: {e}")

@@ -1,10 +1,10 @@
-FROM python:3.11-slim
+FROM python:3.11-alpine 
 
 WORKDIR /app
 
 # Install curl for health checks
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    curl \
+RUN apk update && apk add --no-cache \
+  curl \
   && rm -rf /var/lib/apt/lists/*
 
 # Install dependencies
@@ -18,4 +18,15 @@ COPY app/ ./app/
 EXPOSE 5000
 
 # Run the application
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "5000"]
+CMD [ \
+  "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "5000", "--reload", \
+  "--reload-dir", "/app/app", \
+  "--reload-dir", "/shared-ui/static/css/", \
+  "--reload-dir", "/shared-ui/static/js/", \
+  "--reload-dir", "/shared-ui/static/images/", \
+  "--reload-dir", "/shared-ui/templates/components/", \
+  "--reload-dir", "/shared-ui/templates/layouts/", \
+  "--reload-include", "*.css", \
+  "--reload-include", "*.js", \
+  "--reload-include", "*.html" \
+  ]

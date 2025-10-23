@@ -154,7 +154,7 @@ services:
     restart: unless-stopped
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:5000/health" ]
-      interval: 30s
+      interval: 1m
       timeout: 5s
       retries: 3
       start_period: 10s
@@ -226,7 +226,7 @@ services:
       USE_REDIS_LOADER: true
     volumes:
       - ./services/auth-frontend/:/app/:ro
-      - ./common-ui:/common-ui:ro
+      - ./common-ui:/common-ui:ro # fallback if not use_redis_loader
     depends_on:
       auth-api:
         condition: service_healthy
@@ -306,7 +306,7 @@ services:
       USE_REDIS_LOADER: true
     volumes:
       - ./services/asset-frontend/:/app/:ro
-      - ./common-ui:/common-ui:ro
+      - ./common-ui:/common-ui:ro # fallback if not use_redis_loader
     depends_on:
       asset-api:
         condition: service_healthy

@@ -34,21 +34,6 @@ COMMONUI_TEMPLATES_DIR = (
     else BASE_DIR.parent.parent.parent / "common-ui" / "templates"
 )
 
-remote_static = FastAPI()
-
-
-@remote_static.get("/{path:path}")
-async def serve_remote(path: str):
-    async with httpx.AsyncClient() as client:
-        resp = await client.get(f"http://shared-ui:5000/{path}")
-        return Response(
-            resp.content, resp.status_code, media_type=resp.headers.get("content-type")
-        )
-
-
-# app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
-app.mount("/static", remote_static)
-
 # Initialize Redis client for template caching
 REDIS_URL = os.getenv("REDIS_URL", "redis://redis:6379")
 SHARED_UI_URL = os.getenv("SHARED_UI_URL", "http://shared-ui:5000")
