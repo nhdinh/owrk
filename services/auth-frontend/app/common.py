@@ -4,8 +4,8 @@ from typing import Dict
 
 
 prefixes: Dict = {
-    "auth": os.getenv("AUTH_PREFIX", "/auth"),
-    "asset": os.getenv("ASSET_PREFIX", "/asset"),
+    "auth": "/" + os.getenv("AUTH_PREFIX", "auth"),
+    "asset": "/" + os.getenv("ASSET_PREFIX", "asset"),
 }
 
 

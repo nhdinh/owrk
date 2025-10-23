@@ -72,7 +72,8 @@ async def get_verify_otp(request: Request):
             url=f"{prefixes['auth']}/login", status_code=status.HTTP_302_FOUND
         )
     return templates.TemplateResponse(
-        "auth/verify_otp.html", {"request": request, "error": None}
+        "auth/verify_otp.html",
+        {"request": request, "prefixes": prefixes, "error": None},
     )
 
 

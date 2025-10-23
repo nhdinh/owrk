@@ -48,10 +48,14 @@ class RedisTemplateLoader(BaseLoader):
 
     def _get_cache_key(self, template_name: str) -> str:
         """Generate Redis cache key for a template"""
+        # logger.info(f"_get_cache_key: {template_name}")
+
         return f"template:{template_name}"
 
     def _get_etag_key(self, template_name: str) -> str:
         """Generate Redis cache key for a template's ETag"""
+        # logger.info(f"_get_etag_key: {template_name}")
+
         return f"template:etag:{template_name}"
 
     def _fetch_template_from_service(
@@ -108,6 +112,8 @@ class RedisTemplateLoader(BaseLoader):
 
             content = self.redis_client.get(cache_key)
             etag = self.redis_client.get(etag_key)
+
+            # logger.info(f"etag = {etag}")
 
             if content and etag:
                 logger.debug(f"Template {template_name} found in cache")
@@ -176,6 +182,7 @@ class RedisTemplateLoader(BaseLoader):
             cached_etag = self.redis_client.get(self._get_etag_key(template_name))
             if cached_etag:
                 return cached_etag.decode("utf-8") == current_etag
+            
             return False
         except Exception as e:
             logger.error(f"Error checking template freshness: {e}")

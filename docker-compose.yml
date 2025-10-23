@@ -126,7 +126,7 @@ services:
       - backend
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8000/health"]
+      test: [ "CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8000/health" ]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -223,6 +223,7 @@ services:
       ASSET_PREFIX: ${ASSET_PREFIX}
       SHARED_UI_URL: http://shared-ui:5000
       REDIS_URL: redis://redis:6379
+      USE_REDIS_LOADER: true
     volumes:
       - ./services/auth-frontend/:/app/:ro
       - ./common-ui:/common-ui:ro
@@ -302,6 +303,7 @@ services:
       ASSET_API_URL: http://asset-api:8000/api/v1
       SHARED_UI_URL: http://shared-ui:5000
       REDIS_URL: redis://redis:6379
+      USE_REDIS_LOADER: true
     volumes:
       - ./services/asset-frontend/:/app/:ro
       - ./common-ui:/common-ui:ro
@@ -321,7 +323,6 @@ services:
       timeout: 10s
       retries: 5
       start_period: 30s
-
   # Procurement Service
   # procurement-service:
   #   build:
