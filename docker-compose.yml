@@ -5,6 +5,8 @@ secrets:
     file: ./.secrets/mysql_user_passwd.txt
   mongo_passwd:
     file: ./.secrets/mongo_passwd.txt
+  rabbit_passwd:
+    file: ./.secrets/rabbit_passwd.txt
   jwt_secret_key:
     file: ./.secrets/jwt_secret_key.txt
 
@@ -323,6 +325,30 @@ services:
       timeout: 10s
       retries: 5
       start_period: 30s
+
+  # Auth Frontend V2 (React + Vite)
+  auth-fe-v2:
+    build:
+      context: ./services/auth-frontend-v2
+      dockerfile: Dockerfile
+    container_name: auth-fe-v2
+    # No environment variables needed - uses relative path /api/v1 which nginx proxies to auth-api
+    ports:
+      - "3100:80"
+    depends_on:
+      auth-api:
+        condition: service_healthy
+    networks:
+      - backend
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/" ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+
   # Procurement Service
   # procurement-service:
   #   build:

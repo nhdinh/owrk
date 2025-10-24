@@ -1,10 +1,7 @@
 from fastapi import APIRouter, Request, Form, status
 from fastapi.responses import HTMLResponse, RedirectResponse
 import httpx
-import os
-from ..common import prefixes, get_logger
-
-API_BASE: str = os.getenv("API_BASE", "http://auth-service:8000/api/v1")
+from ..common import prefixes, get_logger, API_BASE
 
 router = APIRouter(prefix="")
 logger = get_logger(__name__)

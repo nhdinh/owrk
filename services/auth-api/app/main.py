@@ -19,13 +19,12 @@ import asyncio
 
 # Configure logging
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 
 # supress sqlalchemy logging
-logging.getLogger('sqlalchemy').setLevel(logging.ERROR)
+logging.getLogger("sqlalchemy").setLevel(logging.ERROR)
 
 
 async def start_event_consumer():
@@ -38,8 +37,10 @@ async def start_event_consumer():
             exchange_name="auth.events",
             queue_name="auth.read_model_updater",
             routing_keys=["user.*", "role.*"],
-            callback=user_event_consumer.handle_event
+            callback=user_event_consumer.handle_event,
         )
+
+        logger.info(f"Event consumer intialized.")
     except Exception as e:
         logger.error(f"❌ Event consumer error: {e}")
         # Retry after delay
@@ -118,7 +119,7 @@ app = FastAPI(
     version="1.0.0",
     docs_url="/docs",
     redoc_url="/redoc",
-    lifespan=lifespan
+    lifespan=lifespan,
 )
 
 # CORS middleware
@@ -139,11 +140,7 @@ async def health_check():
     """
     Health check endpoint for container orchestration
     """
-    return {
-        "status": "healthy",
-        "service": "auth-service",
-        "version": "1.0.0"
-    }
+    return {"status": "healthy", "service": "auth-service", "version": "1.0.0"}
 
 
 @app.get("/")
@@ -155,7 +152,7 @@ async def root():
         "service": "Auth Service",
         "version": "1.0.0",
         "status": "running",
-        "docs": "/docs"
+        "docs": "/docs",
     }
 
 

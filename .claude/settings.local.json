@@ -42,7 +42,8 @@
       "Bash(docker compose restart auth-api)",
       "Bash(docker compose:*)",
       "Bash(mkdir:*)",
-      "Bash(winpty docker exec:*)"
+      "Bash(winpty docker exec:*)",
+      "Bash(docker build:*)"
     ],
     "deny": [],
     "ask": []

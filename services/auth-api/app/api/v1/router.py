@@ -12,6 +12,7 @@ api_router.include_router(auth.router)
 api_router.include_router(users.router)
 api_router.include_router(roles.router)
 
+
 # Status endpoint
 @api_router.get("/status")
 async def status():
@@ -21,6 +22,5 @@ async def status():
     return {
         "service": "Auth Service",
         "status": "running",
-        "sprint": "Sprint 2 - Authentication Service",
-        "message": "Authentication endpoints are now available"
+        "message": "Authentication endpoints are now available",
     }

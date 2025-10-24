@@ -3,6 +3,11 @@ import os
 from typing import Dict, Optional
 import re
 
+from fastapi import Request
+
+# API endpoints
+API_BASE: str = os.getenv("AUTH_API_URL", "http://auth-api:8000/api/v1")
+
 
 # Configure logging
 def get_logger(logger_name: str):

@@ -82,7 +82,7 @@ for k, l in enumerate(loaders):
     logger.info(f"Loader {k} = {l}")
 
 # Import routers after templates is configured
-from .routers import auth, pages
+from .routers import auth, users, roles, pages
 
 # Session (for CSRF/non-sensitive state). Tokens will be in HTTPOnly cookies
 # JWT Settings
@@ -98,6 +98,8 @@ app.add_middleware(SessionMiddleware, secret_key=JWT_SECRET)
 # so we don't add AUTH_PREFIX here
 app.include_router(auth.router, prefix="", tags=["auth"])
 app.include_router(pages.router, prefix="", tags=["pages"])
+app.include_router(users.router, prefix="", tags=["users"])
+app.include_router(roles.router, prefix="", tags=["roles"])
 
 
 @app.get("/health")
