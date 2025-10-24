@@ -28,7 +28,7 @@ def get_prefix(key: str, default_val: str = "") -> str:
             logger.info(f"matches found in '{val}', return '/{match}'")
             return f"/{match}"
 
-    return val
+    return f"/{val}"
 
 
 prefixes: Dict = {

@@ -1,22 +1,89 @@
 """
 User Repository with specific user-related operations
+WRITE Repository for CQRS Pattern - handles Commands (MySQL)
 """
 
 from typing import Optional
 from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
+import asyncio
 
 from app.repositories.base_repository import BaseRepository
 from app.models.user import User
+from app.core.events import UserEvents, user_to_event_data
 
 
 class UserRepository(BaseRepository[User]):
     """
-    Repository for User entity with specific user operations
+    WRITE Repository for User entity with specific user operations
+    Part of CQRS Pattern - handles Commands and publishes events
     """
 
     def __init__(self, db: Session):
         super().__init__(User, db)
+
+    def create(self, entity: User) -> User:
+        """
+        Create user and publish UserCreated event
+
+        Args:
+            entity: User entity to create
+
+        Returns:
+            Created user
+        """
+        user = super().create(entity)
+        self.db.flush()  # Ensure ID is generated
+
+        # Publish event asynchronously
+        try:
+            asyncio.create_task(UserEvents.user_created(user_to_event_data(user)))
+        except RuntimeError:
+            # If no event loop, skip event publishing (e.g., in tests)
+            pass
+
+        return user
+
+    def update(self, entity: User) -> User:
+        """
+        Update user and publish UserUpdated event
+
+        Args:
+            entity: User entity to update
+
+        Returns:
+            Updated user
+        """
+        user = super().update(entity)
+        self.db.flush()
+
+        # Publish event asynchronously
+        try:
+            asyncio.create_task(UserEvents.user_updated(user_to_event_data(user)))
+        except RuntimeError:
+            pass
+
+        return user
+
+    def delete(self, entity_id: int) -> bool:
+        """
+        Delete user and publish UserDeleted event
+
+        Args:
+            entity_id: User ID to delete
+
+        Returns:
+            True if successful
+        """
+        result = super().delete(entity_id)
+
+        if result:
+            try:
+                asyncio.create_task(UserEvents.user_deleted(entity_id))
+            except RuntimeError:
+                pass
+
+        return result
 
     def get_by_email(self, email: str) -> Optional[User]:
         """Get user by email"""

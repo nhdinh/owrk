@@ -10,10 +10,12 @@ import logging
 
 from app.core.config import settings
 from app.core.database import engine
-from app.core.rabbitmq import rabbitmq
+from app.core.rabbitmq import rabbitmq, consume_events
 from app.core.mongo_db import connect_mongo, close_mongo
 from app.models.base import Base
 from app.api.v1.router import api_router
+from app.consumers.user_event_consumer import user_event_consumer
+import asyncio
 
 # Configure logging
 logging.basicConfig(
@@ -24,6 +26,25 @@ logger = logging.getLogger(__name__)
 
 # supress sqlalchemy logging
 logging.getLogger('sqlalchemy').setLevel(logging.ERROR)
+
+
+async def start_event_consumer():
+    """
+    Start consuming events from RabbitMQ
+    Runs in background task
+    """
+    try:
+        await consume_events(
+            exchange_name="auth.events",
+            queue_name="auth.read_model_updater",
+            routing_keys=["user.*", "role.*"],
+            callback=user_event_consumer.handle_event
+        )
+    except Exception as e:
+        logger.error(f"❌ Event consumer error: {e}")
+        # Retry after delay
+        await asyncio.sleep(5)
+        asyncio.create_task(start_event_consumer())
 
 
 @asynccontextmanager
@@ -54,6 +75,17 @@ async def lifespan(app: FastAPI):
         logger.info("✅ Connected to RabbitMQ")
     except Exception as e:
         logger.error(f"❌ Failed to connect to RabbitMQ: {e}")
+
+    # Initialize event consumer
+    try:
+        await user_event_consumer.initialize()
+        logger.info("✅ Event consumer initialized")
+    except Exception as e:
+        logger.error(f"❌ Failed to initialize event consumer: {e}")
+
+    # Start consuming events in background
+    asyncio.create_task(start_event_consumer())
+    logger.info("📥 Event consumer started in background")
 
     logger.info("✅ Auth Service started successfully")
 
