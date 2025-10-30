@@ -38,7 +38,11 @@ class DomainEvents:
         }
 
         try:
-            await publish_event(event, exchange_name=DomainEvents.EXCHANGE_NAME)
+            await publish_event(
+                routing_key=event_type,
+                event_data=data,
+                exchange_name=DomainEvents.EXCHANGE_NAME
+            )
             logger.info(f"📤 Published event: {event_type} for entity ID: {data.get('id')}")
         except Exception as e:
             logger.error(f"❌ Failed to publish event {event_type}: {str(e)}")

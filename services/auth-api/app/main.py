@@ -9,13 +9,32 @@ from contextlib import asynccontextmanager
 import logging
 
 from app.core.config import settings
-from app.core.database import engine
+from app.core.database import engine, SessionLocal
 from app.core.rabbitmq import rabbitmq, consume_events
-from app.core.mongo_db import connect_mongo, close_mongo
+from app.core.mongo_db import connect_mongo, close_mongo, get_mongo_db
 from app.models.base import Base
 from app.api.v1.router import api_router
 from app.consumers.user_event_consumer import user_event_consumer
 import asyncio
+
+# Import Message Bus and Handlers
+from app.core.message_bus import message_bus
+from app.schemas.commands.user_commands import (
+    CreateUserCommand, UpdateUserCommand, DeleteUserCommand,
+    ActivateUserCommand, DeactivateUserCommand
+)
+from app.schemas.queries.user_queries import (
+    GetUserByIdQuery, GetUsersListQuery, GetUserHistoryQuery
+)
+from app.commands.handlers import (
+    CreateUserHandler, UpdateUserHandler, DeleteUserHandler,
+    ActivateUserHandler, DeactivateUserHandler
+)
+from app.queries.handlers import (
+    GetUserByIdHandler, GetUsersListHandler,
+    SearchUsersHandler, GetUserHistoryHandler
+)
+from app.read_repositories.user_read_repository import UserReadRepository
 
 # Configure logging
 logging.basicConfig(
@@ -25,6 +44,68 @@ logger = logging.getLogger(__name__)
 
 # supress sqlalchemy logging
 logging.getLogger("sqlalchemy").setLevel(logging.ERROR)
+
+
+async def register_cqrs_handlers():
+    """
+    Register all CQRS command and query handlers with the message bus
+    This enables the CQRS pattern for all operations
+
+    Note: Command handlers receive database session per request via dependency injection
+    Query handlers use MongoDB repository
+    """
+    logger.info("📝 Registering CQRS handlers...")
+
+    # Get MongoDB instance for query handlers
+    mongo_db = get_mongo_db()
+    user_read_repo = UserReadRepository(mongo_db)
+
+    try:
+        # Register Command Handlers (Write operations)
+        # Handlers receive database session from endpoint via execute_command(command, db=db)
+        message_bus.register_command_handler(
+            CreateUserCommand,
+            CreateUserHandler()
+        )
+        message_bus.register_command_handler(
+            UpdateUserCommand,
+            UpdateUserHandler()
+        )
+        message_bus.register_command_handler(
+            DeleteUserCommand,
+            DeleteUserHandler()
+        )
+        message_bus.register_command_handler(
+            ActivateUserCommand,
+            ActivateUserHandler()
+        )
+        message_bus.register_command_handler(
+            DeactivateUserCommand,
+            DeactivateUserHandler()
+        )
+
+        logger.info("✅ Command handlers registered")
+
+        # Register Query Handlers (Read operations)
+        message_bus.register_query_handler(
+            GetUserByIdQuery,
+            GetUserByIdHandler(user_read_repo)
+        )
+        message_bus.register_query_handler(
+            GetUsersListQuery,
+            GetUsersListHandler(user_read_repo)
+        )
+        message_bus.register_query_handler(
+            GetUserHistoryQuery,
+            GetUserHistoryHandler()  # History handler needs db per request
+        )
+
+        logger.info("✅ Query handlers registered")
+        logger.info("✅ CQRS handlers registration complete")
+
+    except Exception as e:
+        logger.error(f"❌ Failed to register handlers: {e}")
+        raise
 
 
 async def start_event_consumer():
@@ -76,6 +157,13 @@ async def lifespan(app: FastAPI):
         logger.info("✅ Connected to RabbitMQ")
     except Exception as e:
         logger.error(f"❌ Failed to connect to RabbitMQ: {e}")
+
+    # Register CQRS handlers
+    try:
+        await register_cqrs_handlers()
+        logger.info("✅ CQRS handlers registered")
+    except Exception as e:
+        logger.error(f"❌ Failed to register CQRS handlers: {e}")
 
     # Initialize event consumer
     try:

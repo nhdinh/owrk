@@ -52,15 +52,16 @@ services:
     secrets:
       - mongo_passwd
     environment:
-      MONGO_PASSWD_FILE: /run/secrets/mongo_passwd
       MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: secret123
+      # MONGO_INITDB_ROOT_PASSWORD will be read from /run/secrets/mongo_passwd by entrypoint
     ports:
       - "27017:27017"
     volumes:
       - ./.mongo_db:/data/db
+      - ./scripts/mongo-init.sh:/usr/local/bin/mongo-init.sh:ro
     networks:
       - backend
+    entrypoint: ["/bin/bash", "/usr/local/bin/mongo-init.sh", "mongod"]
     healthcheck:
       test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
       interval: 30s
@@ -171,6 +172,8 @@ services:
       - jwt_secret_key
       - mysql_user_passwd
       - mongo_passwd
+    ports:
+      - 8001:8000
     environment:
       ENVIRONMENT: development
       DATABASE_USER: ${MYSQL_USER:-officework_dbu}
@@ -179,6 +182,7 @@ services:
       DATABASE_HOST: mysql
       DATABASE_PORT: 3306
       MONGO_PASSWD_FILE: /run/secrets/mongo_passwd
+      MONGODB_PASSWORD_FILE: /run/secrets/mongo_passwd
       JWT_SECRET_KEY_FILE: /run/secrets/jwt_secret_key
       JWT_ALGORITHM: HS256
       ACCESS_TOKEN_EXPIRE_MINUTES: 480
@@ -218,6 +222,8 @@ services:
     container_name: auth-fe
     secrets:
       - jwt_secret_key
+    ports:
+      - 8011:8000
     environment:
       JWT_SECRET_KEY_FILE: /run/secrets/jwt_secret_key
       API_BASE: http://auth-api:8000/api/v1
@@ -256,6 +262,8 @@ services:
       - jwt_secret_key
       - mysql_user_passwd
       - mongo_passwd
+    ports:
+      - 8002:8000
     environment:
       ENVIRONMENT: development
       DATABASE_USER: ${MYSQL_USER:-officework_dbu}
@@ -300,6 +308,8 @@ services:
     container_name: asset-fe
     secrets:
       - jwt_secret_key
+    ports:
+      - 8012:8000
     environment:
       JWT_SECRET_KEY_FILE: /run/secrets/jwt_secret_key
       ASSET_API_URL: http://asset-api:8000/api/v1

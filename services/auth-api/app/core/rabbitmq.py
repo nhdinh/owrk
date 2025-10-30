@@ -49,14 +49,17 @@ class RabbitMQConnection:
 rabbitmq = RabbitMQConnection()
 
 
-async def publish_event(event: dict, exchange_name: str = "auth.events"):
+async def publish_event(routing_key: str, event_data: dict, exchange_name: str = "auth.events"):
     """
     Publish event to RabbitMQ
 
     Args:
-        event: Event data (dict with event_type, timestamp, data)
+        routing_key: Event routing key (e.g., "user.created")
+        event_data: Event payload data
         exchange_name: Exchange to publish to
     """
+    from datetime import datetime
+
     channel = await rabbitmq.get_channel()
 
     # Declare exchange (idempotent)
@@ -66,8 +69,14 @@ async def publish_event(event: dict, exchange_name: str = "auth.events"):
         durable=True
     )
 
+    # Construct full event object
+    event = {
+        "event_type": routing_key,
+        "timestamp": datetime.utcnow().isoformat(),
+        "data": event_data
+    }
+
     # Publish message
-    routing_key = event["event_type"]  # e.g., "user.created"
     message = aio_pika.Message(
         body=json.dumps(event).encode(),
         delivery_mode=aio_pika.DeliveryMode.PERSISTENT

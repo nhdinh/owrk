@@ -55,10 +55,14 @@ class User(Base):
     # Foreign Keys
     role_id = Column(Integer, ForeignKey('auth_db.roles.id'), nullable=True)
 
+    # Versioning (for history tracking)
+    version = Column(Integer, default=1, nullable=False)  # Incremented on each update
+
     # Relationships
     role = relationship("Role", back_populates="users")
     refresh_tokens = relationship("RefreshToken", back_populates="user", cascade="all, delete-orphan")
     password_reset_tokens = relationship("PasswordResetToken", back_populates="user", cascade="all, delete-orphan")
+    history = relationship("UserHistory", backref="user", lazy="dynamic", order_by="UserHistory.version.desc()")
 
     # Timestamps inherited from Base: created_at, updated_at
 

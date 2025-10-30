@@ -97,6 +97,10 @@ class UserRepository(BaseRepository[User]):
         """Get user by Active Directory sync ID"""
         return self.db.query(User).filter(User.ad_sync_id == ad_sync_id).first()
 
+    def get_by_role_id(self, role_id: int) -> list[User]:
+        """Get all users with a specific role"""
+        return self.db.query(User).filter(User.role_id == role_id).all()
+
     def increment_failed_attempts(self, user_id: int) -> None:
         """Increment failed login attempts for user"""
         user = self.get_by_id(user_id)

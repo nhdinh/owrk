@@ -16,13 +16,13 @@ Auth Service has been refactored to implement the **CQRS pattern** with **Event-
 ┌──────────────────────────────────────────────────────┐
 │                  COMMANDS (Write)                    │
 │                                                      │
-│  User Action (Create/Update/Delete)                 │
+│  User Action (Create/Update/Delete)                  │
 │         ↓                                            │
-│  AuthService (Business Logic)                       │
+│  AuthService (Business Logic)                        │
 │         ↓                                            │
-│  UserRepository (Write) → MySQL                     │
+│  UserRepository (Write) → MySQL                      │
 │         ↓                                            │
-│  Publish Event → RabbitMQ                           │
+│  Publish Event → RabbitMQ                            │
 └──────────────────────────────────────────────────────┘
                          ↓
 ┌──────────────────────────────────────────────────────┐
@@ -34,11 +34,11 @@ Auth Service has been refactored to implement the **CQRS pattern** with **Event-
 ┌──────────────────────────────────────────────────────┐
 │                  QUERIES (Read)                      │
 │                                                      │
-│  Event Consumer listens                             │
+│  Event Consumer listens                              │
 │         ↓                                            │
-│  UserReadRepository updates MongoDB                 │
+│  UserReadRepository updates MongoDB                  │
 │         ↓                                            │
-│  Fast queries from MongoDB                          │
+│  Fast queries from MongoDB                           │
 └──────────────────────────────────────────────────────┘
 ```
 
@@ -70,11 +70,13 @@ services/auth-api/app/
 **File**: `app/repositories/user_repository.py`
 
 **Responsibilities**:
+
 - Handle CREATE, UPDATE, DELETE operations
 - Ensure data consistency and integrity
 - Publish domain events to RabbitMQ
 
 **Key Methods**:
+
 ```python
 def create(self, entity: User) -> User:
     """Create user in MySQL and publish UserCreated event"""
@@ -100,11 +102,13 @@ def delete(self, entity_id: int) -> bool:
 **File**: `app/repositories/user_read_repository.py`
 
 **Responsibilities**:
+
 - Handle all READ operations (queries)
 - Denormalized data for fast lookups
 - Updated via event consumers
 
 **Key Methods**:
+
 ```python
 async def get_by_id(self, user_id: int) -> Optional[Dict]:
     """Fast lookup by ID from MongoDB"""
@@ -123,6 +127,7 @@ async def upsert_user(self, user_data: Dict) -> bool:
 ```
 
 **Indexes Created**:
+
 - `id` (unique)
 - `email` (unique)
 - `username`
@@ -138,6 +143,7 @@ async def upsert_user(self, user_data: Dict) -> bool:
 **File**: `app/core/events.py`
 
 **Event Types**:
+
 - `user.created` - User created
 - `user.updated` - User updated
 - `user.deleted` - User deleted
@@ -150,6 +156,7 @@ async def upsert_user(self, user_data: Dict) -> bool:
 - `role.created`, `role.updated`, `role.deleted` - Role events
 
 **Event Structure**:
+
 ```json
 {
   "event_type": "user.created",
@@ -169,6 +176,7 @@ async def upsert_user(self, user_data: Dict) -> bool:
 ```
 
 **Helper Functions**:
+
 ```python
 def user_to_event_data(user) -> Dict:
     """Convert User model to safe event data (excludes password)"""
@@ -182,11 +190,13 @@ def role_to_event_data(role) -> Dict:
 **File**: `app/consumers/user_event_consumer.py`
 
 **Responsibilities**:
+
 - Listen to events from RabbitMQ
 - Update MongoDB read model
 - Handle event failures (logging, retry)
 
 **Event Handlers**:
+
 ```python
 async def _handle_user_created(self, user_data: Dict):
     """Insert user into MongoDB"""
@@ -202,6 +212,7 @@ async def _handle_user_logged_in(self, data: Dict, metadata: Dict):
 ```
 
 **Queue Configuration**:
+
 - Exchange: `auth.events`
 - Queue: `auth.read_model_updater`
 - Routing Keys: `user.*`, `role.*`
@@ -241,21 +252,25 @@ async def _handle_user_logged_in(self, data: Dict, metadata: Dict):
 ## 💡 Benefits
 
 ### 1. Performance
+
 - **Fast Reads**: MongoDB optimized for queries with indexes
 - **Scalability**: Read and write databases can scale independently
 - **Reduced Load**: MySQL only handles writes, MongoDB handles reads
 
 ### 2. Flexibility
+
 - **Denormalization**: MongoDB can store pre-joined data for complex queries
 - **Custom Indexes**: Create indexes specific to query patterns
 - **Aggregations**: Use MongoDB aggregation pipeline for analytics
 
 ### 3. Reliability
+
 - **Event Sourcing**: Full audit trail of all changes
 - **Eventual Consistency**: Read model eventually consistent with write model
 - **Fault Tolerance**: Events stored in RabbitMQ (durable queue)
 
 ### 4. Maintainability
+
 - **Separation of Concerns**: Clear separation between writes and reads
 - **Independent Evolution**: Read and write models can evolve independently
 - **Easy Testing**: Test commands and queries separately
@@ -338,7 +353,7 @@ RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
 
 ```bash
 # Create user (should publish event)
-curl -X POST http://localhost:8088/api/v1/users \
+curl -X POST http://localhost:8001/api/v1/users \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer TOKEN" \
   -d '{"email":"test@example.com","full_name":"Test User","password":"Test123"}'
@@ -348,11 +363,11 @@ curl -X POST http://localhost:8088/api/v1/users \
 
 ```bash
 # Query users from MongoDB
-curl -X GET http://localhost:8088/api/v1/users \
+curl -X GET http://localhost:8001/api/v1/users \
   -H "Authorization: Bearer TOKEN"
 
 # Search users (uses MongoDB text index)
-curl -X GET "http://localhost:8088/api/v1/users?search=test" \
+curl -X GET "http://localhost:8001/api/v1/users?search=test" \
   -H "Authorization: Bearer TOKEN"
 ```
 
@@ -387,6 +402,7 @@ db.users.countDocuments()
 **Symptom**: MySQL updated but MongoDB not updated
 
 **Check**:
+
 ```bash
 # Check consumer logs
 docker compose logs -f auth-api | grep "Event"
@@ -396,6 +412,7 @@ docker compose logs -f auth-api | grep "Event"
 ```
 
 **Solution**:
+
 - Verify RabbitMQ connection in logs
 - Check consumer is initialized: Look for "✅ Event consumer initialized"
 - Restart service: `docker compose restart auth-api`
@@ -405,6 +422,7 @@ docker compose logs -f auth-api | grep "Event"
 **Symptom**: Events consumed but MongoDB unchanged
 
 **Check**:
+
 ```bash
 # Check MongoDB connection
 docker compose logs -f auth-api | grep "MongoDB"
@@ -416,6 +434,7 @@ db.users.getIndexes()
 ```
 
 **Solution**:
+
 - Verify MongoDB connection string
 - Check user_event_consumer logs for errors
 - Manually trigger index creation: Restart service
@@ -425,11 +444,13 @@ db.users.getIndexes()
 **Symptom**: User created but not immediately in search results
 
 **Explanation**: This is expected behavior with CQRS
+
 - Write returns immediately
 - Event processing takes ~100-500ms
 - Read model eventually consistent
 
 **Solution**:
+
 - For critical flows, poll or wait briefly
 - Use write model (MySQL) for immediate consistency needs
 - Implement read-your-writes pattern if needed
@@ -439,6 +460,7 @@ db.users.getIndexes()
 ## 🚦 Current Status
 
 ### Implemented ✅
+
 - [x] Write repositories with event publishing
 - [x] Read repositories for MongoDB
 - [x] Domain events (UserEvents, RoleEvents)
@@ -449,6 +471,7 @@ db.users.getIndexes()
 - [x] Error handling and logging
 
 ### Pending ⏸️
+
 - [ ] Update endpoints to use read repositories for queries
 - [ ] Implement RoleReadRepository
 - [ ] Add event replay mechanism (for rebuilding read model)

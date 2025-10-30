@@ -2,15 +2,16 @@
 
 ## 🚀 Services
 
-| Service | URL | Port | Status |
-|---------|-----|------|--------|
-| Asset API | http://localhost:8089 | 8089 | ✅ Healthy |
-| Asset Frontend | http://localhost:3001 | 3001 | ✅ Healthy |
-| Asset API Docs | http://localhost:8089/docs | - | ✅ Available |
+| Service        | URL                        | Port | Status       |
+| -------------- | -------------------------- | ---- | ------------ |
+| Asset API      | http://localhost:8089      | 8089 | ✅ Healthy   |
+| Asset Frontend | http://localhost:3001      | 3001 | ✅ Healthy   |
+| Asset API Docs | http://localhost:8089/docs | -    | ✅ Available |
 
 ## 📌 Key Endpoints
 
 ### Asset Management
+
 ```bash
 # List assets
 GET http://localhost:8089/api/v1/assets/
@@ -44,6 +45,7 @@ DELETE http://localhost:8089/api/v1/assets/1
 ```
 
 ### Assignment Workflow
+
 ```bash
 # Assign asset
 POST http://localhost:8089/api/v1/assets/1/assign
@@ -66,6 +68,7 @@ GET http://localhost:8089/api/v1/assets/1/history
 ```
 
 ### QR Code & Depreciation
+
 ```bash
 # Get QR code
 GET http://localhost:8089/api/v1/assets/1/qrcode
@@ -78,6 +81,7 @@ GET http://localhost:8089/api/v1/assets/statistics/summary
 ```
 
 ### File Upload
+
 ```bash
 # Upload attachment
 POST http://localhost:8089/api/v1/assets/1/attachments
@@ -93,6 +97,7 @@ DELETE http://localhost:8089/api/v1/assets/attachments/1
 ```
 
 ### Categories
+
 ```bash
 # Create category
 POST http://localhost:8089/api/v1/categories/
@@ -109,11 +114,13 @@ GET http://localhost:8089/api/v1/categories/
 ## 🔐 Authentication
 
 All endpoints require Bearer token:
+
 ```bash
 Authorization: Bearer <access_token>
 ```
 
 Get token from auth service:
+
 ```bash
 # Login
 POST http://localhost:8088/api/v1/auth/login
@@ -133,6 +140,7 @@ POST http://localhost:8088/api/v1/auth/verify-otp
 ## 🧪 Testing
 
 ### Run Unit Tests
+
 ```bash
 cd services/asset-api
 pytest tests/test_asset_service.py -v
@@ -140,6 +148,7 @@ pytest tests/test_depreciation_service.py -v
 ```
 
 ### Run Integration Tests
+
 ```bash
 chmod +x tests/test_asset_api_integration.sh
 bash tests/test_asset_api_integration.sh
@@ -148,6 +157,7 @@ bash tests/test_asset_api_integration.sh
 ## 📁 Important Files
 
 ### Backend
+
 - `services/asset-api/app/main.py` - Main app + scheduler
 - `services/asset-api/app/api/v1/endpoints/assets.py` - Asset endpoints
 - `services/asset-api/app/services/asset_service.py` - Business logic
@@ -156,6 +166,7 @@ bash tests/test_asset_api_integration.sh
 - `services/asset-api/app/models/asset.py` - Asset model
 
 ### Frontend
+
 - `services/asset-frontend/app/templates/assets/list.html` - Asset list
 - `services/asset-frontend/app/templates/assets/detail.html` - Asset detail (with modals)
 - `services/asset-frontend/app/templates/assets/form.html` - Create/Edit form
@@ -163,6 +174,7 @@ bash tests/test_asset_api_integration.sh
 - `services/asset-frontend/app/static/js/main.js` - JavaScript
 
 ### Tests
+
 - `services/asset-api/tests/test_asset_service.py` - Unit tests (15 cases)
 - `services/asset-api/tests/test_depreciation_service.py` - Unit tests (12 cases)
 - `tests/test_asset_api_integration.sh` - Integration tests (20+ cases)
@@ -195,6 +207,7 @@ docker compose up -d --build asset-api asset-fe
 ### Schema: asset_db
 
 **Tables**:
+
 - `assets` - Main asset table
 - `asset_categories` - Asset categories
 - `asset_assignments` - Assignment history
@@ -202,9 +215,10 @@ docker compose up -d --build asset-api asset-fe
 - `asset_depreciation_records` - Depreciation tracking
 
 ### Connect to MySQL
+
 ```bash
 docker exec -it mysql mysql -u officework_dbu -p
-# Password from .secrets/mysql_passwd.txt
+# Password from .secrets/mysql_user_passwd.txt
 
 USE asset_db;
 SHOW TABLES;
@@ -217,6 +231,7 @@ SELECT * FROM assets;
 **Configuration**: `DEPRECIATION_DAY_OF_MONTH=1` in docker-compose.yml
 
 **Manual trigger** (for testing):
+
 ```python
 from app.services.depreciation_service import DepreciationService
 

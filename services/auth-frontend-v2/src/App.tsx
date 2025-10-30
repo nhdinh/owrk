@@ -12,8 +12,11 @@ import ForgotPassword from "./pages/ForgotPassword";
 import Dashboard from "./pages/Dashboard";
 import Users from "./pages/Users";
 import UserDetail from "./pages/UserDetail";
+import UserEdit from "./pages/UserEdit";
 import Roles from "./pages/Roles";
 import RoleDetail from "./pages/RoleDetail";
+import RoleEdit from "./pages/RoleEdit";
+import RoleCreate from "./pages/RoleCreate";
 import Profile from "./pages/Profile";
 
 const queryClient = new QueryClient();
@@ -89,6 +92,14 @@ const AppRoutes = () => {
         }
       />
       <Route
+        path="/users/:id/edit"
+        element={
+          <ProtectedRoute>
+            <UserEdit />
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/roles"
         element={
           <ProtectedRoute>
@@ -97,10 +108,26 @@ const AppRoutes = () => {
         }
       />
       <Route
+        path="/roles/create"
+        element={
+          <ProtectedRoute>
+            <RoleCreate />
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/roles/:id"
         element={
           <ProtectedRoute>
             <RoleDetail />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/roles/:id/edit"
+        element={
+          <ProtectedRoute>
+            <RoleEdit />
           </ProtectedRoute>
         }
       />

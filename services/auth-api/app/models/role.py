@@ -2,7 +2,7 @@
 Role Model
 """
 
-from sqlalchemy import Column, String, Text, Boolean, Table, ForeignKey
+from sqlalchemy import Column, String, Text, Boolean, Table, ForeignKey, Integer, JSON
 from sqlalchemy.orm import relationship
 from app.models.base import Base
 
@@ -33,9 +33,13 @@ class Role(Base):
     is_active = Column(Boolean, default=True, nullable=False)
     is_system_role = Column(Boolean, default=False, nullable=False)  # Cannot be deleted
 
+    # Versioning (for history tracking)
+    version = Column(Integer, default=1, nullable=False)  # Incremented on each update
+
     # Relationships
     users = relationship("User", back_populates="role")
     permissions = relationship("Permission", secondary=role_permissions, back_populates="roles")
+    history = relationship("RoleHistory", backref="role", lazy="dynamic", order_by="RoleHistory.version.desc()")
 
     # Timestamps inherited from Base
 

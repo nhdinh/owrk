@@ -53,8 +53,10 @@ class Settings(BaseSettings):
     # MongoDB (Read DB for CQRS)
     MONGODB_HOST: str = os.getenv("MONGODB_HOST", "mongodb")
     MONGODB_PORT: str = os.getenv("MONGODB_PORT", "27017")
+    MONGODB_USER: str = os.getenv("MONGODB_USER", "admin")
     MONGODB_URL: str = (
-        f"mongodb://admin:{quote_plus(MONGO_PASSWD)}@{MONGODB_HOST}:{MONGODB_PORT}/"
+        f"mongodb://{MONGODB_USER}:{MONGO_PASSWD}@{MONGODB_HOST}:{MONGODB_PORT}/"
+        f"?authSource=admin"  # Authenticate against admin database
     )
     MONGODB_DB_NAME: str = "asset_management_read"
 

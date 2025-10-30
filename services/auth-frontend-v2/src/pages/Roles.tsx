@@ -62,7 +62,7 @@ export default function Roles() {
                 </p>
               </div>
             </div>
-            <Button onClick={() => navigate('/roles/new')}>
+            <Button onClick={() => navigate('/roles/create')}>
               <Plus className="h-4 w-4 mr-2" />
               Create Role
             </Button>

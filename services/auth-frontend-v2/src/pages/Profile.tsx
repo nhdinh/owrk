@@ -44,6 +44,8 @@ export default function Profile() {
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [isSettingUpMFA, setIsSettingUpMFA] = useState(false);
   const [qrCodeUrl, setQrCodeUrl] = useState('');
+  const [showOtpInput, setShowOtpInput] = useState(false);
+  const [otpCode, setOtpCode] = useState('');
 
   const {
     register,
@@ -80,6 +82,25 @@ export default function Profile() {
     } catch (error: any) {
       toast.error(error.response?.data?.detail || 'Failed to setup MFA');
       setIsSettingUpMFA(false);
+    }
+  };
+
+  const handleEnableMFA = async () => {
+    if (!otpCode || otpCode.length !== 6) {
+      toast.error('Please enter a valid 6-digit code');
+      return;
+    }
+
+    try {
+      await authAPI.enableMFA({ otp_code: otpCode });
+      toast.success('MFA enabled successfully');
+      setQrCodeUrl('');
+      setShowOtpInput(false);
+      setOtpCode('');
+      setIsSettingUpMFA(false);
+      refreshUser();
+    } catch (error: any) {
+      toast.error(error.response?.data?.detail || 'Invalid OTP code');
     }
   };
 
@@ -281,16 +302,53 @@ export default function Profile() {
 
                     {qrCodeUrl ? (
                       <div className="space-y-4">
-                        <Alert>
-                          <AlertDescription>
-                            Scan this QR code with your authenticator app (Google Authenticator,
-                            Authy, etc.)
-                          </AlertDescription>
-                        </Alert>
-                        <div className="flex justify-center p-4 border rounded-lg bg-white">
-                          <img src={qrCodeUrl} alt="MFA QR Code" className="w-64 h-64" />
-                        </div>
-                        <Button onClick={() => setQrCodeUrl('')}>Done</Button>
+                        {!showOtpInput ? (
+                          <>
+                            <Alert>
+                              <AlertDescription>
+                                Scan this QR code with your authenticator app (Google Authenticator,
+                                Authy, etc.)
+                              </AlertDescription>
+                            </Alert>
+                            <div className="flex justify-center p-4 border rounded-lg bg-white">
+                              <img src={qrCodeUrl} alt="MFA QR Code" className="w-64 h-64" />
+                            </div>
+                            <Button onClick={() => setShowOtpInput(true)}>Done</Button>
+                          </>
+                        ) : (
+                          <>
+                            <Alert>
+                              <AlertDescription>
+                                Enter the 6-digit code from your authenticator app to complete setup
+                              </AlertDescription>
+                            </Alert>
+                            <div className="space-y-2">
+                              <Label htmlFor="otp">Verification Code</Label>
+                              <Input
+                                id="otp"
+                                type="text"
+                                placeholder="000000"
+                                maxLength={6}
+                                value={otpCode}
+                                onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))}
+                              />
+                            </div>
+                            <div className="flex gap-2">
+                              <Button onClick={handleEnableMFA}>Verify & Enable</Button>
+                              <Button
+                                variant="outline"
+                                onClick={() => {
+                                  setShowOtpInput(false);
+                                  setQrCodeUrl('');
+                                  setOtpCode('');
+                                  setIsSettingUpMFA(false);
+                                }}
+                              >
+                                Cancel
+                              </Button>
+                            </div>
+                          </>
+                        )}
                       </div>
                     ) : (
                       <div className="space-y-4">

@@ -1,12 +1,18 @@
-import { useParams, useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { userAPI } from '@/lib/user-api';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Separator } from '@/components/ui/separator';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useParams, useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { userAPI } from "@/lib/user-api";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   ArrowLeft,
   Mail,
@@ -19,16 +25,22 @@ import {
   Trash2,
   Lock,
   Unlock,
-} from 'lucide-react';
-import { toast } from 'sonner';
-import { format } from 'date-fns';
+} from "lucide-react";
+import { toast } from "sonner";
+import { format } from "date-fns";
+import { useAuth } from "@/lib/auth-context";
 
 export default function UserDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { user: currentUser } = useAuth(); // Get the logged-in user
 
-  const { data: user, isLoading, refetch } = useQuery({
-    queryKey: ['user', id],
+  const {
+    data: user,
+    isLoading,
+    refetch,
+  } = useQuery({
+    queryKey: ["user", id],
     queryFn: () => userAPI.get(parseInt(id!)),
     enabled: !!id,
   });
@@ -36,37 +48,50 @@ export default function UserDetail() {
   const handleToggleStatus = async () => {
     if (!user) return;
 
+    // Prevent self-deactivation
+    if (currentUser && user.id === currentUser.id) {
+      toast.error("You cannot deactivate your own account");
+      return;
+    }
+
     try {
       if (user.is_active) {
         await userAPI.deactivate(user.id);
-        toast.success('User deactivated');
+        toast.success("User deactivated");
       } else {
         await userAPI.activate(user.id);
-        toast.success('User activated');
+        toast.success("User activated");
       }
       refetch();
     } catch (error: any) {
-      toast.error(error.response?.data?.detail || 'Failed to update user status');
+      toast.error(
+        error.response?.data?.detail || "Failed to update user status"
+      );
     }
   };
 
   const handleDelete = async () => {
-    if (!user || !confirm('Are you sure you want to delete this user?')) return;
+    if (!user || !confirm("Are you sure you want to delete this user?")) return;
+
+    if (currentUser && user.id === currentUser.id) {
+      toast.error("You cannot delete your own account");
+      return;
+    }
 
     try {
       await userAPI.delete(user.id);
-      toast.success('User deleted successfully');
-      navigate('/users');
+      toast.success("User deleted successfully");
+      navigate("/users");
     } catch (error: any) {
-      toast.error(error.response?.data?.detail || 'Failed to delete user');
+      toast.error(error.response?.data?.detail || "Failed to delete user");
     }
   };
 
   const getInitials = (name: string) => {
     return name
-      .split(' ')
+      .split(" ")
       .map((n) => n[0])
-      .join('')
+      .join("")
       .toUpperCase()
       .slice(0, 2);
   };
@@ -85,7 +110,7 @@ export default function UserDetail() {
         <Card className="w-full max-w-md">
           <CardContent className="pt-6 text-center">
             <p className="text-muted-foreground mb-4">User not found</p>
-            <Button onClick={() => navigate('/users')}>Back to Users</Button>
+            <Button onClick={() => navigate("/users")}>Back to Users</Button>
           </CardContent>
         </Card>
       </div>
@@ -99,7 +124,11 @@ export default function UserDetail() {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Button variant="ghost" size="icon" onClick={() => navigate('/users')}>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => navigate("/users")}
+              >
                 <ArrowLeft className="h-5 w-5" />
               </Button>
               <div>
@@ -108,27 +137,36 @@ export default function UserDetail() {
               </div>
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" onClick={() => navigate(`/users/${user.id}/edit`)}>
+              <Button
+                variant="outline"
+                onClick={() => navigate(`/users/${user.id}/edit`)}
+              >
                 <Edit className="h-4 w-4 mr-2" />
                 Edit
               </Button>
-              <Button variant="outline" onClick={handleToggleStatus}>
-                {user.is_active ? (
-                  <>
-                    <Lock className="h-4 w-4 mr-2" />
-                    Deactivate
-                  </>
-                ) : (
-                  <>
-                    <Unlock className="h-4 w-4 mr-2" />
-                    Activate
-                  </>
-                )}
-              </Button>
-              <Button variant="destructive" onClick={handleDelete}>
-                <Trash2 className="h-4 w-4 mr-2" />
-                Delete
-              </Button>
+
+              {/* Only show deactivate/delete buttons if not viewing own profile */}
+              {currentUser && currentUser.id !== user.id && (
+                <>
+                  <Button variant="outline" onClick={handleToggleStatus}>
+                    {user.is_active ? (
+                      <>
+                        <Lock className="h-4 w-4 mr-2" />
+                        Deactivate
+                      </>
+                    ) : (
+                      <>
+                        <Unlock className="h-4 w-4 mr-2" />
+                        Activate
+                      </>
+                    )}
+                  </Button>
+                  <Button variant="destructive" onClick={handleDelete}>
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Delete
+                  </Button>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -146,14 +184,18 @@ export default function UserDetail() {
                 </AvatarFallback>
               </Avatar>
               <CardTitle className="text-xl">{user.full_name}</CardTitle>
-              <CardDescription>{user.position || 'No position'}</CardDescription>
+              <CardDescription>
+                {user.position || "No position"}
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-center gap-2">
-                <Badge variant={user.is_active ? 'default' : 'secondary'}>
-                  {user.is_active ? 'Active' : 'Inactive'}
+                <Badge variant={user.is_active ? "default" : "secondary"}>
+                  {user.is_active ? "Active" : "Inactive"}
                 </Badge>
-                {user.is_superuser && <Badge variant="destructive">Admin</Badge>}
+                {user.is_superuser && (
+                  <Badge variant="destructive">Admin</Badge>
+                )}
               </div>
 
               <Separator />
@@ -174,7 +216,9 @@ export default function UserDetail() {
                 {user.address && (
                   <div className="flex items-start gap-2 text-sm">
                     <MapPin className="h-4 w-4 text-muted-foreground mt-0.5" />
-                    <span className="text-muted-foreground">{user.address}</span>
+                    <span className="text-muted-foreground">
+                      {user.address}
+                    </span>
                   </div>
                 )}
 
@@ -191,21 +235,23 @@ export default function UserDetail() {
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">MFA Enabled:</span>
-                  <Badge variant={user.mfa_enabled ? 'default' : 'outline'}>
-                    {user.mfa_enabled ? 'Yes' : 'No'}
+                  <Badge variant={user.mfa_enabled ? "default" : "outline"}>
+                    {user.mfa_enabled ? "Yes" : "No"}
                   </Badge>
                 </div>
 
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Email Verified:</span>
-                  <Badge variant={user.email_verified ? 'default' : 'outline'}>
-                    {user.email_verified ? 'Yes' : 'No'}
+                  <Badge variant={user.email_verified ? "default" : "outline"}>
+                    {user.email_verified ? "Yes" : "No"}
                   </Badge>
                 </div>
 
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">User Type:</span>
-                  <span className="capitalize">{user.user_type || 'local'}</span>
+                  <span className="capitalize">
+                    {user.user_type || "local"}
+                  </span>
                 </div>
               </div>
             </CardContent>
@@ -226,35 +272,47 @@ export default function UserDetail() {
                 <TabsContent value="info" className="space-y-4">
                   <div className="grid gap-4">
                     <div>
-                      <label className="text-sm font-medium text-muted-foreground">User ID</label>
+                      <label className="text-sm font-medium text-muted-foreground">
+                        User ID
+                      </label>
                       <p className="mt-1">#{user.id}</p>
                     </div>
 
                     <div>
-                      <label className="text-sm font-medium text-muted-foreground">Username</label>
-                      <p className="mt-1">{user.username || 'Not set'}</p>
+                      <label className="text-sm font-medium text-muted-foreground">
+                        Username
+                      </label>
+                      <p className="mt-1">{user.username || "Not set"}</p>
                     </div>
 
                     <div>
-                      <label className="text-sm font-medium text-muted-foreground">Department</label>
+                      <label className="text-sm font-medium text-muted-foreground">
+                        Department
+                      </label>
                       <p className="mt-1">
-                        {user.department_id ? `Department #${user.department_id}` : 'Not assigned'}
+                        {user.department_id
+                          ? `Department #${user.department_id}`
+                          : "Not assigned"}
                       </p>
                     </div>
 
                     <div>
-                      <label className="text-sm font-medium text-muted-foreground">Created At</label>
+                      <label className="text-sm font-medium text-muted-foreground">
+                        Created At
+                      </label>
                       <div className="flex items-center gap-2 mt-1">
                         <Calendar className="h-4 w-4 text-muted-foreground" />
-                        <span>{format(new Date(user.created_at), 'PPP')}</span>
+                        <span>{format(new Date(user.created_at), "PPP")}</span>
                       </div>
                     </div>
 
                     <div>
-                      <label className="text-sm font-medium text-muted-foreground">Updated At</label>
+                      <label className="text-sm font-medium text-muted-foreground">
+                        Updated At
+                      </label>
                       <div className="flex items-center gap-2 mt-1">
                         <Calendar className="h-4 w-4 text-muted-foreground" />
-                        <span>{format(new Date(user.updated_at), 'PPP')}</span>
+                        <span>{format(new Date(user.updated_at), "PPP")}</span>
                       </div>
                     </div>
                   </div>
@@ -268,7 +326,7 @@ export default function UserDetail() {
                       </label>
                       <div className="flex items-center gap-2 mt-1">
                         <Clock className="h-4 w-4 text-muted-foreground" />
-                        <span>{user.last_login_at || 'Never'}</span>
+                        <span>{user.last_login_at || "Never"}</span>
                       </div>
                       {user.last_login_ip && (
                         <p className="text-sm text-muted-foreground mt-1">
@@ -281,7 +339,9 @@ export default function UserDetail() {
                       <label className="text-sm font-medium text-muted-foreground">
                         Password Changed
                       </label>
-                      <p className="mt-1">{user.password_changed_at || 'Never'}</p>
+                      <p className="mt-1">
+                        {user.password_changed_at || "Never"}
+                      </p>
                     </div>
 
                     <Separator />
@@ -291,7 +351,7 @@ export default function UserDetail() {
                         Reset Password
                       </Button>
                       <Button variant="outline" className="w-full">
-                        {user.mfa_enabled ? 'Disable MFA' : 'Enable MFA'}
+                        {user.mfa_enabled ? "Disable MFA" : "Enable MFA"}
                       </Button>
                     </div>
                   </div>

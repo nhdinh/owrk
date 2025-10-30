@@ -2,21 +2,37 @@
 FastAPI Dependencies for authentication and authorization
 """
 
+import logging
 from typing import Optional
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
 from app.core.security import decode_token
 from app.core.unit_of_work import UnitOfWork
+from app.core.message_bus import MessageBus, get_message_bus
 from app.models.user import User
+
+logger = logging.getLogger(__name__)
 
 
 # HTTP Bearer token scheme
 security = HTTPBearer()
 
 
+# Export get_message_bus for dependency injection
+__all__ = [
+    "get_current_user",
+    "get_current_active_user",
+    "get_optional_user",
+    "require_permission",
+    "require_role",
+    "require_any_role",
+    "get_message_bus",
+]
+
+
 async def get_current_user(
-    credentials: HTTPAuthorizationCredentials = Depends(security)
+    credentials: HTTPAuthorizationCredentials = Depends(security),
 ) -> User:
     """
     Get current authenticated user from JWT token
@@ -69,12 +85,21 @@ async def get_current_user(
 
         if not user.is_active:
             raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="User account is inactive"
+                status_code=status.HTTP_403_FORBIDDEN, detail="User account is inactive"
             )
 
-        # Store user_id for later use (avoid detached instance errors)
-        user._cached_id = user_id  # Store as custom attribute
+        # Create a detached copy with accessible ID
+        # Store all needed attributes before session closes
+        user_dict = {
+            "id": user.id,
+            "email": user.email,
+            "full_name": user.full_name,
+            "is_active": user.is_active,
+            "mfa_enabled": user.mfa_enabled,
+            "user_type": user.user_type,
+            "role_id": user.role_id,
+            "department_id": user.department_id,
+        }
 
         # Eager load role to avoid detached instance errors
         if user.role:
@@ -82,11 +107,15 @@ async def get_current_user(
             _ = user.role.name
             _ = user.role.display_name
 
+        # Store attributes as custom _auth properties to avoid SQLAlchemy access
+        for key, value in user_dict.items():
+            setattr(user, f"_auth_{key}", value)
+
         return user
 
 
 async def get_current_active_user(
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
 ) -> User:
     """
     Get current active user (alias for get_current_user)
@@ -113,22 +142,25 @@ def require_permission(permission_name: str):
     Example:
         @router.get("/assets", dependencies=[Depends(require_permission("asset:read"))])
     """
-    async def permission_checker(current_user: User = Depends(get_current_user)) -> User:
+
+    async def permission_checker(
+        current_user: User = Depends(get_current_user),
+    ) -> User:
         # Get cached user_id to avoid detached instance error
-        user_id = getattr(current_user, '_cached_id', None)
+        user_id = getattr(current_user, "_auth_id", None)
         if not user_id:
             raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid user"
+                status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid user"
             )
 
         with UnitOfWork() as uow:
             # Get user's role
             user = uow.users.get_by_id(user_id)
+
             if not user or not user.role:
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN,
-                    detail="User has no role assigned"
+                    detail="User has no role assigned",
                 )
 
             # Check if user's role has the required permission
@@ -141,8 +173,22 @@ def require_permission(permission_name: str):
             if not has_permission:
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN,
-                    detail=f"Permission denied: {permission_name} required"
+                    detail=f"Permission denied: {permission_name} required",
                 )
+
+            # Cache attributes with _auth_ prefix to avoid detached instance errors
+            user_dict = {
+                "id": user.id,
+                "email": user.email,
+                "full_name": user.full_name,
+                "is_active": user.is_active,
+                "mfa_enabled": user.mfa_enabled,
+                "user_type": user.user_type,
+                "role_id": user.role_id,
+                "department_id": user.department_id,
+            }
+            for key, value in user_dict.items():
+                setattr(user, f"_auth_{key}", value)
 
             return user
 
@@ -162,13 +208,13 @@ def require_role(role_name: str):
     Example:
         @router.get("/admin", dependencies=[Depends(require_role("admin"))])
     """
+
     async def role_checker(current_user: User = Depends(get_current_user)) -> User:
         # Get cached user_id to avoid detached instance error
-        user_id = getattr(current_user, '_cached_id', None)
+        user_id = getattr(current_user, "_auth_id", None)
         if not user_id:
             raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid user"
+                status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid user"
             )
 
         with UnitOfWork() as uow:
@@ -176,14 +222,28 @@ def require_role(role_name: str):
             if not user or not user.role:
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN,
-                    detail="User has no role assigned"
+                    detail="User has no role assigned",
                 )
 
             if user.role.name != role_name:
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN,
-                    detail=f"Role '{role_name}' required"
+                    detail=f"Role '{role_name}' required",
                 )
+
+            # Cache attributes with _auth_ prefix to avoid detached instance errors
+            user_dict = {
+                "id": user.id,
+                "email": user.email,
+                "full_name": user.full_name,
+                "is_active": user.is_active,
+                "mfa_enabled": user.mfa_enabled,
+                "user_type": user.user_type,
+                "role_id": user.role_id,
+                "department_id": user.department_id,
+            }
+            for key, value in user_dict.items():
+                setattr(user, f"_auth_{key}", value)
 
             return user
 
@@ -203,13 +263,13 @@ def require_any_role(*role_names: str):
     Example:
         @router.get("/dashboard", dependencies=[Depends(require_any_role("admin", "manager"))])
     """
+
     async def role_checker(current_user: User = Depends(get_current_user)) -> User:
         # Get cached user_id to avoid detached instance error
-        user_id = getattr(current_user, '_cached_id', None)
+        user_id = getattr(current_user, "_auth_id", None)
         if not user_id:
             raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid user"
+                status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid user"
             )
 
         with UnitOfWork() as uow:
@@ -217,14 +277,28 @@ def require_any_role(*role_names: str):
             if not user or not user.role:
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN,
-                    detail="User has no role assigned"
+                    detail="User has no role assigned",
                 )
 
             if user.role.name not in role_names:
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN,
-                    detail=f"One of these roles required: {', '.join(role_names)}"
+                    detail=f"One of these roles required: {', '.join(role_names)}",
                 )
+
+            # Cache attributes with _auth_ prefix to avoid detached instance errors
+            user_dict = {
+                "id": user.id,
+                "email": user.email,
+                "full_name": user.full_name,
+                "is_active": user.is_active,
+                "mfa_enabled": user.mfa_enabled,
+                "user_type": user.user_type,
+                "role_id": user.role_id,
+                "department_id": user.department_id,
+            }
+            for key, value in user_dict.items():
+                setattr(user, f"_auth_{key}", value)
 
             return user
 
@@ -232,7 +306,9 @@ def require_any_role(*role_names: str):
 
 
 async def get_optional_user(
-    credentials: Optional[HTTPAuthorizationCredentials] = Depends(HTTPBearer(auto_error=False))
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(
+        HTTPBearer(auto_error=False)
+    ),
 ) -> Optional[User]:
     """
     Get current user if token is provided, otherwise None

@@ -1,51 +1,28 @@
 {
   "permissions": {
     "allow": [
-      "Bash(python -m pip install:*)",
-      "Bash(docker-compose up:*)",
-      "Bash(docker ps:*)",
-      "Bash(docker logs:*)",
-      "Bash(docker-compose build:*)",
-      "Bash(docker-compose down:*)",
-      "Bash(docker volume rm:*)",
-      "Bash(alembic upgrade:*)",
-      "Bash(pip install:*)",
-      "Bash(docker run:*)",
-      "Bash(docker exec:*)",
+      "Bash(docker compose logs:*)",
       "Bash(curl:*)",
-      "Bash(python:*)",
-      "Bash(docker-compose restart:*)",
-      "Bash(docker-compose ps:*)",
-      "Bash(cat:*)",
-      "Bash(/dev/null)",
-      "Bash(xargs -I {} curl -s -X POST http://localhost:8088/api/v1/auth/verify-otp -H \"Content-Type: application/json\" -d '{\"\"\"\"temp_token\"\"\"\":\"\"\"\"{}\"\"\"\",\"\"\"\"otp_code\"\"\"\":\"\"\"\"000000\"\"\"\"}')",
-      "Bash(docker-compose config:*)",
-      "Bash(docker-compose logs:*)",
-      "Bash(docker-compose exec:*)",
-      "Bash(find:*)",
-      "Bash(mkdir -p docs/memory_files)",
-      "Bash(mkdir -p docs/{requirements,design,development,deployment,guides})",
-      "Bash(tree -L 2 docs/ -I '__pycache__|*.pyc')",
-      "Bash(docker start mysql mongodb redis rabbitmq)",
-      "Bash(docker restart auth-api)",
-      "Bash(docker-compose stop auth-api)",
-      "Bash(bash /tmp/comprehensive_test.sh)",
-      "Bash(tee /tmp/test_results.txt)",
-      "Bash(tee /tmp/login_response.json)",
-      "Bash(bash /tmp/test_verify.sh)",
-      "Bash(tee /tmp/comprehensive_test_results.txt)",
-      "Bash(bash /tmp/test_me_endpoint.sh)",
-      "Bash(bash /tmp/test_users.sh)",
-      "Bash(chmod +x tests/test_all_endpoints.sh)",
-      "Bash(bash tests/test_all_endpoints.sh)",
-      "Bash(tee /tmp/login.json)",
-      "Bash(docker compose restart auth-api)",
+      "Bash(docker compose build:*)",
       "Bash(docker compose:*)",
-      "Bash(mkdir:*)",
-      "Bash(winpty docker exec:*)",
-      "Bash(docker build:*)"
+      "Bash(docker exec:*)",
+      "Bash(python:*)",
+      "Bash(export TEMP_TOKEN=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZW1haWwiOiJhZG1pbkBleGFtcGxlLmNvbSIsImV4cCI6MTc2MTcwOTYxMywiaWF0IjoxNzYxNzA5MzEzLCJ0eXBlIjoidGVtcCJ9.im4S3u9_lC0fBdjYEZt6P9qO-pq-V3wMnInC3DP2mFM\")",
+      "Bash(TEMP_TOKEN=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZW1haWwiOiJhZG1pbkBleGFtcGxlLmNvbSIsImV4cCI6MTc2MTcwOTYxMywiaWF0IjoxNzYxNzA5MzEzLCJ0eXBlIjoidGVtcCJ9.im4S3u9_lC0fBdjYEZt6P9qO-pq-V3wMnInC3DP2mFM\")",
+      "Bash(ACCESS_TOKEN=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZW1haWwiOiJhZG1pbkBleGFtcGxlLmNvbSIsInR5cGUiOiJhY2Nlc3MiLCJleHAiOjE3NjE3MzgzMDIsImlhdCI6MTc2MTcwOTUwMn0.mc6GCeVfbrt1PRQjC4IKHlX5OEAATkX50fv4ql0UQ8Q\")",
+      "Bash(cat:*)",
+      "Bash(npm run build:*)",
+      "Bash(docker cp:*)",
+      "Bash(docker ps:*)"
     ],
     "deny": [],
-    "ask": []
+    "ask": [],
+    "hooks": [
+      {
+        "event": "PreToolUse",
+        "matcher": "Bash",
+        "command": "bash .claude/scripts/validate-bash.sh"
+      }
+    ]
   }
 }

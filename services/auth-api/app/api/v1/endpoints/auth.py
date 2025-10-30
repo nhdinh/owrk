@@ -133,19 +133,19 @@ async def setup_mfa(current_user: User = Depends(get_current_user)):
     Returns QR code and backup codes
     """
     try:
-        # Use cached user_id to avoid detached instance error
-        user_id = getattr(current_user, '_cached_id', None)
+        # Get user_id from cached auth attributes
+        user_id = getattr(current_user, '_auth_id', None)
         if not user_id:
             raise HTTPException(status_code=401, detail="Invalid user session")
 
         result = await AuthService.setup_mfa(user_id)
         return result
     except ValueError as e:
-        user_id = getattr(current_user, '_cached_id', None)
+        user_id = getattr(current_user, '_auth_id', None)
         logger.error(f"MFA setup validation failed for user {user_id}: {str(e)}")
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
     except Exception as e:
-        user_id = getattr(current_user, '_cached_id', None)
+        user_id = getattr(current_user, '_auth_id', None)
         logger.error(f"MFA setup error for user {user_id}: {str(e)}")
         logger.error(traceback.format_exc())
         raise HTTPException(
@@ -161,19 +161,19 @@ async def enable_mfa(
     Enable MFA after verifying OTP code
     """
     try:
-        # Use cached user_id to avoid detached instance error
-        user_id = getattr(current_user, '_cached_id', None)
+        # Get user_id from cached auth attributes
+        user_id = getattr(current_user, '_auth_id', None)
         if not user_id:
             raise HTTPException(status_code=401, detail="Invalid user session")
 
         await AuthService.enable_mfa(user_id, request.otp_code)
         return {"message": "MFA enabled successfully"}
     except ValueError as e:
-        user_id = getattr(current_user, '_cached_id', None)
+        user_id = getattr(current_user, '_auth_id', None)
         logger.error(f"MFA enable validation failed for user {user_id}: {str(e)}")
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
     except Exception as e:
-        user_id = getattr(current_user, '_cached_id', None)
+        user_id = getattr(current_user, '_auth_id', None)
         logger.error(f"MFA enable error for user {user_id}: {str(e)}")
         logger.error(traceback.format_exc())
         raise HTTPException(
@@ -190,8 +190,8 @@ async def disable_mfa(
     Disable MFA for current user
     """
     try:
-        # Use cached user_id to avoid detached instance error
-        user_id = getattr(current_user, '_cached_id', None)
+        # Get user_id from cached auth attributes
+        user_id = getattr(current_user, '_auth_id', None)
         if not user_id:
             raise HTTPException(status_code=401, detail="Invalid user session")
 
@@ -203,11 +203,11 @@ async def disable_mfa(
         )
         return {"message": "MFA disabled successfully"}
     except ValueError as e:
-        user_id = getattr(current_user, '_cached_id', None)
+        user_id = getattr(current_user, '_auth_id', None)
         logger.error(f"MFA disable validation failed for user {user_id}: {str(e)}")
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
     except Exception as e:
-        user_id = getattr(current_user, '_cached_id', None)
+        user_id = getattr(current_user, '_auth_id', None)
         logger.error(f"MFA disable error for user {user_id}: {str(e)}")
         logger.error(traceback.format_exc())
         raise HTTPException(

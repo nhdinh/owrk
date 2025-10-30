@@ -100,12 +100,6 @@ export default function Login() {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label htmlFor="password">Password</Label>
-                <a
-                  href="/forgot-password"
-                  className="text-sm text-primary hover:underline"
-                >
-                  Forgot password?
-                </a>
               </div>
               <div className="relative">
                 <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
@@ -116,6 +110,14 @@ export default function Login() {
                   className="pl-10"
                   {...register('password')}
                 />
+              </div>
+              <div className="flex items-center justify-between">
+                <a
+                  href="/forgot-password"
+                  className="text-sm text-primary hover:underline"
+                >
+                  Forgot password?
+                </a>
               </div>
               {errors.password && (
                 <p className="text-sm text-destructive">{errors.password.message}</p>
