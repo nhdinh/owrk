@@ -125,6 +125,10 @@ services:
         condition: service_healthy
       asset-api:
         condition: service_healthy
+      auth-fe-v2:
+        condition: service_started
+      asset-fe-v2:
+        condition: service_started
     networks:
       - backend
     restart: unless-stopped
@@ -346,6 +350,29 @@ services:
     ports:
       - "3100:80"
     depends_on:
+      auth-api:
+        condition: service_healthy
+    networks:
+      - backend
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/" ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  asset-fe-v2:
+    build:
+      context: ./services/asset-frontend-v2
+      dockerfile: Dockerfile
+    container_name: asset-fe-v2
+    # No environment variables needed - uses relative path /api/v1 which nginx proxies to asset-api
+    ports:
+      - "3200:80"
+    depends_on:
+      asset-api:
+        condition: service_healthy
       auth-api:
         condition: service_healthy
     networks:

@@ -20,7 +20,9 @@ engine = create_engine(
     pool_size=20,
     max_overflow=40,
     pool_recycle=3600,  # Recycle connections after 1 hour
-    echo=settings.ENVIRONMENT == "debug",
+    echo=(
+        settings.ENVIRONMENT.lower() == "debug"
+    ),  # only turn on `echo` in debug environment
     connect_args={"charset": "utf8mb4"},
 )
 

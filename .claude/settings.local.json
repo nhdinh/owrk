@@ -13,7 +13,14 @@
       "Bash(cat:*)",
       "Bash(npm run build:*)",
       "Bash(docker cp:*)",
-      "Bash(docker ps:*)"
+      "Bash(docker ps:*)",
+      "Bash(mkdir:*)",
+      "Bash(npm create:*)",
+      "Bash(npm install)",
+      "Bash(npm install:*)",
+      "Bash(TEMP_TOKEN=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZW1haWwiOiJhZG1pbkBleGFtcGxlLmNvbSIsImV4cCI6MTc2MTkwMzAwMCwiaWF0IjoxNzYxOTAyNzAwLCJ0eXBlIjoidGVtcCJ9.ev9kruayfpe9n3fHDiNDmz32iJMKBaW8oHJ1QUddJNo\")",
+      "Bash(docker inspect:*)",
+      "Bash(python3:*)"
     ],
     "deny": [],
     "ask": [],

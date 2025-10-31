@@ -327,11 +327,18 @@ async def on_user_created(message):
 - **Auth Frontend V2** (10 pages - fully functional)
   - Login, Register, Profile, MFA Setup, User Management, Role Management
   - User Create/Edit, Role Create/Edit, Permission Management
+  - Built with: React 18 + Vite 7 + TypeScript + Tailwind + shadcn/ui
+- **Asset API** (12 endpoints - fully complete)
+  - Asset CRUD operations, Category management, Assignment tracking
+  - Features: Asset lifecycle management, File attachments, History tracking
+- **Asset Frontend V2** (3 pages - 95% complete)
+  - Assets list with filters/search/pagination, Asset detail view, Create/Edit forms
+  - Built with: React 18 + Vite 7 + TypeScript + Tailwind + shadcn/ui
+  - Status: Builds successfully, ready for deployment
 
 🚧 **In Progress**:
 
-- Asset API (12 endpoints - implemented, testing pending)
-- Asset Frontend (3 pages - basic UI complete)
+- Asset Frontend V2 (replacing 2 placeholder pages with full implementations)
 
 ⏸️ **Pending**:
 
@@ -342,18 +349,19 @@ async def on_user_created(message):
 
 ### 6.3. Infrastructure Status
 
-| Component     | Status       | Health  |
-| ------------- | ------------ | ------- |
-| MySQL 8.0     | ✅ Running   | Healthy |
-| MongoDB 7     | ✅ Running   | Healthy |
-| Redis 7       | ✅ Running   | Healthy |
-| RabbitMQ 3.12 | ✅ Running   | Healthy |
-| auth-api      | ✅ Running   | Healthy |
-| auth-fe       | ✅ Running   | Healthy |
-| auth-fe-v2    | ✅ Running   | Healthy |
-| asset-api     | ✅ Running   | Healthy |
-| asset-fe      | ✅ Running   | Healthy |
-| Nginx Gateway | ⏸️ Commented | N/A     |
+| Component     | Status       | Health  | Port | Access URL |
+| ------------- | ------------ | ------- | ---- | ---------- |
+| **API Gateway** | ✅ **Running** | **Active** | **8000** | **http://localhost:8000** |
+| MySQL 8.0     | ✅ Running   | Healthy | 3306 | - |
+| MongoDB 7     | ✅ Running   | Healthy | 27017 | - |
+| Redis 7       | ✅ Running   | Healthy | 6379 | - |
+| RabbitMQ 3.12 | ✅ Running   | Healthy | 5672, 15672 | http://localhost:15672 |
+| auth-api      | ✅ Running   | Healthy | 8001 | http://localhost:8001 |
+| auth-fe-v2    | ✅ Running   | Active  | 3100 | http://localhost:8000/auth/ |
+| asset-api     | ✅ Running   | Healthy | 8002 | http://localhost:8002 |
+| asset-fe-v2   | ✅ Running   | Active  | 3200 | http://localhost:8000/assets/ |
+| auth-fe (legacy) | ⏸️ Stopped | N/A | 3000 | (Replaced by v2) |
+| asset-fe (legacy) | ⏸️ Stopped | N/A | 3001 | (Replaced by v2) |
 
 **Check status**:
 
@@ -468,19 +476,31 @@ docker compose stop auth-api
 
 ### 7.2. Accessing Services
 
+**⭐ PRIMARY ACCESS (via API Gateway)**:
+
+| Service             | URL                                  | Credentials                      |
+| ------------------- | ------------------------------------ | -------------------------------- |
+| **Main Portal**     | **http://localhost:8000**            | Redirects to /app/auth/          |
+| **Auth Frontend**   | **http://localhost:8000/app/auth/**  | admin@example.com / admin123     |
+| **Asset Frontend**  | **http://localhost:8000/app/assets/**| admin@example.com / admin123     |
+| **API Gateway Docs**| **http://localhost:8000/docs**       | -                                |
+
+**Direct Access (Development Only)**:
+
 | Service             | URL                        | Credentials                      |
 | ------------------- | -------------------------- | -------------------------------- |
 | Auth API            | http://localhost:8001      | admin@example.com / admin123     |
 | Auth API Docs       | http://localhost:8001/docs | Requires auth token              |
-| Auth Frontend       | http://localhost:3000      | admin@example.com / admin123     |
-| **Auth Frontend V2**| **http://localhost:3100**  | **admin@example.com / admin123** |
+| Auth Frontend V2    | http://localhost:3100      | admin@example.com / admin123     |
 | Asset API           | http://localhost:8002      | Requires auth token              |
 | Asset API Docs      | http://localhost:8002/docs | Requires auth token              |
-| Asset Frontend      | http://localhost:3001      | Requires auth token              |
+| Asset Frontend V2   | http://localhost:3200      | admin@example.com / admin123     |
 | RabbitMQ Management | http://localhost:15672     | guest / guest                    |
 | MySQL               | localhost:3306             | officework_dbu / (see .secrets/) |
 | MongoDB             | localhost:27017            | admin / (see .secrets/)          |
 | Redis               | localhost:6379             | (no auth)                        |
+
+**📝 Note**: Legacy frontends (auth-fe at :3000 and asset-fe at :3001) have been stopped. Use the API Gateway URLs instead.
 
 ### 7.3. Database Migrations
 
