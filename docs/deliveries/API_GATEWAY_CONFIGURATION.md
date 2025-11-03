@@ -8,7 +8,7 @@
 
 ## 1. Overview
 
-Successfully configured and deployed the **nginx API Gateway** to serve both auth-frontend-v2 and asset-frontend-v2 through a unified entry point. Legacy frontend containers (auth-fe and asset-fe) have been stopped.
+Successfully configured and deployed the **nginx API Gateway** to serve both auth-frontend and asset-frontend through a unified entry point. Legacy frontend containers (auth-fe and asset-fe) have been stopped.
 
 ### Architecture
 
@@ -43,8 +43,8 @@ Successfully configured and deployed the **nginx API Gateway** to serve both aut
 
 | URL Path        | Proxies To      | Purpose                      | Port |
 |-----------------|-----------------|------------------------------|------|
-| `/auth/`        | auth-fe-v2:80   | Authentication & User Mgmt   | 3100 |
-| `/assets/`      | asset-fe-v2:80  | Asset Management UI          | 3200 |
+| `/auth/`        | auth-fe:80   | Authentication & User Mgmt   | 3100 |
+| `/assets/`      | asset-fe:80  | Asset Management UI          | 3200 |
 | `/`             | Redirect        | → `/auth/` (default)         | -    |
 
 ### 2.2. API Routes
@@ -83,12 +83,12 @@ Successfully configured and deployed the **nginx API Gateway** to serve both aut
 
 1. **Fixed Upstream Definitions** (Lines 56-62):
 ```nginx
-upstream auth-fe-v2 {
-    server auth-fe-v2:80;  # ✅ Corrected from auth-fe:3100
+upstream auth-fe {
+    server auth-fe:80;  # ✅ Corrected from auth-fe:3100
 }
 
-upstream asset-fe-v2 {
-    server asset-fe-v2:80;  # ✅ Corrected from asset-fe:3200
+upstream asset-fe {
+    server asset-fe:80;  # ✅ Corrected from asset-fe:3200
 }
 ```
 
@@ -96,7 +96,7 @@ upstream asset-fe-v2 {
 ```nginx
 # Auth Frontend V2 (login, profile, user/role management)
 location /auth/ {
-    proxy_pass http://auth-fe-v2/;
+    proxy_pass http://auth-fe/;
     proxy_set_header Host $host;
     proxy_set_header X-Real-IP $remote_addr;
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -110,7 +110,7 @@ location /auth/ {
 
 # Asset Frontend V2 (asset management UI)
 location /assets/ {
-    proxy_pass http://asset-fe-v2/;
+    proxy_pass http://asset-fe/;
     # ... same proxy headers ...
     # WebSocket support
     proxy_http_version 1.1;
@@ -156,9 +156,9 @@ nginx:
       condition: service_healthy
     asset-api:
       condition: service_healthy
-    auth-fe-v2:
+    auth-fe:
       condition: service_started  # ✅ Added
-    asset-fe-v2:
+    asset-fe:
       condition: service_started  # ✅ Added
   networks:
     - backend
@@ -207,8 +207,8 @@ nginx:
 
 | Service           | Status   | Port | Notes                          |
 |-------------------|----------|------|--------------------------------|
-| auth-fe (v1)      | ⏸️ Stopped | 8011 | Replaced by auth-fe-v2        |
-| asset-fe (v1)     | ⏸️ Stopped | 3001 | Replaced by asset-fe-v2       |
+| auth-fe (v1)      | ⏸️ Stopped | 8011 | Replaced by auth-fe        |
+| asset-fe (v1)     | ⏸️ Stopped | 3001 | Replaced by asset-fe       |
 
 ---
 
@@ -232,7 +232,7 @@ Server: nginx/1.29.1
 Content-Type: text/html
 Content-Length: 490
 
-# Status: ✅ Serving auth-fe-v2 successfully
+# Status: ✅ Serving auth-fe successfully
 ```
 
 ### 5.3. Asset Frontend
@@ -244,7 +244,7 @@ Server: nginx/1.29.1
 Content-Type: text/html
 Content-Length: 492
 
-# Status: ✅ Serving asset-fe-v2 successfully
+# Status: ✅ Serving asset-fe successfully
 ```
 
 ### 5.4. Auth API via Gateway
@@ -274,10 +274,10 @@ $ docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
 
 NAMES         STATUS                          PORTS
 api-gateway   Up 5 minutes (unhealthy)       0.0.0.0:8000->8000/tcp, 0.0.0.0:8443->8443/tcp
-asset-fe-v2   Up 30 minutes (unhealthy)      0.0.0.0:3200->80/tcp
+asset-fe   Up 30 minutes (unhealthy)      0.0.0.0:3200->80/tcp
 asset-api     Up 33 minutes (healthy)        0.0.0.0:8002->8000/tcp
 auth-api      Up 33 minutes (healthy)        0.0.0.0:8001->8000/tcp
-auth-fe-v2    Up 20 minutes (unhealthy)      0.0.0.0:3100->80/tcp
+auth-fe    Up 20 minutes (unhealthy)      0.0.0.0:3100->80/tcp
 ```
 
 **Note**: Frontend services show as "unhealthy" due to IPv6/IPv4 health check mismatch, but are **fully functional**.
@@ -547,7 +547,7 @@ docker compose restart nginx
 
 ## 13. Summary
 
-The API Gateway is now **fully configured and operational**, serving both auth-frontend-v2 and asset-frontend-v2 through a unified entry point at http://localhost:8000.
+The API Gateway is now **fully configured and operational**, serving both auth-frontend and asset-frontend through a unified entry point at http://localhost:8000.
 
 ### Key Achievements:
 

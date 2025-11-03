@@ -8,7 +8,7 @@
 
 ## 1. Overview
 
-Successfully implemented **asset-frontend-v2** - a modern React frontend for the Asset Management Service with complete CRUD functionality and authentication integration.
+Successfully implemented **asset-frontend** - a modern React frontend for the Asset Management Service with complete CRUD functionality and authentication integration.
 
 ### Technology Stack
 - **Framework**: React 18.3.1
@@ -143,10 +143,10 @@ location /api/v1/categories {
 
 #### docker-compose.yml
 ```yaml
-asset-fe-v2:
+asset-fe:
   build:
-    context: ./services/asset-frontend-v2
-  container_name: asset-fe-v2
+    context: ./services/asset-frontend
+  container_name: asset-fe
   ports:
     - "3200:80"
   depends_on:
@@ -177,7 +177,7 @@ asset-fe-v2:
 ## 3. Issues Resolved
 
 ### 3.1. Issue #1: 502 Bad Gateway Error
-**Problem**: Asset-frontend-v2 couldn't connect to auth-api, returning 502 Bad Gateway.
+**Problem**: asset-frontend couldn't connect to auth-api, returning 502 Bad Gateway.
 
 **Root Cause**: nginx.conf only had proxy route for asset-api, missing auth-api route.
 
@@ -282,7 +282,7 @@ asset-fe-v2:
 
 1. ✅ Logout (if logout button exists)
 2. ✅ Try accessing protected routes without login
-3. ✅ Verify redirect to auth-frontend-v2 login page
+3. ✅ Verify redirect to auth-frontend login page
 4. ✅ Login again and verify access token is stored
 5. ✅ Verify token is sent in Authorization header
 
@@ -309,7 +309,7 @@ asset-fe-v2:
 ## 6. File Structure
 
 ```
-services/asset-frontend-v2/
+services/asset-frontend/
 ├── src/
 │   ├── pages/
 │   │   ├── Assets.tsx          (375 lines) ✅
@@ -434,15 +434,15 @@ services/asset-frontend-v2/
 
 ## 10. Documentation Updated
 
-- ✅ [docs/03. System_Architecture.md](../03.%20System_Architecture.md) - Added frontend tech stack and asset-fe-v2 service
+- ✅ [docs/03. System_Architecture.md](../03.%20System_Architecture.md) - Added frontend tech stack and asset-fe service
 - ✅ [CLAUDE.md](../../CLAUDE.md) - Updated services status and infrastructure table
-- ✅ [docker-compose.yml](../../docker-compose.yml) - Added asset-fe-v2 service configuration
+- ✅ [docker-compose.yml](../../docker-compose.yml) - Added asset-fe service configuration
 
 ---
 
 ## 11. Summary
 
-The **asset-frontend-v2** implementation is **complete and ready for production testing**. All three pages are fully functional with comprehensive CRUD operations, authentication integration, and a modern, responsive UI.
+The **asset-frontend** implementation is **complete and ready for production testing**. All three pages are fully functional with comprehensive CRUD operations, authentication integration, and a modern, responsive UI.
 
 ### Quick Stats:
 - **Total Lines of Code**: 1,386+ lines (pages only)

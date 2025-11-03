@@ -197,3 +197,45 @@ class DepreciationRecordResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+# Maintenance Schemas
+class MaintenanceCreate(BaseModel):
+    asset_id: int
+    maintenance_type: str  # routine, preventive, corrective, emergency
+    maintenance_date: date
+    description: Optional[str] = None
+    cost: Optional[Decimal] = None
+    technician: Optional[str] = None
+    notes: Optional[str] = None
+
+
+class MaintenanceUpdate(BaseModel):
+    maintenance_type: Optional[str] = None
+    maintenance_date: Optional[date] = None
+    completed_date: Optional[date] = None
+    cost: Optional[Decimal] = None
+    technician: Optional[str] = None
+    description: Optional[str] = None
+    notes: Optional[str] = None
+    status: Optional[str] = None  # pending, in_progress, completed, cancelled
+
+
+class MaintenanceResponse(BaseModel):
+    id: int
+    asset_id: int
+    asset_code: Optional[str] = None
+    asset_name: Optional[str] = None
+    maintenance_type: str
+    maintenance_date: date
+    completed_date: Optional[date] = None
+    cost: Decimal
+    technician: Optional[str] = None
+    description: Optional[str] = None
+    notes: Optional[str] = None
+    status: str
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True

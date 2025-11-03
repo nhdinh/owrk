@@ -2,7 +2,7 @@
 
 **Date**: 2025-10-24
 **Status**: ✅ 100% COMPLETE
-**Location**: `services/auth-frontend-v2/`
+**Location**: `services/auth-frontend/`
 
 ---
 
@@ -38,58 +38,58 @@
 ## 📦 Complete File List
 
 ### Configuration Files (6)
-1. ✅ [package.json](services/auth-frontend-v2/package.json#L1)
-2. ✅ [vite.config.ts](services/auth-frontend-v2/vite.config.ts#L1)
-3. ✅ [tsconfig.json](services/auth-frontend-v2/tsconfig.json#L1)
-4. ✅ [tailwind.config.ts](services/auth-frontend-v2/tailwind.config.ts#L1)
-5. ✅ [postcss.config.js](services/auth-frontend-v2/postcss.config.js#L1)
-6. ✅ [.env.example](services/auth-frontend-v2/.env.example#L1)
+1. ✅ [package.json](services/auth-frontend/package.json#L1)
+2. ✅ [vite.config.ts](services/auth-frontend/vite.config.ts#L1)
+3. ✅ [tsconfig.json](services/auth-frontend/tsconfig.json#L1)
+4. ✅ [tailwind.config.ts](services/auth-frontend/tailwind.config.ts#L1)
+5. ✅ [postcss.config.js](services/auth-frontend/postcss.config.js#L1)
+6. ✅ [.env.example](services/auth-frontend/.env.example#L1)
 
 ### Application Core (4)
-7. ✅ [index.html](services/auth-frontend-v2/index.html#L1)
-8. ✅ [src/main.tsx](services/auth-frontend-v2/src/main.tsx#L1)
-9. ✅ [src/App.tsx](services/auth-frontend-v2/src/App.tsx#L1)
-10. ✅ [src/index.css](services/auth-frontend-v2/src/index.css#L1)
+7. ✅ [index.html](services/auth-frontend/index.html#L1)
+8. ✅ [src/main.tsx](services/auth-frontend/src/main.tsx#L1)
+9. ✅ [src/App.tsx](services/auth-frontend/src/App.tsx#L1)
+10. ✅ [src/index.css](services/auth-frontend/src/index.css#L1)
 
 ### Library Files (6)
-11. ✅ [src/lib/api.ts](services/auth-frontend-v2/src/lib/api.ts#L1)
-12. ✅ [src/lib/auth-api.ts](services/auth-frontend-v2/src/lib/auth-api.ts#L1)
-13. ✅ [src/lib/user-api.ts](services/auth-frontend-v2/src/lib/user-api.ts#L1)
-14. ✅ [src/lib/role-api.ts](services/auth-frontend-v2/src/lib/role-api.ts#L1)
-15. ✅ [src/lib/auth-context.tsx](services/auth-frontend-v2/src/lib/auth-context.tsx#L1)
-16. ✅ [src/lib/utils.ts](services/auth-frontend-v2/src/lib/utils.ts#L1)
+11. ✅ [src/lib/api.ts](services/auth-frontend/src/lib/api.ts#L1)
+12. ✅ [src/lib/auth-api.ts](services/auth-frontend/src/lib/auth-api.ts#L1)
+13. ✅ [src/lib/user-api.ts](services/auth-frontend/src/lib/user-api.ts#L1)
+14. ✅ [src/lib/role-api.ts](services/auth-frontend/src/lib/role-api.ts#L1)
+15. ✅ [src/lib/auth-context.tsx](services/auth-frontend/src/lib/auth-context.tsx#L1)
+16. ✅ [src/lib/utils.ts](services/auth-frontend/src/lib/utils.ts#L1)
 
 ### Types (1)
-17. ✅ [src/types/auth.ts](services/auth-frontend-v2/src/types/auth.ts#L1)
+17. ✅ [src/types/auth.ts](services/auth-frontend/src/types/auth.ts#L1)
 
 ### Pages (9) ✅ ALL COMPLETE
-18. ✅ [src/pages/Login.tsx](services/auth-frontend-v2/src/pages/Login.tsx#L1)
-19. ✅ [src/pages/VerifyOTP.tsx](services/auth-frontend-v2/src/pages/VerifyOTP.tsx#L1)
-20. ✅ [src/pages/ForgotPassword.tsx](services/auth-frontend-v2/src/pages/ForgotPassword.tsx#L1)
-21. ✅ [src/pages/Dashboard.tsx](services/auth-frontend-v2/src/pages/Dashboard.tsx#L1)
-22. ✅ [src/pages/Users.tsx](services/auth-frontend-v2/src/pages/Users.tsx#L1)
-23. ✅ [src/pages/UserDetail.tsx](services/auth-frontend-v2/src/pages/UserDetail.tsx#L1)
-24. ✅ [src/pages/Roles.tsx](services/auth-frontend-v2/src/pages/Roles.tsx#L1)
-25. ✅ [src/pages/RoleDetail.tsx](services/auth-frontend-v2/src/pages/RoleDetail.tsx#L1)
-26. ✅ [src/pages/Profile.tsx](services/auth-frontend-v2/src/pages/Profile.tsx#L1)
+18. ✅ [src/pages/Login.tsx](services/auth-frontend/src/pages/Login.tsx#L1)
+19. ✅ [src/pages/VerifyOTP.tsx](services/auth-frontend/src/pages/VerifyOTP.tsx#L1)
+20. ✅ [src/pages/ForgotPassword.tsx](services/auth-frontend/src/pages/ForgotPassword.tsx#L1)
+21. ✅ [src/pages/Dashboard.tsx](services/auth-frontend/src/pages/Dashboard.tsx#L1)
+22. ✅ [src/pages/Users.tsx](services/auth-frontend/src/pages/Users.tsx#L1)
+23. ✅ [src/pages/UserDetail.tsx](services/auth-frontend/src/pages/UserDetail.tsx#L1)
+24. ✅ [src/pages/Roles.tsx](services/auth-frontend/src/pages/Roles.tsx#L1)
+25. ✅ [src/pages/RoleDetail.tsx](services/auth-frontend/src/pages/RoleDetail.tsx#L1)
+26. ✅ [src/pages/Profile.tsx](services/auth-frontend/src/pages/Profile.tsx#L1)
 
 ### Components (40+)
-27-67. ✅ [src/components/ui/**](services/auth-frontend-v2/src/components/ui/) - shadcn/ui components
+27-67. ✅ [src/components/ui/**](services/auth-frontend/src/components/ui/) - shadcn/ui components
 
 ### Hooks (2)
-68. ✅ [src/hooks/use-toast.ts](services/auth-frontend-v2/src/hooks/use-toast.ts#L1)
-69. ✅ [src/hooks/use-mobile.tsx](services/auth-frontend-v2/src/hooks/use-mobile.tsx#L1)
+68. ✅ [src/hooks/use-toast.ts](services/auth-frontend/src/hooks/use-toast.ts#L1)
+69. ✅ [src/hooks/use-mobile.tsx](services/auth-frontend/src/hooks/use-mobile.tsx#L1)
 
 ### Docker (2)
-70. ✅ [Dockerfile](services/auth-frontend-v2/Dockerfile#L1)
-71. ✅ [nginx.conf](services/auth-frontend-v2/nginx.conf#L1)
+70. ✅ [Dockerfile](services/auth-frontend/Dockerfile#L1)
+71. ✅ [nginx.conf](services/auth-frontend/nginx.conf#L1)
 
 ### Documentation (2)
-72. ✅ [README.md](services/auth-frontend-v2/README.md#L1)
+72. ✅ [README.md](services/auth-frontend/README.md#L1)
 73. ✅ [AUTH_FRONTEND_V2_SETUP.md](AUTH_FRONTEND_V2_SETUP.md#L1)
 
 ### Docker Compose
-74. ✅ [docker-compose.yml](docker-compose.yml#L329) - auth-fe-v2 service added
+74. ✅ [docker-compose.yml](docker-compose.yml#L329) - auth-fe service added
 
 **Total Files: 74+**
 
@@ -156,7 +156,7 @@
 
 ```bash
 # Navigate to project
-cd services/auth-frontend-v2
+cd services/auth-frontend
 
 # Install dependencies
 npm install
@@ -177,14 +177,14 @@ Visit: http://localhost:3100
 cd c:\Users\nhdinh\dev\officework
 
 # Build and start with docker compose
-docker compose build auth-fe-v2
-docker compose up -d auth-fe-v2
+docker compose build auth-fe
+docker compose up -d auth-fe
 
 # Check status
-docker compose ps auth-fe-v2
+docker compose ps auth-fe
 
 # View logs
-docker compose logs -f auth-fe-v2
+docker compose logs -f auth-fe
 ```
 
 Visit: http://localhost:3100
@@ -452,11 +452,11 @@ None currently - all core features complete!
 Service is already added to `docker-compose.yml`:
 
 ```yaml
-auth-fe-v2:
+auth-fe:
   build:
-    context: ./services/auth-frontend-v2
+    context: ./services/auth-frontend
     dockerfile: Dockerfile
-  container_name: auth-fe-v2
+  container_name: auth-fe
   environment:
     VITE_API_BASE_URL: http://auth-api:8000/api/v1
   ports:
@@ -473,29 +473,29 @@ auth-fe-v2:
 
 ```bash
 # Build
-docker compose build auth-fe-v2
+docker compose build auth-fe
 
 # Start
-docker compose up -d auth-fe-v2
+docker compose up -d auth-fe
 
 # Check status
-docker compose ps auth-fe-v2
+docker compose ps auth-fe
 
 # View logs
-docker compose logs -f auth-fe-v2
+docker compose logs -f auth-fe
 
 # Stop
-docker compose stop auth-fe-v2
+docker compose stop auth-fe
 
 # Remove
-docker compose down auth-fe-v2
+docker compose down auth-fe
 ```
 
 ---
 
 ## 📈 Comparison: V1 vs V2
 
-| Feature | V1 (auth-frontend) | V2 (auth-frontend-v2) |
+| Feature | V1 (auth-frontend) | V2 (auth-frontend) |
 |---------|-------------------|----------------------|
 | **Technology** | FastAPI + Jinja2 | React + Vite |
 | **Rendering** | Server-side | Client-side SPA |
@@ -548,7 +548,7 @@ Successfully created a complete, modern React-based authentication frontend with
 ✅ **Modern UX** with React and TailwindCSS
 ✅ **Production ready** with proper error handling
 
-**The auth-frontend-v2 service is 100% complete and ready for deployment!**
+**The auth-frontend service is 100% complete and ready for deployment!**
 
 ---
 

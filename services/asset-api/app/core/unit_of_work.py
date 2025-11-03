@@ -8,6 +8,7 @@ from app.repositories.category_repository import CategoryRepository
 from app.repositories.assignment_repository import AssignmentRepository
 from app.repositories.attachment_repository import AttachmentRepository
 from app.repositories.depreciation_repository import DepreciationRepository
+from app.repositories.maintenance_repository import MaintenanceRepository
 
 
 class UnitOfWork:
@@ -23,6 +24,7 @@ class UnitOfWork:
         self.assignments = AssignmentRepository(self.session)
         self.attachments = AttachmentRepository(self.session)
         self.depreciations = DepreciationRepository(self.session)
+        self.maintenance = MaintenanceRepository(self.session)
 
     def __enter__(self):
         return self

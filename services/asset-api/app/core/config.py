@@ -13,6 +13,7 @@ class Settings:
     # Application
     APP_NAME: str = "Asset Management Service"
     DEBUG: bool = os.getenv("DEBUG", "False").lower() == "true"
+    TESTING: bool = os.getenv("TESTING", "False").lower() == "true"
     API_PREFIX: str = "/api/v1"
 
     # Database - MySQL (Write)

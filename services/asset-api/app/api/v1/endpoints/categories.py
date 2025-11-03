@@ -36,7 +36,20 @@ async def create_category(
             category = uow.categories.create(category)
             uow.commit()
 
-            return category
+            # Refresh to get the latest data
+            uow.session.refresh(category)
+
+            # Return as dict to avoid relationship serialization issues
+            return CategoryResponse(
+                id=category.id,
+                name=category.name,
+                code=category.code,
+                parent_id=category.parent_id,
+                description=category.description,
+                is_active=category.is_active,
+                created_at=category.created_at,
+                updated_at=category.updated_at
+            )
     except HTTPException:
         raise
     except Exception as e:
@@ -99,7 +112,20 @@ async def update_category(
             category = uow.categories.update(category)
             uow.commit()
 
-            return category
+            # Refresh to get the latest data
+            uow.session.refresh(category)
+
+            # Return as dict to avoid relationship serialization issues
+            return CategoryResponse(
+                id=category.id,
+                name=category.name,
+                code=category.code,
+                parent_id=category.parent_id,
+                description=category.description,
+                is_active=category.is_active,
+                created_at=category.created_at,
+                updated_at=category.updated_at
+            )
     except HTTPException:
         raise
     except Exception as e:

@@ -74,7 +74,7 @@ class Asset(BaseModel):
     current_user_id = Column(Integer, nullable=True, index=True)  # Currently assigned user
 
     # QR Code
-    qr_code = Column(String(500), nullable=True)
+    qr_code = Column(Text, nullable=True)
 
     # Audit
     created_by = Column(Integer, nullable=False)

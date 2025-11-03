@@ -2,7 +2,7 @@
 
 **Date**: 2025-10-24
 **Status**: ✅ Core Setup Complete
-**Location**: `services/auth-frontend-v2/`
+**Location**: `services/auth-frontend/`
 
 ---
 
@@ -12,7 +12,7 @@ Created a modern React-based authentication frontend (v2) to replace the Jinja2-
 
 ### Key Differences from V1
 
-| Feature | V1 (auth-frontend) | V2 (auth-frontend-v2) |
+| Feature | V1 (auth-frontend) | V2 (auth-frontend) |
 |---------|-------------------|----------------------|
 | **Framework** | FastAPI + Jinja2 (Server-side rendering) | React + Vite (Client-side SPA) |
 | **UI Library** | Bootstrap 5 | shadcn/ui + Radix UI |
@@ -59,7 +59,7 @@ Created a modern React-based authentication frontend (v2) to replace the Jinja2-
 ## Project Structure
 
 ```
-services/auth-frontend-v2/
+services/auth-frontend/
 ├── public/
 │   └── favicon.ico
 ├── src/
@@ -323,7 +323,7 @@ roleAPI.removePermission(roleId, permId)// DELETE /roles/{id}/permissions/{permI
 ### Development
 
 ```bash
-cd services/auth-frontend-v2
+cd services/auth-frontend
 npm install
 npm run dev
 ```
@@ -334,12 +334,12 @@ Open http://localhost:3100
 
 ```bash
 # Build Docker image
-docker build -t auth-frontend-v2:latest .
+docker build -t auth-frontend:latest .
 
 # Run container
 docker run -p 3100:80 \
   -e VITE_API_BASE_URL=http://localhost:8088/api/v1 \
-  auth-frontend-v2:latest
+  auth-frontend:latest
 ```
 
 ### Docker Compose Integration
@@ -347,10 +347,10 @@ docker run -p 3100:80 \
 Add to `docker-compose.yml`:
 
 ```yaml
-auth-frontend-v2:
+auth-frontend:
   build:
-    context: ./services/auth-frontend-v2
-  container_name: auth-frontend-v2
+    context: ./services/auth-frontend
+  container_name: auth-frontend
   ports:
     - "3100:80"
   environment:

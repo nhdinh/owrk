@@ -18,7 +18,8 @@ from app.models.depreciation import AssetDepreciationRecord
 config = context.config
 
 # Set sqlalchemy.url from settings
-config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
+# Note: Don't use set_main_option with URLs containing % characters (URL encoding)
+# Instead, we'll use the URL directly in run_migrations_online()
 
 # Interpret the config file for Python logging.
 if config.config_file_name is not None:
@@ -30,9 +31,9 @@ target_metadata = Base.metadata
 
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode."""
-    url = config.get_main_option("sqlalchemy.url")
+    # Use DATABASE_URL directly to avoid URL encoding issues
     context.configure(
-        url=url,
+        url=settings.DATABASE_URL,
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
@@ -44,13 +45,10 @@ def run_migrations_offline() -> None:
 
 def run_migrations_online() -> None:
     """Run migrations in 'online' mode."""
-    connectable = engine_from_config(
-        config.get_section(config.config_ini_section, {}),
-        prefix="sqlalchemy.",
-        poolclass=pool.NullPool,
-    )
+    # Use the database engine directly to avoid URL encoding issues
+    from app.core.database import engine
 
-    with connectable.connect() as connection:
+    with engine.connect() as connection:
         context.configure(
             connection=connection, target_metadata=target_metadata
         )

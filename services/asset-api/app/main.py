@@ -53,17 +53,21 @@ async def lifespan(app: FastAPI):
     # Startup
     logger.info("Starting Asset Management Service...")
 
-    # Start scheduler
-    scheduler.start()
-    schedule_depreciation_calculation()
-    logger.info("Scheduler started")
+    # Start scheduler only if not in testing mode
+    if not settings.TESTING:
+        scheduler.start()
+        schedule_depreciation_calculation()
+        logger.info("Scheduler started")
+    else:
+        logger.info("Scheduler disabled (TESTING mode)")
 
     yield
 
     # Shutdown
     logger.info("Shutting down Asset Management Service...")
-    scheduler.shutdown()
-    logger.info("Scheduler stopped")
+    if not settings.TESTING:
+        scheduler.shutdown()
+        logger.info("Scheduler stopped")
 
 
 # Create FastAPI app

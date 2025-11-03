@@ -8,7 +8,7 @@
 
 ## 📋 TÓM TẮT
 
-Đã hoàn thành các cải tiến quan trọng cho auth-frontend-v2, bao gồm:
+Đã hoàn thành các cải tiến quan trọng cho auth-frontend, bao gồm:
 - Real-time statistics dashboard
 - Pagination cho user management
 - Create user dialog
@@ -252,9 +252,9 @@ VITE_API_BASE_URL=https://api.yourdomain.com/api/v1
 ### Docker Build
 
 ```bash
-cd services/auth-frontend-v2
-docker build -t auth-frontend-v2:latest .
-docker run -p 3100:80 auth-frontend-v2:latest
+cd services/auth-frontend
+docker build -t auth-frontend:latest .
+docker run -p 3100:80 auth-frontend:latest
 ```
 
 ### Nginx Configuration

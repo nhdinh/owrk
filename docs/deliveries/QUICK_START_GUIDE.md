@@ -49,7 +49,7 @@ docker compose up -d mysql mongodb redis rabbitmq
 docker compose up -d auth-api asset-api
 
 # Start frontends
-docker compose up -d auth-fe-v2 asset-fe-v2
+docker compose up -d auth-fe asset-fe
 
 # Start API gateway
 docker compose up -d nginx
@@ -115,8 +115,8 @@ All services are accessible through the unified gateway at **http://localhost:80
 
 | Service         | Port | Status  | Replaced By        |
 |-----------------|------|---------|-------------------|
-| auth-fe (v1)    | 3000 | Stopped | auth-fe-v2        |
-| asset-fe (v1)   | 3001 | Stopped | asset-fe-v2       |
+| auth-fe (v1)    | 3000 | Stopped | auth-fe        |
+| asset-fe (v1)   | 3001 | Stopped | asset-fe       |
 
 ---
 
@@ -256,15 +256,15 @@ See [API_GATEWAY_CONFIGURATION.md](./API_GATEWAY_CONFIGURATION.md) section 12.
 docker ps | grep asset-api
 ```
 
-**Check asset-fe-v2 is running**:
+**Check asset-fe is running**:
 ```bash
-docker ps | grep asset-fe-v2
+docker ps | grep asset-fe
 ```
 
 **Check logs**:
 ```bash
 docker compose logs asset-api --tail=50
-docker compose logs asset-fe-v2 --tail=50
+docker compose logs asset-fe --tail=50
 ```
 
 ### 5.4. 502 Bad Gateway Error

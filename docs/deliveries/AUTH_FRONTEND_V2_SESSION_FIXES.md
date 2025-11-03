@@ -8,7 +8,7 @@
 
 ## 📋 EXECUTIVE SUMMARY
 
-This session continued from previous auth-frontend-v2 work and focused on fixing critical backend API issues that were preventing the frontend from functioning correctly. All issues have been resolved and the system is now fully operational.
+This session continued from previous auth-frontend work and focused on fixing critical backend API issues that were preventing the frontend from functioning correctly. All issues have been resolved and the system is now fully operational.
 
 ### Key Achievements:
 - ✅ Fixed 4 user management endpoints (ResponseValidationError)
@@ -85,9 +85,9 @@ viewer   - 6 permissions ✓
 3. Updated button to navigate to `/roles/create`
 
 **Files Changed**:
-- `services/auth-frontend-v2/src/pages/RoleCreate.tsx` - New component
-- `services/auth-frontend-v2/src/App.tsx` - Added route (lines 110-117)
-- `services/auth-frontend-v2/src/pages/Roles.tsx` - Updated navigation (line 65)
+- `services/auth-frontend/src/pages/RoleCreate.tsx` - New component
+- `services/auth-frontend/src/App.tsx` - Added route (lines 110-117)
+- `services/auth-frontend/src/pages/Roles.tsx` - Updated navigation (line 65)
 
 ---
 
@@ -279,7 +279,7 @@ uow.commit()
 - `app/api/v1/endpoints/roles.py` - Added 5 new endpoints, fixed 1
 - `app/repositories/user_repository.py` - Added get_by_role_id method
 
-**Frontend (auth-frontend-v2)**:
+**Frontend (auth-frontend)**:
 - `src/pages/RoleCreate.tsx` - **NEW** - Role creation component
 - `src/pages/RoleEdit.tsx` - Existing, documented
 - `src/pages/Roles.tsx` - Updated navigation
@@ -288,7 +288,7 @@ uow.commit()
 ### Deployment Status:
 ✅ Auth-api restarted successfully
 ✅ Frontend rebuilt (bundle: index-B69E6nnp.js)
-✅ Frontend deployed to auth-fe-v2 container
+✅ Frontend deployed to auth-fe container
 ✅ All services healthy
 
 ---
@@ -344,7 +344,7 @@ uow.commit()
 | Redis 7 | ✅ Running | Healthy |
 | RabbitMQ 3.12 | ✅ Running | Healthy |
 | auth-api | ✅ Running | Healthy |
-| auth-fe-v2 | ✅ Running | Healthy |
+| auth-fe | ✅ Running | Healthy |
 
 ---
 
@@ -373,7 +373,7 @@ uow.commit()
 ## 📝 NEXT STEPS
 
 ### Immediate:
-1. ✅ All auth-frontend-v2 issues resolved
+1. ✅ All auth-frontend issues resolved
 2. ✅ All backend endpoints working correctly
 3. ✅ System ready for production use
 

@@ -35,12 +35,12 @@ Changed the frontend routing paths to avoid conflict with Vite's `/assets/` dire
 
 ```nginx
 location /auth/ {
-    proxy_pass http://auth-fe-v2/;
+    proxy_pass http://auth-fe/;
     # ...
 }
 
 location /assets/ {
-    proxy_pass http://asset-fe-v2/;
+    proxy_pass http://asset-fe/;
     # ...
 }
 ```
@@ -50,20 +50,20 @@ location /assets/ {
 ```nginx
 location /app/auth {
     rewrite ^/app/auth(.*)$ $1 break;
-    proxy_pass http://auth-fe-v2;
+    proxy_pass http://auth-fe;
     # ...
 }
 
 location /app/assets {
     rewrite ^/app/assets(.*)$ $1 break;
-    proxy_pass http://asset-fe-v2;
+    proxy_pass http://asset-fe;
     # ...
 }
 ```
 
 The `rewrite` directive strips `/app/auth` or `/app/assets` from the request URI before passing to the backend, so:
-- `http://localhost:8000/app/auth/` → `http://auth-fe-v2/`
-- `http://localhost:8000/app/auth/assets/index-xxx.css` → `http://auth-fe-v2/assets/index-xxx.css` ✅
+- `http://localhost:8000/app/auth/` → `http://auth-fe/`
+- `http://localhost:8000/app/auth/assets/index-xxx.css` → `http://auth-fe/assets/index-xxx.css` ✅
 
 ---
 

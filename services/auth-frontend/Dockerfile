@@ -1,21 +1,34 @@
-FROM python:3.11-slim
+# Build stage
+FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    curl \
-  && rm -rf /var/lib/apt/lists/*
+# Copy package files
+COPY package*.json ./
 
-COPY requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
+# Install dependencies (use install instead of ci since we don't have package-lock.json)
+RUN npm install
 
-COPY ./app ./app
+# Copy source code
+COPY . .
 
-EXPOSE 3000
+# Build the application
+RUN npm run build
 
-HEALTHCHECK --interval=30s --timeout=10s --start-period=20s --retries=3 \
-  CMD curl -f http://localhost:3000/health || exit 1
+# Production stage
+FROM nginx:alpine
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "3000", "--reload"]
+# Copy built assets from builder
+COPY --from=builder /app/dist /usr/share/nginx/html
 
+# Copy nginx configuration
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
+# Expose port
+EXPOSE 80
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost/ || exit 1
+
+CMD ["nginx", "-g", "daemon off;"]

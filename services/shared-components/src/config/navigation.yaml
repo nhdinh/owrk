@@ -1,0 +1,55 @@
+# Navigation Configuration for Asset Management System
+# This file defines the sidebar menu structure for all services
+
+navigation:
+  - name: Dashboard
+    href: /dashboard/
+    icon: Home
+    service: dashboard
+    description: System overview and statistics
+
+  - name: Users & Roles
+    href: /auth/
+    icon: Shield
+    service: auth
+    description: User and role management
+    submenu:
+      - name: Users
+        href: /auth/users
+        icon: Users
+        description: Manage users
+      - name: Roles
+        href: /auth/roles
+        icon: ShieldCheck
+        description: Manage roles and permissions
+      - name: Profile
+        href: /auth/profile
+        icon: User
+        description: My profile settings
+      - name: MFA Setup
+        href: /auth/mfa-setup
+        icon: Key
+        description: Multi-factor authentication
+
+  - name: Assets
+    href: /assets/
+    icon: Package
+    service: assets
+    description: Asset management
+    submenu:
+      - name: All Assets
+        href: /assets/
+        icon: Package
+        description: View all assets
+      - name: Categories
+        href: /assets/categories
+        icon: FolderTree
+        description: Manage asset categories
+      - name: Assignments
+        href: /assets/assignments
+        icon: UserCheck
+        description: Asset assignments
+      - name: Maintenance
+        href: /assets/maintenance
+        icon: Wrench
+        description: Maintenance schedule
