@@ -11,9 +11,22 @@ class Query:
     pass
 
 
+@dataclass
+class Command:
+    pass
+
+
 # TCommand = TypeVar("TCommand", bound=Command)
+TCommand = TypeVar("TCommand", bound=Command)
 TQuery = TypeVar("TQuery", bound=Query)
 TResult = TypeVar("TResult")
+
+
+class CommandHandler(Generic[TCommand, TResult]):
+    """Base class for command handlers"""
+
+    async def handle(self, command: TCommand) -> TResult:
+        raise NotImplementedError
 
 
 class QueryHandler(Generic[TQuery, TResult]):
@@ -31,6 +44,7 @@ class MessageBus:
 
     def __init__(self) -> None:
         self._query_handlers: Dict[Type[Query], QueryHandler] = {}
+        self._command_handlers: Dict[Type[Command], CommandHandler] = {}
 
     # def register_command_handler(
     #     self, command_type: Type[TCommand], handler: CommandHandler[TCommand, TResult]
@@ -46,24 +60,24 @@ class MessageBus:
         self._query_handlers[query_type] = handler
         logger.info(f"Registered query handler for {query_type.__name__}")
 
-    # async def execute_command(self, command: TCommand, **dependencies) -> TResult:
-    #     """
-    #     Execute a command by dispatching to its handler
+    async def execute_command(self, command: TCommand, **dependencies) -> TResult:
+        """
+        Execute a command by dispatching to its handler
 
-    #     Args:
-    #         command: Command to execute
-    #         **dependencies: Dependencies to pass to handler (e.g., db=session)
-    #     """
-    #     command_type = type(command)
-    #     handler = self._command_handlers.get(command_type)
+        Args:
+            command: Command to execute
+            **dependencies: Dependencies to pass to handler (e.g., db=session)
+        """
+        command_type = type(command)
+        handler = self._command_handlers.get(command_type)
 
-    #     if not handler:
-    #         raise ValueError(
-    #             f"No handler registered for command {command_type.__name__}"
-    #         )
+        if not handler:
+            raise ValueError(
+                f"No handler registered for command {command_type.__name__}"
+            )
 
-    #     logger.info(f"Executing command: {command_type.__name__}")
-    #     return await handler.handle(command, **dependencies)
+        logger.info(f"Executing command: {command_type.__name__}")
+        return await handler.handle(command, **dependencies)
 
     async def execute_query(self, query: TQuery, **dependencies) -> TResult:
         """

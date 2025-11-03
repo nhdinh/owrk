@@ -1,10 +1,13 @@
 import logging
 
 from uuid import UUID
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends, HTTPException, status
 
-from app.core.database import mongo_client
-from app.schemas.registry import Service
+from app.core.database import get_mongo_db, mongo_client
+from app.schemas.registry import ServiceRegister, ServiceResponse
+from app.schemas.commands import RegisterServiceCommand
+
+from app.core.message_bus import MessageBus, get_message_bus
 
 
 logger = logging.getLogger(__name__)
@@ -12,7 +15,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/registry", tags=["Registry"])
 
 
-@router.get("/services", response_model=Service)
+@router.get("/services", response_model=ServiceResponse)
 async def get_services():
     """
     This call List available services by their name and description
@@ -40,12 +43,27 @@ async def get_services():
             ]
 
     """
-    return Service(name="some_name")
+    return ServiceResponse(name="some_name")
 
 
 @router.post("/services")
-async def register_service():
-    return None
+async def register_service(
+    service_data: ServiceRegister,
+    mongo=Depends(get_mongo_db),
+    bus: MessageBus = Depends(get_message_bus),
+):
+    command = RegisterServiceCommand()
+
+    try:
+        result = await bus.execute_command(command, mongo=mongo)
+        return result
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to register service: {str(e)}",
+        )
 
 
 @router.delete("/services")
@@ -118,4 +136,4 @@ async def get_service(service_name: str):
         204:
         description: service name not found
     """
-    return Service(name=service_name)
+    return ServiceResponse(name=service_name)
