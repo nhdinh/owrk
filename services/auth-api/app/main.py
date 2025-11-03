@@ -20,19 +20,29 @@ import asyncio
 # Import Message Bus and Handlers
 from app.core.message_bus import message_bus
 from app.schemas.commands.user_commands import (
-    CreateUserCommand, UpdateUserCommand, DeleteUserCommand,
-    ActivateUserCommand, DeactivateUserCommand
+    CreateUserCommand,
+    UpdateUserCommand,
+    DeleteUserCommand,
+    ActivateUserCommand,
+    DeactivateUserCommand,
 )
 from app.schemas.queries.user_queries import (
-    GetUserByIdQuery, GetUsersListQuery, GetUserHistoryQuery
+    GetUserByIdQuery,
+    GetUsersListQuery,
+    GetUserHistoryQuery,
 )
 from app.commands.handlers import (
-    CreateUserHandler, UpdateUserHandler, DeleteUserHandler,
-    ActivateUserHandler, DeactivateUserHandler
+    CreateUserHandler,
+    UpdateUserHandler,
+    DeleteUserHandler,
+    ActivateUserHandler,
+    DeactivateUserHandler,
 )
 from app.queries.handlers import (
-    GetUserByIdHandler, GetUsersListHandler,
-    SearchUsersHandler, GetUserHistoryHandler
+    GetUserByIdHandler,
+    GetUsersListHandler,
+    SearchUsersHandler,
+    GetUserHistoryHandler,
 )
 from app.read_repositories.user_read_repository import UserReadRepository
 
@@ -63,41 +73,26 @@ async def register_cqrs_handlers():
     try:
         # Register Command Handlers (Write operations)
         # Handlers receive database session from endpoint via execute_command(command, db=db)
+        message_bus.register_command_handler(CreateUserCommand, CreateUserHandler())
+        message_bus.register_command_handler(UpdateUserCommand, UpdateUserHandler())
+        message_bus.register_command_handler(DeleteUserCommand, DeleteUserHandler())
+        message_bus.register_command_handler(ActivateUserCommand, ActivateUserHandler())
         message_bus.register_command_handler(
-            CreateUserCommand,
-            CreateUserHandler()
-        )
-        message_bus.register_command_handler(
-            UpdateUserCommand,
-            UpdateUserHandler()
-        )
-        message_bus.register_command_handler(
-            DeleteUserCommand,
-            DeleteUserHandler()
-        )
-        message_bus.register_command_handler(
-            ActivateUserCommand,
-            ActivateUserHandler()
-        )
-        message_bus.register_command_handler(
-            DeactivateUserCommand,
-            DeactivateUserHandler()
+            DeactivateUserCommand, DeactivateUserHandler()
         )
 
         logger.info("✅ Command handlers registered")
 
         # Register Query Handlers (Read operations)
         message_bus.register_query_handler(
-            GetUserByIdQuery,
-            GetUserByIdHandler(user_read_repo)
+            GetUserByIdQuery, GetUserByIdHandler(user_read_repo)
         )
         message_bus.register_query_handler(
-            GetUsersListQuery,
-            GetUsersListHandler(user_read_repo)
+            GetUsersListQuery, GetUsersListHandler(user_read_repo)
         )
         message_bus.register_query_handler(
             GetUserHistoryQuery,
-            GetUserHistoryHandler()  # History handler needs db per request
+            GetUserHistoryHandler(),  # History handler needs db per request
         )
 
         logger.info("✅ Query handlers registered")

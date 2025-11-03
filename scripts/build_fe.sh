@@ -1,6 +1,19 @@
 #!/bin/bash
 
-export GENERATE_SOURCEMAP=true
+services=(
+    "shared-components:shared-components"
+    "auth-frontend:auth-fe"
+    "asset-frontend:asset-fe"
+    "dashboard-frontend:dashboard-fe"
+)
+
+if [[ $# -gt 2 ]]; then
+  echo "Usage: $0 <service_name> [--full]: for full build with node_modules reinstallation" >&2
+  echo "       $0: for build all the services" >&2
+  exit 1
+fi
+
+# export GENERATE_SOURCEMAP=true
 
 # Full build script with npm install
 # Use this for first-time setup or after dependency changes
@@ -9,57 +22,59 @@ export GENERATE_SOURCEMAP=true
 echo "=== Full Frontend Build (with npm install) ==="
 echo ""
 
-# Build and deploy shared-components (Module Federation host)
-echo "Building shared-components..."
-cd ./services/shared-components
-echo "Installing dependencies..."
-rm -rf ./dist
-npm install 
-npm run build
+PACKAGES_HASH_FILE=$(pwd)/scripts/.packages_hashes
+SERVICE_BASE_PATH=$(pwd)/services/
 
-echo "Deploying shared-components..."
-docker cp ./dist/assets shared-components:/usr/share/nginx/html/
-docker cp ./dist/index.html shared-components:/usr/share/nginx/html/
-echo "✓ shared-components deployed"
-echo ""
+build_service() {
+    SERVICE_NAME=$1
+    CONTAINER_NAME=$2
 
-# Build and deploy auth-frontend
-echo "Building auth-frontend..."
-cd ../auth-frontend
-echo "Installing dependencies..."
-rm -rf ./dist
-npm install
-npm run build
+    
+    echo "Building ${SERVICE_NAME}..."
+    cd ${SERVICE_BASE_PATH}/${SERVICE_NAME}
 
-echo "Deploying auth-frontend..."
-docker cp ./dist/assets auth-fe:/usr/share/nginx/html/
-docker cp ./dist/index.html auth-fe:/usr/share/nginx/html/
-echo "✓ auth-frontend deployed"
-echo ""
+    # read hash of package.json to determine if dependencies have changed
+    package_hash=$(md5sum package.json | awk '{ print $1 }')
 
-# Build and deploy asset-frontend
-echo "Building asset-frontend..."
-cd ../asset-frontend
-rm -rf ./dist
-npm run build
+    # read stored hash
+    stored_hash=""
+    if [ -f ${PACKAGES_HASH_FILE} ]; then
+        stored_hash=$(grep "^${SERVICE_NAME}:" ${PACKAGES_HASH_FILE} | cut -d':' -f2)
+    fi
 
-echo "Deploying asset-frontend..."
-docker cp ./dist/assets asset-fe:/usr/share/nginx/html/
-docker cp ./dist/index.html asset-fe:/usr/share/nginx/html/
-echo "✓ asset-frontend deployed"
-echo ""
 
-# Build and deploy dashboard-frontend
-echo "Building dashboard-frontend..."
-cd ../dashboard-frontend
-rm -rf ./dist
-npm run build 
+    # if hashes match, skip npm install
+    if [ "$package_hash" == "$stored_hash" ]; then
+        echo "Dependencies unchanged. Skipping npm install."
+        rm -rf ./dist
+    else
+        echo "Dependencies changed or no stored hash. Proceeding with full install."
 
-echo "Deploying dashboard-frontend..."
-docker cp ./dist/assets dashboard-fe:/usr/share/nginx/html/
-docker cp ./dist/index.html dashboard-fe:/usr/share/nginx/html/
-echo "✓ dashboard-frontend deployed"
-echo ""
+        rm -rf ./dist
+        rm -rf ./node_modules
+        rm -rf ./package-lock.json
+
+        npm install 
+    fi
+
+    npm run build
+
+    echo "Deploying auth-frontend..."
+    docker cp ./dist/assets ${CONTAINER_NAME}:/usr/share/nginx/html/
+    docker cp ./dist/index.html ${CONTAINER_NAME}:/usr/share/nginx/html/
+    echo "✓ ${SERVICE_NAME} deployed"
+    echo ""
+
+    # update stored hash
+    grep -v "^${SERVICE_NAME}:" ${PACKAGES_HASH_FILE} > ${PACKAGES_HASH_FILE}.tmp || true
+    echo "${SERVICE_NAME}:${package_hash}" >> ${PACKAGES_HASH_FILE}.tmp
+    mv ${PACKAGES_HASH_FILE}.tmp ${PACKAGES_HASH_FILE}
+}
+
+for service in "${services[@]}"; do
+    IFS=":" read -r SERVICE_NAME CONTAINER_NAME <<< "$service"
+    build_service $SERVICE_NAME $CONTAINER_NAME
+done
 
 echo "=== All frontends built and deployed successfully! ==="
 echo ""

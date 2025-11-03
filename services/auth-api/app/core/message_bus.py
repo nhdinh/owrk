@@ -2,38 +2,44 @@
 Message Bus for CQRS Pattern
 Dispatches commands and queries to their respective handlers
 """
+
 from typing import Dict, Type, Any, Callable, TypeVar, Generic
 from dataclasses import dataclass
 import logging
 
 logger = logging.getLogger(__name__)
 
+
 # Base classes
 @dataclass
 class Command:
     """Base class for all commands (write operations)"""
+
     pass
 
 
 @dataclass
 class Query:
     """Base class for all queries (read operations)"""
+
     pass
 
 
-TCommand = TypeVar('TCommand', bound=Command)
-TQuery = TypeVar('TQuery', bound=Query)
-TResult = TypeVar('TResult')
+TCommand = TypeVar("TCommand", bound=Command)
+TQuery = TypeVar("TQuery", bound=Query)
+TResult = TypeVar("TResult")
 
 
 class CommandHandler(Generic[TCommand, TResult]):
     """Base class for command handlers"""
+
     async def handle(self, command: TCommand) -> TResult:
         raise NotImplementedError
 
 
 class QueryHandler(Generic[TQuery, TResult]):
     """Base class for query handlers"""
+
     async def handle(self, query: TQuery) -> TResult:
         raise NotImplementedError
 
@@ -49,18 +55,14 @@ class MessageBus:
         self._query_handlers: Dict[Type[Query], QueryHandler] = {}
 
     def register_command_handler(
-        self,
-        command_type: Type[TCommand],
-        handler: CommandHandler[TCommand, TResult]
+        self, command_type: Type[TCommand], handler: CommandHandler[TCommand, TResult]
     ):
         """Register a command handler"""
         self._command_handlers[command_type] = handler
         logger.info(f"Registered command handler for {command_type.__name__}")
 
     def register_query_handler(
-        self,
-        query_type: Type[TQuery],
-        handler: QueryHandler[TQuery, TResult]
+        self, query_type: Type[TQuery], handler: QueryHandler[TQuery, TResult]
     ):
         """Register a query handler"""
         self._query_handlers[query_type] = handler
@@ -78,7 +80,9 @@ class MessageBus:
         handler = self._command_handlers.get(command_type)
 
         if not handler:
-            raise ValueError(f"No handler registered for command {command_type.__name__}")
+            raise ValueError(
+                f"No handler registered for command {command_type.__name__}"
+            )
 
         logger.info(f"Executing command: {command_type.__name__}")
         return await handler.handle(command, **dependencies)

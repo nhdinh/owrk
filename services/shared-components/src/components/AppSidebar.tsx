@@ -14,6 +14,8 @@ import {
   FolderTree,
   UserCheck,
   Wrench,
+  HandCoins,
+  Trash,
 } from 'lucide-react';
 import { useState } from 'react';
 import yaml from 'js-yaml';
@@ -32,6 +34,8 @@ const iconMap: Record<string, any> = {
   FolderTree,
   UserCheck,
   Wrench,
+  HandCoins,
+  Trash,
 };
 
 interface SubMenuItem {

@@ -10,6 +10,17 @@ from decimal import Decimal
 from app.models.asset import AssetType, AssetStatus, DepreciationMethod
 
 
+class PermissionBase:
+    name: str
+    code: str
+    description: Optional[str] = None
+    is_active: bool = True
+
+
+class PermissionResponse(PermissionBase):
+    pass
+
+
 # Category Schemas
 class CategoryBase(BaseModel):
     name: str

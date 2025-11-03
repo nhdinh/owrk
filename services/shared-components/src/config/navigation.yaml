@@ -53,3 +53,13 @@ navigation:
         href: /assets/maintenance
         icon: Wrench
         description: Maintenance schedule
+
+  - name: Procurement
+    href: /procurement/
+    icon: HandCoins
+    service: procurement
+    description: Manage procurement process
+
+  - name: Trash
+    href: /dashboard/trash
+    icon: Trash

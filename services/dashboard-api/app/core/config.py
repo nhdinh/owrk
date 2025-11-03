@@ -32,10 +32,9 @@ class Settings(BaseSettings):
     REDIS_PORT: int = 6379
 
     # RabbitMQ
-    RABBITMQ_HOST: str = "rabbitmq"
-    RABBITMQ_PORT: int = 5672
-    RABBITMQ_USER: str = "guest"
-    RABBITMQ_PASSWORD: str = "guest"
+    RABBITMQ_HOST: str = os.getenv("RABBITMQ_HOST", "rabbitmq")
+    RABBITMQ_PORT: str = os.getenv("RABBITMQ_PORT", "5672")
+    RABBITMQ_URL: str = f"amqp://guest:guest@{RABBITMQ_HOST}:{RABBITMQ_PORT}/"
 
     # JWT
     JWT_ALGORITHM: str = "HS256"
@@ -72,6 +71,7 @@ class Settings(BaseSettings):
     def MONGODB_URL(self) -> str:
         """MongoDB connection URL"""
         from urllib.parse import quote_plus
+
         username = quote_plus(self.MONGODB_USER)
         password = quote_plus(self.MONGODB_PASSWORD) if self.MONGODB_PASSWORD else ""
         return f"mongodb://{username}:{password}@{self.MONGODB_HOST}:{self.MONGODB_PORT}/?authSource=admin"

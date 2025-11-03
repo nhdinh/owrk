@@ -119,6 +119,7 @@ class UserEventConsumer:
             if existing_user:
                 # Update last login info
                 from datetime import datetime
+
                 existing_user["last_login_at"] = datetime.utcnow().isoformat()
                 existing_user["last_login_ip"] = metadata.get("ip_address")
                 await self.user_read_repo.upsert_user(existing_user)
@@ -131,9 +132,12 @@ class UserEventConsumer:
             existing_user = await self.user_read_repo.get_by_id(user_id)
             if existing_user:
                 from datetime import datetime
+
                 existing_user["password_changed_at"] = datetime.utcnow().isoformat()
                 await self.user_read_repo.upsert_user(existing_user)
-                logger.info(f"✅ Password change recorded for user: {data.get('email')}")
+                logger.info(
+                    f"✅ Password change recorded for user: {data.get('email')}"
+                )
 
 
 # Global instance
