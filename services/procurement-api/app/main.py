@@ -15,7 +15,7 @@ from app.core.events import startup_event_publisher, shutdown_event_publisher
 # Configure logging
 logging.basicConfig(
     level=logging.INFO if not settings.DEBUG else logging.DEBUG,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    format="%(asctime)s - %(name)s:%(lineno) - %(levelname)s - %(message)s",
 )
 logger = logging.getLogger(__name__)
 

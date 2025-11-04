@@ -796,7 +796,7 @@ from app.api.v1.router import api_router
 # Configure logging
 logging.basicConfig(
     level=logging.INFO if not settings.DEBUG else logging.DEBUG,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    format="%(asctime)s - %(name)s:%(lineno) - %(levelname)s - %(message)s",
 )
 
 logger = logging.getLogger(__name__)
