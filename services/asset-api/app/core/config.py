@@ -15,6 +15,9 @@ class Settings:
     DEBUG: bool = os.getenv("DEBUG", "False").lower() == "true"
     TESTING: bool = os.getenv("TESTING", "False").lower() == "true"
     API_PREFIX: str = "/api/v1"
+    SERVICE_NAME: str = "asset-api"
+    SERVICE_ADDRESS: str = "asset-api"
+    SERVICE_PORT: int = 8000
 
     # Database - MySQL (Write)
     DATABASE_USER: str = os.getenv("DATABASE_USER", "admin")

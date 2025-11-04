@@ -3,21 +3,24 @@ import json
 import logging
 import os
 
+from .schema import ServiceStatus
+
 logger = logging.getLogger(__name__)
 
 
 service_file_path = os.getenv("SERVICES_CACHE_FILE", "/tmp/services.json")
-this_service = {
-    "service-registry": {
-        "name": "service-registry",
-        "address": "service-registry",
-        "port": 3000,
-        "last_check": datetime.timestamp(datetime.now()),
-        "status": "healthy",
-        "response_time": 0,
-        "heath_endpoint": "/health",
-    }
-}
+service_name = "service-registry"
+service_data = ServiceStatus(
+    name=service_name,
+    address="service-registry",
+    port=3000,
+    last_check=datetime.timestamp(datetime.now()),
+    status="healthy",
+    response_time=0,
+    health_endpoint="/health",
+)
+
+this_service = {service_name: service_data}
 
 
 def load_services():
@@ -26,8 +29,8 @@ def load_services():
         with open(service_file_path, "r") as f:
             saved_services = json.loads(f.read())
 
-            if "service-registry" not in saved_services.keys():
-                saved_services["service-registry"] = this_service["service-registry"]
+            if service_name not in saved_services.keys():
+                saved_services[service_name] = service_data
 
             return saved_services
 
@@ -36,7 +39,7 @@ def load_services():
 
 def save_services(g_services):
     with open(service_file_path, "w+") as f:
-        f.write(json.dumps(g_services))
+        f.write(json.dumps(g_services, indent=4))
 
         logger.info(f"Save services data to file")
 
@@ -44,7 +47,7 @@ def save_services(g_services):
 def reset_services():
     os.unlink(service_file_path)
 
-    return this_service
+    return {service_name: service_data}
 
 
 g_services = {}

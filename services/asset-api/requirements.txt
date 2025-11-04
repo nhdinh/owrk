@@ -36,3 +36,5 @@ aio-pika==9.3.0
 
 # Redis
 redis==5.0.1
+
+httpx==0.24.1

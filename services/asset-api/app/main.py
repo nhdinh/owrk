@@ -6,6 +6,7 @@ import logging
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+import httpx
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 
@@ -54,6 +55,16 @@ async def lifespan(app: FastAPI):
     """Application lifespan events"""
     # Startup
     logger.info("Starting Asset Management Service...")
+
+    async with httpx.AsyncClient() as client:
+        data = {
+            "name": settings.SERVICE_NAME,
+            "address": settings.SERVICE_ADDRESS,
+            "port": settings.SERVICE_PORT,
+            "health_endpoint": "/health",
+        }
+        headers = {"Content-Type": "application/json"}
+        httpx.post("http://service-registry:3000/register", json=data)
 
     # Start scheduler only if not in testing mode
     if not settings.TESTING:

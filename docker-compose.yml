@@ -152,17 +152,19 @@ services:
       context: ./services/service-registry
       dockerfile: Dockerfile
     container_name: service-registry
+    secrets:
+      - mongo_passwd
     ports:
       - 3000:3000
     environment:
       SERVICES_CACHE_FILE: /services.json
+      MONGO_PASSWD_FILE: /run/secrets/mongo_passwd
     networks:
       - backend
     restart: unless-stopped
     volumes:
       - ./services/service-registry/:/app/:ro
       - ./.config/services.json:/services.json
-
 
   # Auth Service
   auth-api:
