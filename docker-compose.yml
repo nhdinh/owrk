@@ -147,6 +147,23 @@ services:
   # MICROSERVICES
   # ======================
 
+  service-registry:
+    build:
+      context: ./services/service-registry
+      dockerfile: Dockerfile
+    container_name: service-registry
+    ports:
+      - 3000:3000
+    environment:
+      SERVICES_CACHE_FILE: /services.json
+    networks:
+      - backend
+    restart: unless-stopped
+    volumes:
+      - ./services/service-registry/:/app/:ro
+      - ./.config/services.json:/services.json
+
+
   # Auth Service
   auth-api:
     build:
@@ -188,6 +205,8 @@ services:
       redis:
         condition: service_healthy
       rabbitmq:
+        condition: service_healthy
+      service-registry:
         condition: service_healthy
     networks:
       - backend
@@ -236,6 +255,8 @@ services:
       redis:
         condition: service_healthy
       rabbitmq:
+        condition: service_healthy
+      service-registry:
         condition: service_healthy
     networks:
       - backend
@@ -289,6 +310,8 @@ services:
       redis:
         condition: service_healthy
       rabbitmq:
+        condition: service_healthy
+      service-registry:
         condition: service_healthy
     networks:
       - backend

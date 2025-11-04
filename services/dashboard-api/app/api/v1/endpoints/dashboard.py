@@ -192,69 +192,30 @@ async def get_system_health(
     """
     services = []
 
-    # Check Auth API
     try:
-        start = time.time()
         async with httpx.AsyncClient() as client:
-            response = await client.get("http://auth-api:8000/health", timeout=5.0)
-            response_time = (time.time() - start) * 1000
+            response = await client.get(
+                "http://service-registry:3000/services", timeout=5.0
+            )
             if response.status_code == 200:
-                services.append(
-                    SystemHealth(
-                        service="auth-api",
-                        status="healthy",
-                        response_time_ms=response_time,
-                        last_check=datetime.utcnow(),
+                json_data = response.json()
+
+                for k, service in json_data.items():
+                    services.append(
+                        SystemHealth(
+                            service=service["name"],
+                            status=service["status"],
+                            response_time_ms=service["response_time"],
+                            last_check=service["last_check"],
+                        )
                     )
-                )
-            else:
-                services.append(
-                    SystemHealth(
-                        service="auth-api",
-                        status="degraded",
-                        response_time_ms=response_time,
-                        last_check=datetime.utcnow(),
-                    )
-                )
+
+                # logger.info(f"services = {json_data}")
     except Exception as e:
-        logger.error(f"Auth API health check failed: {e}")
+        logger.error(f"Services health check failed: {e}")
         services.append(
             SystemHealth(
                 service="auth-api",
-                status="down",
-                last_check=datetime.utcnow(),
-            )
-        )
-
-    # Check Asset API
-    try:
-        start = time.time()
-        async with httpx.AsyncClient() as client:
-            response = await client.get("http://asset-api:8000/health", timeout=5.0)
-            response_time = (time.time() - start) * 1000
-            if response.status_code == 200:
-                services.append(
-                    SystemHealth(
-                        service="asset-api",
-                        status="healthy",
-                        response_time_ms=response_time,
-                        last_check=datetime.utcnow(),
-                    )
-                )
-            else:
-                services.append(
-                    SystemHealth(
-                        service="asset-api",
-                        status="degraded",
-                        response_time_ms=response_time,
-                        last_check=datetime.utcnow(),
-                    )
-                )
-    except Exception as e:
-        logger.error(f"Asset API health check failed: {e}")
-        services.append(
-            SystemHealth(
-                service="asset-api",
                 status="down",
                 last_check=datetime.utcnow(),
             )

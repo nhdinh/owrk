@@ -6,17 +6,18 @@ from pydantic import BaseModel, validator
 class ServiceBase(BaseModel):
     """Base Service Model"""
 
-    service_id: UUID
+    node_id: UUID
     name: str
     description: Optional[str]
-    url: str
+    address: str
+    service_port: int
 
 
 class ServiceRegister(ServiceBase):
-    @validator("url")
+    @validator("address")
     def validate_url(cls, value: str):
         if not value.startswith("http://"):
-            raise ValueError("URL must be starts with http:// or https://")
+            raise ValueError("Node address must be starts with http:// or https://")
 
         return value
 

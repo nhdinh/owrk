@@ -13,3 +13,6 @@ httpx==0.25.1
 redis==5.0.1
 python-dotenv==1.0.0
 pymysql==1.1.0
+
+# Task scheduling (for polling service status)
+apscheduler==3.10.4

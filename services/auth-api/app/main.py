@@ -3,10 +3,14 @@ Auth Service - Main Application
 Handles authentication, authorization, MFA, and Active Directory integration
 """
 
+import os
+import uuid
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 import logging
+
+import httpx
 
 from app.core.config import settings
 from app.core.database import engine, SessionLocal
@@ -131,6 +135,33 @@ async def lifespan(app: FastAPI):
     """
     # Startup
     logger.info("🚀 Starting Auth Service...")
+
+    async with httpx.AsyncClient() as client:
+        data = {
+            "name": settings.SERVICE_NAME,
+            "address": settings.SERVICE_ADDRESS,
+            "port": settings.SERVICE_PORT,
+            "health_endpoint": "/health",
+        }
+        headers = {"Content-Type": "application/json"}
+        httpx.post("http://service-registry:3000/register", json=data)
+
+    # log node id
+    node_id_path = "/tmp/node_id"
+    node_id = None
+    if not os.path.exists(node_id_path):
+        node_id = str(uuid.uuid4())
+        with open(node_id_path, "w+") as f:
+            f.write(node_id)
+
+        logger.info(f"✅ Node ID created: {node_id}")
+    else:
+        with open(node_id_path, "r") as f:
+            node_id = f.read()
+
+        logger.info(f"✅ Node ID exists: {node_id}")
+
+    # register service node
 
     # Create database tables
     try:

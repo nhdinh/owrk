@@ -39,6 +39,9 @@ class Settings(BaseSettings):
     APP_NAME: str = "Asset Management - Auth Service"
     ENVIRONMENT: str = os.getenv("ENVIRONMENT", "development")
     DEBUG: bool = ENVIRONMENT == "development"
+    SERVICE_NAME: str = "auth-api"
+    SERVICE_PORT: int = 8000
+    SERVICE_ADDRESS: str = "auth-api"
 
     # Database - MySQL (Write DB)
     DATABASE_USER: str = os.getenv("DATABASE_USER", "admin")

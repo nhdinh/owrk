@@ -46,12 +46,12 @@ class MessageBus:
         self._query_handlers: Dict[Type[Query], QueryHandler] = {}
         self._command_handlers: Dict[Type[Command], CommandHandler] = {}
 
-    # def register_command_handler(
-    #     self, command_type: Type[TCommand], handler: CommandHandler[TCommand, TResult]
-    # ):
-    #     """Register a command handler"""
-    #     self._command_handlers[command_type] = handler
-    #     logger.info(f"Registered command handler for {command_type.__name__}")
+    def register_command_handler(
+        self, command_type: Type[TCommand], handler: CommandHandler[TCommand, TResult]
+    ):
+        """Register a command handler"""
+        self._command_handlers[command_type] = handler
+        logger.info(f"Registered command handler for {command_type.__name__}")
 
     def register_query_handler(
         self, query_type: Type[TQuery], handler: QueryHandler[TQuery, TResult]

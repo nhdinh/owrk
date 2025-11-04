@@ -12,6 +12,8 @@ class Settings(BaseSettings):
 
     # Service
     SERVICE_NAME: str = "dashboard-api"
+    SERVICE_ADDRESS: str = "dashboard-api"
+    SERVICE_PORT: int = int(os.getenv("SERVICE_PORT", 8000))
     DEBUG: bool = True
     API_V1_PREFIX: str = "/api/v1"
 
@@ -48,6 +50,9 @@ class Settings(BaseSettings):
     MYSQL_PASSWORD: Optional[str] = None
     MONGODB_PASSWORD: Optional[str] = None
     JWT_SECRET_KEY: Optional[str] = None
+
+    # Ping service health
+    SERVICES_HEALTH_POLL_DURATION: int = 5
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)

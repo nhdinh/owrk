@@ -52,6 +52,45 @@ async def register_service(
     mongo=Depends(get_mongo_db),
     bus: MessageBus = Depends(get_message_bus),
 ):
+    """
+    This call register a new service in database
+    ---
+    tags:
+      - Registry
+    parameters:
+      - name: name
+        in: post
+        type: string
+        required: true
+        description: the service name
+      - name: address
+        in: post
+        type: string
+        required: true
+        description: service address (IP or domain name)
+      - name: service_port
+        in: post
+        type: string
+        required: true
+        description: service port for communicate to with
+      - name: node_id
+        in: post
+        type: string
+        required: true
+        description: unique node ID. Must be in UUID format.
+    responses:
+      201:
+        description: service added
+        schema:
+          type: object
+        examples:
+              application/json:
+                message: MESSAGE TEXT
+      400:
+        description: some error in input format of data
+      409:
+        description: service already exits
+    """
     command = RegisterServiceCommand()
 
     try:
