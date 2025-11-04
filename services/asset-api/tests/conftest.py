@@ -64,11 +64,7 @@ def client(db_session):
 
     def override_get_current_user():
         """Override authentication to return a mock user"""
-        return {
-            "id": 1,
-            "email": "admin@example.com",
-            "role": "admin"
-        }
+        return {"id": 1, "email": "admin@example.com", "role": "admin"}
 
     app.dependency_overrides[get_db] = override_get_db
     app.dependency_overrides[get_current_user] = override_get_current_user
@@ -88,11 +84,7 @@ def auth_headers():
 @pytest.fixture
 def mock_current_user():
     """Mock current user for authentication"""
-    return {
-        "id": 1,
-        "email": "admin@example.com",
-        "role": "admin"
-    }
+    return {"id": 1, "email": "admin@example.com", "role": "admin"}
 
 
 @pytest.fixture
@@ -104,7 +96,7 @@ def sample_category(db_session):
         code="IT-HW",
         name="IT Hardware",
         description="Computer equipment",
-        is_active=True
+        is_active=True,
     )
     db_session.add(category)
     db_session.commit()
@@ -128,7 +120,7 @@ def sample_asset(db_session, sample_category):
         purchase_price=Decimal("1299.99"),
         purchase_date=date(2023, 1, 15),
         status=AssetStatus.NEW,
-        created_by=1
+        created_by=1,
     )
     db_session.add(asset)
     db_session.commit()

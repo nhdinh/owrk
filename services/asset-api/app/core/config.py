@@ -29,7 +29,9 @@ class Settings:
         with open(DATABASE_PASSWORD_FILE, "r") as f:
             DATABASE_PASSWORD = f.read().strip()
 
-    DATABASE_URL: str = f"mysql+pymysql://{DATABASE_USER}:{quote_plus(DATABASE_PASSWORD)}@{DATABASE_HOST}:{DATABASE_PORT}/{DATABASE_NAME}"
+    DATABASE_URL: str = (
+        f"mysql+pymysql://{DATABASE_USER}:{quote_plus(DATABASE_PASSWORD)}@{DATABASE_HOST}:{DATABASE_PORT}/{DATABASE_NAME}"
+    )
 
     # MongoDB (Read - for CQRS)
     MONGODB_HOST: str = os.getenv("MONGODB_HOST", "mongodb")
@@ -44,7 +46,9 @@ class Settings:
             MONGODB_PASSWORD = f.read().strip()
 
     MONGODB_DB_NAME: str = os.getenv("MONGODB_DB_NAME", "asset_read_db")
-    MONGODB_URL: str = f"mongodb://{MONGODB_USER}:{quote_plus(MONGODB_PASSWORD)}@{MONGODB_HOST}:{MONGODB_PORT}/"
+    MONGODB_URL: str = (
+        f"mongodb://{MONGODB_USER}:{quote_plus(MONGODB_PASSWORD)}@{MONGODB_HOST}:{MONGODB_PORT}/"
+    )
 
     # Redis
     REDIS_HOST: str = os.getenv("REDIS_HOST", "redis")
@@ -68,13 +72,26 @@ class Settings:
     # File Upload
     UPLOAD_DIR: str = os.getenv("UPLOAD_DIR", "/app/uploads")
     MAX_UPLOAD_SIZE: int = int(os.getenv("MAX_UPLOAD_SIZE", "10485760"))  # 10MB
-    ALLOWED_EXTENSIONS: set = {".pdf", ".jpg", ".jpeg", ".png", ".doc", ".docx", ".xls", ".xlsx"}
+    ALLOWED_EXTENSIONS: set = {
+        ".pdf",
+        ".jpg",
+        ".jpeg",
+        ".png",
+        ".doc",
+        ".docx",
+        ".xls",
+        ".xlsx",
+    }
 
     # Depreciation Calculation
-    DEPRECIATION_DAY_OF_MONTH: int = int(os.getenv("DEPRECIATION_DAY_OF_MONTH", "1"))  # Run on 1st of each month
+    DEPRECIATION_DAY_OF_MONTH: int = int(
+        os.getenv("DEPRECIATION_DAY_OF_MONTH", "1")
+    )  # Run on 1st of each month
 
     # Auth Service URL
-    AUTH_SERVICE_URL: str = os.getenv("AUTH_SERVICE_URL", "http://auth-api-service:8000")
+    AUTH_SERVICE_URL: str = os.getenv(
+        "AUTH_SERVICE_URL", "http://auth-api-service:8000"
+    )
 
 
 settings = Settings()

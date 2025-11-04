@@ -36,9 +36,7 @@ async def get_system_stats(
     """
     try:
         # Query from auth_db.users table
-        total_users = db.execute(
-            text("SELECT COUNT(*) FROM auth_db.users")
-        ).scalar()
+        total_users = db.execute(text("SELECT COUNT(*) FROM auth_db.users")).scalar()
 
         active_users = db.execute(
             text("SELECT COUNT(*) FROM auth_db.users WHERE is_active = 1")
@@ -46,9 +44,7 @@ async def get_system_stats(
 
         inactive_users = total_users - active_users
 
-        total_roles = db.execute(
-            text("SELECT COUNT(*) FROM auth_db.roles")
-        ).scalar()
+        total_roles = db.execute(text("SELECT COUNT(*) FROM auth_db.roles")).scalar()
 
         users_with_mfa = db.execute(
             text("SELECT COUNT(*) FROM auth_db.users WHERE mfa_enabled = 1")
@@ -63,7 +59,9 @@ async def get_system_stats(
         )
     except Exception as e:
         logger.error(f"Error fetching system stats: {e}")
-        raise HTTPException(status_code=500, detail=f"Error fetching system stats: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Error fetching system stats: {str(e)}"
+        )
 
 
 @router.get("/stats/assets", response_model=AssetStats)
@@ -81,19 +79,27 @@ async def get_asset_stats(
         ).scalar()
 
         available_assets = db.execute(
-            text("SELECT COUNT(*) FROM asset_db.assets WHERE status = 'available' AND deleted_at IS NULL")
+            text(
+                "SELECT COUNT(*) FROM asset_db.assets WHERE status = 'available' AND deleted_at IS NULL"
+            )
         ).scalar()
 
         assigned_assets = db.execute(
-            text("SELECT COUNT(*) FROM asset_db.assets WHERE status = 'assigned' AND deleted_at IS NULL")
+            text(
+                "SELECT COUNT(*) FROM asset_db.assets WHERE status = 'assigned' AND deleted_at IS NULL"
+            )
         ).scalar()
 
         in_maintenance_assets = db.execute(
-            text("SELECT COUNT(*) FROM asset_db.assets WHERE status = 'in_maintenance' AND deleted_at IS NULL")
+            text(
+                "SELECT COUNT(*) FROM asset_db.assets WHERE status = 'in_maintenance' AND deleted_at IS NULL"
+            )
         ).scalar()
 
         disposed_assets = db.execute(
-            text("SELECT COUNT(*) FROM asset_db.assets WHERE status = 'disposed' AND deleted_at IS NULL")
+            text(
+                "SELECT COUNT(*) FROM asset_db.assets WHERE status = 'disposed' AND deleted_at IS NULL"
+            )
         ).scalar()
 
         return AssetStats(
@@ -105,7 +111,9 @@ async def get_asset_stats(
         )
     except Exception as e:
         logger.error(f"Error fetching asset stats: {e}")
-        raise HTTPException(status_code=500, detail=f"Error fetching asset stats: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Error fetching asset stats: {str(e)}"
+        )
 
 
 @router.get("/activity", response_model=List[ActivityLog])
@@ -126,7 +134,9 @@ async def get_recent_activity(
         return []
     except Exception as e:
         logger.error(f"Error fetching activity logs: {e}")
-        raise HTTPException(status_code=500, detail=f"Error fetching activity logs: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Error fetching activity logs: {str(e)}"
+        )
 
 
 @router.get("/overview", response_model=DashboardOverview)
@@ -145,7 +155,9 @@ async def get_dashboard_overview(
         try:
             asset_stats = await get_asset_stats(db=db, current_user=current_user)
         except Exception as asset_error:
-            logger.warning(f"Could not fetch asset stats (table may not exist yet): {asset_error}")
+            logger.warning(
+                f"Could not fetch asset stats (table may not exist yet): {asset_error}"
+            )
             # Return empty/default asset stats
             asset_stats = AssetStats(
                 total_assets=0,
@@ -155,7 +167,9 @@ async def get_dashboard_overview(
                 disposed_assets=0,
             )
 
-        recent_activity = await get_recent_activity(limit=10, db=db, current_user=current_user)
+        recent_activity = await get_recent_activity(
+            limit=10, db=db, current_user=current_user
+        )
 
         return DashboardOverview(
             system_stats=system_stats,
@@ -164,7 +178,9 @@ async def get_dashboard_overview(
         )
     except Exception as e:
         logger.error(f"Error fetching dashboard overview: {e}")
-        raise HTTPException(status_code=500, detail=f"Error fetching dashboard overview: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Error fetching dashboard overview: {str(e)}"
+        )
 
 
 @router.get("/health", response_model=DashboardHealth)

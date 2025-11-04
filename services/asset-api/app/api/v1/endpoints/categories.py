@@ -15,8 +15,7 @@ router = APIRouter()
 
 @router.post("/", response_model=CategoryResponse, status_code=status.HTTP_201_CREATED)
 async def create_category(
-    category_data: CategoryCreate,
-    current_user: dict = Depends(get_current_user)
+    category_data: CategoryCreate, current_user: dict = Depends(get_current_user)
 ):
     """Create new category"""
     try:
@@ -24,13 +23,18 @@ async def create_category(
             # Check if code already exists
             existing = uow.categories.get_by_code(category_data.code)
             if existing:
-                raise HTTPException(status_code=400, detail=f"Category code {category_data.code} already exists")
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Category code {category_data.code} already exists",
+                )
 
             # Validate parent if provided
             if category_data.parent_id:
                 parent = uow.categories.get_by_id(category_data.parent_id)
                 if not parent:
-                    raise HTTPException(status_code=400, detail="Parent category not found")
+                    raise HTTPException(
+                        status_code=400, detail="Parent category not found"
+                    )
 
             category = AssetCategory(**category_data.model_dump())
             category = uow.categories.create(category)
@@ -48,7 +52,7 @@ async def create_category(
                 description=category.description,
                 is_active=category.is_active,
                 created_at=category.created_at,
-                updated_at=category.updated_at
+                updated_at=category.updated_at,
             )
     except HTTPException:
         raise
@@ -58,8 +62,7 @@ async def create_category(
 
 @router.get("/", response_model=List[CategoryResponse])
 async def list_categories(
-    active_only: bool = False,
-    current_user: dict = Depends(get_current_user)
+    active_only: bool = False, current_user: dict = Depends(get_current_user)
 ):
     """List all categories"""
     try:
@@ -75,8 +78,7 @@ async def list_categories(
 
 @router.get("/{category_id}", response_model=CategoryResponse)
 async def get_category(
-    category_id: int,
-    current_user: dict = Depends(get_current_user)
+    category_id: int, current_user: dict = Depends(get_current_user)
 ):
     """Get category by ID"""
     try:
@@ -95,7 +97,7 @@ async def get_category(
 async def update_category(
     category_id: int,
     category_data: CategoryUpdate,
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
 ):
     """Update category"""
     try:
@@ -124,7 +126,7 @@ async def update_category(
                 description=category.description,
                 is_active=category.is_active,
                 created_at=category.created_at,
-                updated_at=category.updated_at
+                updated_at=category.updated_at,
             )
     except HTTPException:
         raise
@@ -134,8 +136,7 @@ async def update_category(
 
 @router.delete("/{category_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_category(
-    category_id: int,
-    current_user: dict = Depends(get_current_user)
+    category_id: int, current_user: dict = Depends(get_current_user)
 ):
     """Delete category"""
     try:
@@ -143,7 +144,9 @@ async def delete_category(
             # Check if category has assets
             assets = uow.assets.get_assets_by_category(category_id)
             if assets:
-                raise HTTPException(status_code=400, detail="Cannot delete category with assets")
+                raise HTTPException(
+                    status_code=400, detail="Cannot delete category with assets"
+                )
 
             success = uow.categories.delete(category_id)
             if not success:

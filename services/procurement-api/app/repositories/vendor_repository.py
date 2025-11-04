@@ -32,10 +32,7 @@ class VendorRepository:
         vendor_code = generate_vendor_code(self.db)
 
         # Create vendor object
-        vendor = Vendor(
-            vendor_code=vendor_code,
-            **vendor_data
-        )
+        vendor = Vendor(vendor_code=vendor_code, **vendor_data)
 
         self.db.add(vendor)
         self.db.flush()
@@ -61,7 +58,7 @@ class VendorRepository:
         limit: int = 100,
         status: Optional[VendorStatus] = None,
         search: Optional[str] = None,
-        min_rating: Optional[Decimal] = None
+        min_rating: Optional[Decimal] = None,
     ) -> List[Vendor]:
         """
         Get all vendors with optional filtering
@@ -89,7 +86,7 @@ class VendorRepository:
             search_filter = or_(
                 Vendor.company_name.ilike(f"%{search}%"),
                 Vendor.vendor_code.ilike(f"%{search}%"),
-                Vendor.email.ilike(f"%{search}%")
+                Vendor.email.ilike(f"%{search}%"),
             )
             query = query.filter(search_filter)
 
@@ -99,7 +96,7 @@ class VendorRepository:
         self,
         status: Optional[VendorStatus] = None,
         search: Optional[str] = None,
-        min_rating: Optional[Decimal] = None
+        min_rating: Optional[Decimal] = None,
     ) -> int:
         """
         Count vendors with optional filtering
@@ -124,7 +121,7 @@ class VendorRepository:
             search_filter = or_(
                 Vendor.company_name.ilike(f"%{search}%"),
                 Vendor.vendor_code.ilike(f"%{search}%"),
-                Vendor.email.ilike(f"%{search}%")
+                Vendor.email.ilike(f"%{search}%"),
             )
             query = query.filter(search_filter)
 
@@ -165,10 +162,7 @@ class VendorRepository:
         return True
 
     def update_status(
-        self,
-        vendor: Vendor,
-        new_status: VendorStatus,
-        reason: Optional[str] = None
+        self, vendor: Vendor, new_status: VendorStatus, reason: Optional[str] = None
     ) -> Vendor:
         """
         Update vendor status
@@ -214,9 +208,7 @@ class VendorRepository:
 
     def get_active_vendors(self) -> List[Vendor]:
         """Get all active vendors"""
-        return self.db.query(Vendor).filter(
-            Vendor.status == VendorStatus.ACTIVE
-        ).all()
+        return self.db.query(Vendor).filter(Vendor.status == VendorStatus.ACTIVE).all()
 
     def get_top_rated_vendors(self, limit: int = 10) -> List[Vendor]:
         """
@@ -228,9 +220,13 @@ class VendorRepository:
         Returns:
             List[Vendor]: Top rated vendors
         """
-        return self.db.query(Vendor).filter(
-            Vendor.status == VendorStatus.ACTIVE
-        ).order_by(Vendor.rating.desc()).limit(limit).all()
+        return (
+            self.db.query(Vendor)
+            .filter(Vendor.status == VendorStatus.ACTIVE)
+            .order_by(Vendor.rating.desc())
+            .limit(limit)
+            .all()
+        )
 
     def search_by_name(self, company_name: str) -> List[Vendor]:
         """
@@ -242,15 +238,19 @@ class VendorRepository:
         Returns:
             List[Vendor]: Matching vendors
         """
-        return self.db.query(Vendor).filter(
-            Vendor.company_name.ilike(f"%{company_name}%")
-        ).all()
+        return (
+            self.db.query(Vendor)
+            .filter(Vendor.company_name.ilike(f"%{company_name}%"))
+            .all()
+        )
 
     def exists(self, vendor_id: int) -> bool:
         """Check if vendor exists"""
         return self.db.query(Vendor).filter(Vendor.id == vendor_id).first() is not None
 
-    def is_tax_code_unique(self, tax_code: str, exclude_id: Optional[int] = None) -> bool:
+    def is_tax_code_unique(
+        self, tax_code: str, exclude_id: Optional[int] = None
+    ) -> bool:
         """
         Check if tax code is unique
 

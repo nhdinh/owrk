@@ -15,12 +15,16 @@ class AssetCategory(BaseModel):
 
     name = Column(String(255), nullable=False)
     code = Column(String(50), unique=True, nullable=False, index=True)
-    parent_id = Column(Integer, ForeignKey("asset_db.asset_categories.id"), nullable=True)
+    parent_id = Column(
+        Integer, ForeignKey("asset_db.asset_categories.id"), nullable=True
+    )
     description = Column(Text, nullable=True)
     is_active = Column(Boolean, default=True, nullable=False)
 
     # Relationships
-    parent = relationship("AssetCategory", remote_side="AssetCategory.id", backref="children")
+    parent = relationship(
+        "AssetCategory", remote_side="AssetCategory.id", backref="children"
+    )
     assets = relationship("Asset", back_populates="category")
 
     def __repr__(self):

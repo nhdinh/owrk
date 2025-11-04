@@ -29,7 +29,9 @@ class Settings:
         with open(DB_PASSWORD_FILE, "r") as f:
             DB_PASSWORD = f.read().strip()
 
-    DATABASE_URL: str = f"mysql+pymysql://{DB_USER}:{quote_plus(DB_PASSWORD)}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+    DATABASE_URL: str = (
+        f"mysql+pymysql://{DB_USER}:{quote_plus(DB_PASSWORD)}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+    )
 
     # MongoDB (Read - for CQRS)
     MONGODB_HOST: str = os.getenv("MONGODB_HOST", "mongodb")
@@ -44,7 +46,9 @@ class Settings:
             MONGODB_PASSWORD = f.read().strip()
 
     MONGODB_DATABASE: str = os.getenv("MONGODB_DATABASE", "procurement_read_db")
-    MONGODB_URL: str = f"mongodb://{MONGODB_USER}:{quote_plus(MONGODB_PASSWORD)}@{MONGODB_HOST}:{MONGODB_PORT}/"
+    MONGODB_URL: str = (
+        f"mongodb://{MONGODB_USER}:{quote_plus(MONGODB_PASSWORD)}@{MONGODB_HOST}:{MONGODB_PORT}/"
+    )
 
     # Redis
     REDIS_HOST: str = os.getenv("REDIS_HOST", "redis")
@@ -66,18 +70,33 @@ class Settings:
     ALGORITHM: str = os.getenv("ALGORITHM", "HS256")
 
     # CORS
-    ALLOWED_ORIGINS: list = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:8000").split(",")
+    ALLOWED_ORIGINS: list = os.getenv(
+        "ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:8000"
+    ).split(",")
 
     # File Upload
     UPLOAD_DIR: str = os.getenv("UPLOAD_DIR", "/app/uploads")
     MAX_UPLOAD_SIZE: int = int(os.getenv("MAX_UPLOAD_SIZE", "10485760"))  # 10MB
-    ALLOWED_EXTENSIONS: set = {".pdf", ".jpg", ".jpeg", ".png", ".doc", ".docx", ".xls", ".xlsx"}
+    ALLOWED_EXTENSIONS: set = {
+        ".pdf",
+        ".jpg",
+        ".jpeg",
+        ".png",
+        ".doc",
+        ".docx",
+        ".xls",
+        ".xlsx",
+    }
 
     # Auth Service URL
-    AUTH_SERVICE_URL: str = os.getenv("AUTH_SERVICE_URL", "http://auth-api-service:8000")
+    AUTH_SERVICE_URL: str = os.getenv(
+        "AUTH_SERVICE_URL", "http://auth-api-service:8000"
+    )
 
     # Asset Service URL
-    ASSET_SERVICE_URL: str = os.getenv("ASSET_SERVICE_URL", "http://asset-api-service:8000")
+    ASSET_SERVICE_URL: str = os.getenv(
+        "ASSET_SERVICE_URL", "http://asset-api-service:8000"
+    )
 
 
 settings = Settings()

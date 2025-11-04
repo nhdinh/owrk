@@ -2,7 +2,17 @@
 Asset Model
 """
 
-from sqlalchemy import Column, String, Integer, Numeric, Date, Text, ForeignKey, DateTime, Enum as SQLEnum
+from sqlalchemy import (
+    Column,
+    String,
+    Integer,
+    Numeric,
+    Date,
+    Text,
+    ForeignKey,
+    DateTime,
+    Enum as SQLEnum,
+)
 from sqlalchemy.orm import relationship
 from datetime import datetime
 import enum
@@ -12,12 +22,14 @@ from app.models.base import BaseModel
 
 class AssetType(str, enum.Enum):
     """Asset type enumeration"""
+
     FIXED_ASSET = "FIXED_ASSET"  # Tài sản cố định
     TOOL = "TOOL"  # Công cụ dụng cụ
 
 
 class AssetStatus(str, enum.Enum):
     """Asset status enumeration"""
+
     NEW = "NEW"
     IN_USE = "IN_USE"
     AVAILABLE = "AVAILABLE"
@@ -28,6 +40,7 @@ class AssetStatus(str, enum.Enum):
 
 class DepreciationMethod(str, enum.Enum):
     """Depreciation method enumeration"""
+
     STRAIGHT_LINE = "STRAIGHT_LINE"  # Khấu hao đường thẳng
     DECLINING_BALANCE = "DECLINING_BALANCE"  # Khấu hao số dư giảm dần
 
@@ -41,7 +54,9 @@ class Asset(BaseModel):
     # Basic Information
     asset_code = Column(String(50), unique=True, nullable=False, index=True)
     name = Column(String(255), nullable=False)
-    category_id = Column(Integer, ForeignKey("asset_db.asset_categories.id"), nullable=False, index=True)
+    category_id = Column(
+        Integer, ForeignKey("asset_db.asset_categories.id"), nullable=False, index=True
+    )
     asset_type = Column(SQLEnum(AssetType), nullable=False, index=True)
     description = Column(Text, nullable=True)
     manufacturer = Column(String(255), nullable=True)
@@ -66,12 +81,16 @@ class Asset(BaseModel):
     warranty_provider = Column(String(255), nullable=True)
 
     # Status
-    status = Column(SQLEnum(AssetStatus), default=AssetStatus.NEW, nullable=False, index=True)
+    status = Column(
+        SQLEnum(AssetStatus), default=AssetStatus.NEW, nullable=False, index=True
+    )
 
     # Location
     location = Column(String(255), nullable=True)
     department_id = Column(Integer, nullable=True, index=True)
-    current_user_id = Column(Integer, nullable=True, index=True)  # Currently assigned user
+    current_user_id = Column(
+        Integer, nullable=True, index=True
+    )  # Currently assigned user
 
     # QR Code
     qr_code = Column(Text, nullable=True)
@@ -82,9 +101,15 @@ class Asset(BaseModel):
 
     # Relationships
     category = relationship("AssetCategory", back_populates="assets")
-    assignments = relationship("AssetAssignment", back_populates="asset", cascade="all, delete-orphan")
-    attachments = relationship("AssetAttachment", back_populates="asset", cascade="all, delete-orphan")
-    depreciation_records = relationship("AssetDepreciationRecord", back_populates="asset", cascade="all, delete-orphan")
+    assignments = relationship(
+        "AssetAssignment", back_populates="asset", cascade="all, delete-orphan"
+    )
+    attachments = relationship(
+        "AssetAttachment", back_populates="asset", cascade="all, delete-orphan"
+    )
+    depreciation_records = relationship(
+        "AssetDepreciationRecord", back_populates="asset", cascade="all, delete-orphan"
+    )
 
     def __repr__(self):
         return f"<Asset(id={self.id}, code={self.asset_code}, name={self.name}, status={self.status})>"

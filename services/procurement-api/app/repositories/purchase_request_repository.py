@@ -9,7 +9,12 @@ from datetime import date
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import and_, or_, desc
 
-from app.models.purchase_request import PurchaseRequest, PurchaseRequestItem, ApprovalStatus, Priority
+from app.models.purchase_request import (
+    PurchaseRequest,
+    PurchaseRequestItem,
+    ApprovalStatus,
+    Priority,
+)
 from app.utils.code_generator import generate_request_code
 
 
@@ -31,14 +36,11 @@ class PurchaseRequestRepository:
             PurchaseRequest: Created purchase request object with items
         """
         # Generate request code
-        department_id = request_data.get('department_id')
+        department_id = request_data.get("department_id")
         request_code = generate_request_code(self.db, department_id)
 
         # Create purchase request object
-        purchase_request = PurchaseRequest(
-            request_code=request_code,
-            **request_data
-        )
+        purchase_request = PurchaseRequest(request_code=request_code, **request_data)
 
         self.db.add(purchase_request)
         self.db.flush()
@@ -46,8 +48,7 @@ class PurchaseRequestRepository:
         # Create items
         for item_data in items_data:
             item = PurchaseRequestItem(
-                purchase_request_id=purchase_request.id,
-                **item_data
+                purchase_request_id=purchase_request.id, **item_data
             )
             self.db.add(item)
 
@@ -58,19 +59,21 @@ class PurchaseRequestRepository:
 
     def get_by_id(self, request_id: int) -> Optional[PurchaseRequest]:
         """Get purchase request by ID with items"""
-        return self.db.query(PurchaseRequest).options(
-            joinedload(PurchaseRequest.items)
-        ).filter(
-            PurchaseRequest.id == request_id
-        ).first()
+        return (
+            self.db.query(PurchaseRequest)
+            .options(joinedload(PurchaseRequest.items))
+            .filter(PurchaseRequest.id == request_id)
+            .first()
+        )
 
     def get_by_code(self, request_code: str) -> Optional[PurchaseRequest]:
         """Get purchase request by code with items"""
-        return self.db.query(PurchaseRequest).options(
-            joinedload(PurchaseRequest.items)
-        ).filter(
-            PurchaseRequest.request_code == request_code
-        ).first()
+        return (
+            self.db.query(PurchaseRequest)
+            .options(joinedload(PurchaseRequest.items))
+            .filter(PurchaseRequest.request_code == request_code)
+            .first()
+        )
 
     def get_all(
         self,
@@ -81,7 +84,7 @@ class PurchaseRequestRepository:
         requested_by: Optional[int] = None,
         department_id: Optional[int] = None,
         from_date: Optional[date] = None,
-        to_date: Optional[date] = None
+        to_date: Optional[date] = None,
     ) -> List[PurchaseRequest]:
         """
         Get all purchase requests with optional filtering
@@ -122,7 +125,12 @@ class PurchaseRequestRepository:
         if to_date:
             query = query.filter(PurchaseRequest.request_date <= to_date)
 
-        return query.order_by(desc(PurchaseRequest.created_at)).offset(skip).limit(limit).all()
+        return (
+            query.order_by(desc(PurchaseRequest.created_at))
+            .offset(skip)
+            .limit(limit)
+            .all()
+        )
 
     def count(
         self,
@@ -131,7 +139,7 @@ class PurchaseRequestRepository:
         requested_by: Optional[int] = None,
         department_id: Optional[int] = None,
         from_date: Optional[date] = None,
-        to_date: Optional[date] = None
+        to_date: Optional[date] = None,
     ) -> int:
         """
         Count purchase requests with optional filtering
@@ -169,7 +177,9 @@ class PurchaseRequestRepository:
 
         return query.count()
 
-    def update(self, purchase_request: PurchaseRequest, update_data: dict) -> PurchaseRequest:
+    def update(
+        self, purchase_request: PurchaseRequest, update_data: dict
+    ) -> PurchaseRequest:
         """
         Update purchase request information
 
@@ -205,9 +215,12 @@ class PurchaseRequestRepository:
 
     def exists(self, request_id: int) -> bool:
         """Check if purchase request exists"""
-        return self.db.query(PurchaseRequest).filter(
-            PurchaseRequest.id == request_id
-        ).first() is not None
+        return (
+            self.db.query(PurchaseRequest)
+            .filter(PurchaseRequest.id == request_id)
+            .first()
+            is not None
+        )
 
     def get_pending_approvals(self, approver_level: int = 1) -> List[PurchaseRequest]:
         """
@@ -228,8 +241,10 @@ class PurchaseRequestRepository:
         else:
             return []
 
-        return self.db.query(PurchaseRequest).options(
-            joinedload(PurchaseRequest.items)
-        ).filter(
-            PurchaseRequest.approval_status == status
-        ).order_by(desc(PurchaseRequest.created_at)).all()
+        return (
+            self.db.query(PurchaseRequest)
+            .options(joinedload(PurchaseRequest.items))
+            .filter(PurchaseRequest.approval_status == status)
+            .order_by(desc(PurchaseRequest.created_at))
+            .all()
+        )

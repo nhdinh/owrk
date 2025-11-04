@@ -34,9 +34,7 @@ class EventPublisher:
 
             # Declare exchange
             self.channel.exchange_declare(
-                exchange=self.exchange,
-                exchange_type="topic",
-                durable=True
+                exchange=self.exchange, exchange_type="topic", durable=True
             )
 
             logger.info("Connected to RabbitMQ successfully")
@@ -73,7 +71,7 @@ class EventPublisher:
             message = {
                 "event_type": event_type,
                 "data": data,
-                "timestamp": data.get("created_at") or data.get("updated_at")
+                "timestamp": data.get("created_at") or data.get("updated_at"),
             }
 
             # Publish to exchange with routing key
@@ -84,11 +82,13 @@ class EventPublisher:
                 body=json.dumps(message, default=str),
                 properties=pika.BasicProperties(
                     delivery_mode=2,  # Make message persistent
-                    content_type="application/json"
-                )
+                    content_type="application/json",
+                ),
             )
 
-            logger.info(f"Published event: {event_type} with routing key: {routing_key}")
+            logger.info(
+                f"Published event: {event_type} with routing key: {routing_key}"
+            )
 
         except AMQPChannelError as e:
             logger.error(f"Failed to publish event {event_type}: {e}")

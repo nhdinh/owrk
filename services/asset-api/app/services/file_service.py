@@ -39,7 +39,10 @@ class FileService:
         # Check file extension
         ext = FileService.get_file_extension(filename)
         if ext not in settings.ALLOWED_EXTENSIONS:
-            return False, f"File type {ext} not allowed. Allowed types: {', '.join(settings.ALLOWED_EXTENSIONS)}"
+            return (
+                False,
+                f"File type {ext} not allowed. Allowed types: {', '.join(settings.ALLOWED_EXTENSIONS)}",
+            )
 
         # Check file size
         if file_size > settings.MAX_UPLOAD_SIZE:
@@ -80,12 +83,13 @@ class FileService:
 
         # Generate unique filename
         import uuid
+
         ext = FileService.get_file_extension(file.filename)
         unique_filename = f"{uuid.uuid4()}{ext}"
         file_path = asset_dir / unique_filename
 
         # Save file
-        async with aiofiles.open(file_path, 'wb') as f:
+        async with aiofiles.open(file_path, "wb") as f:
             await f.write(content)
 
         logger.info(f"File saved: {file_path}")
@@ -95,10 +99,7 @@ class FileService:
 
     @staticmethod
     async def upload_attachment(
-        asset_id: int,
-        file: UploadFile,
-        file_type: FileType,
-        uploaded_by: int
+        asset_id: int, file: UploadFile, file_type: FileType, uploaded_by: int
     ) -> AssetAttachment:
         """
         Upload file attachment for asset

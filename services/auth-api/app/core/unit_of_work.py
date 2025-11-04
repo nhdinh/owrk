@@ -35,6 +35,7 @@ class UnitOfWork:
         """Lazy load User Repository"""
         if self._user_repository is None:
             from app.repositories.user_repository import UserRepository
+
             self._user_repository = UserRepository(self.db)
         return self._user_repository
 
@@ -43,6 +44,7 @@ class UnitOfWork:
         """Lazy load Role Repository"""
         if self._role_repository is None:
             from app.repositories.role_repository import RoleRepository
+
             self._role_repository = RoleRepository(self.db)
         return self._role_repository
 
@@ -51,6 +53,7 @@ class UnitOfWork:
         """Lazy load Permission Repository"""
         if self._permission_repository is None:
             from app.repositories.role_repository import PermissionRepository
+
             self._permission_repository = PermissionRepository(self.db)
         return self._permission_repository
 
@@ -59,6 +62,7 @@ class UnitOfWork:
         """Lazy load RefreshToken Repository"""
         if self._refresh_token_repository is None:
             from app.repositories.refresh_token_repository import RefreshTokenRepository
+
             self._refresh_token_repository = RefreshTokenRepository(self.db)
         return self._refresh_token_repository
 
@@ -66,15 +70,23 @@ class UnitOfWork:
     def password_reset_tokens(self):
         """Lazy load PasswordResetToken Repository"""
         if self._password_reset_token_repository is None:
-            from app.repositories.refresh_token_repository import PasswordResetTokenRepository
-            self._password_reset_token_repository = PasswordResetTokenRepository(self.db)
+            from app.repositories.refresh_token_repository import (
+                PasswordResetTokenRepository,
+            )
+
+            self._password_reset_token_repository = PasswordResetTokenRepository(
+                self.db
+            )
         return self._password_reset_token_repository
 
     @property
     def mfa_backup_codes(self):
         """Lazy load MFABackupCode Repository"""
         if self._mfa_backup_code_repository is None:
-            from app.repositories.refresh_token_repository import MFABackupCodeRepository
+            from app.repositories.refresh_token_repository import (
+                MFABackupCodeRepository,
+            )
+
             self._mfa_backup_code_repository = MFABackupCodeRepository(self.db)
         return self._mfa_backup_code_repository
 

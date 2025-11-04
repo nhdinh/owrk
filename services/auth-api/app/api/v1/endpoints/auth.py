@@ -72,12 +72,12 @@ async def verify_otp(request: MFAVerifyRequest, http_request: Request):
         return result
     except ValueError as e:
         logger.error(f"OTP verification failed: {str(e)}")
-        logger.error(traceback.format_exc()) 
+        logger.error(traceback.format_exc())
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(e))
     except Exception as e:
         logger.error(f"OTP verification failed: {str(e)}")
-        logger.error(traceback.format_exc()) 
-        
+        logger.error(traceback.format_exc())
+
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="OTP verification failed",
@@ -134,18 +134,18 @@ async def setup_mfa(current_user: User = Depends(get_current_user)):
     """
     try:
         # Get user_id from cached auth attributes
-        user_id = getattr(current_user, '_auth_id', None)
+        user_id = getattr(current_user, "_auth_id", None)
         if not user_id:
             raise HTTPException(status_code=401, detail="Invalid user session")
 
         result = await AuthService.setup_mfa(user_id)
         return result
     except ValueError as e:
-        user_id = getattr(current_user, '_auth_id', None)
+        user_id = getattr(current_user, "_auth_id", None)
         logger.error(f"MFA setup validation failed for user {user_id}: {str(e)}")
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
     except Exception as e:
-        user_id = getattr(current_user, '_auth_id', None)
+        user_id = getattr(current_user, "_auth_id", None)
         logger.error(f"MFA setup error for user {user_id}: {str(e)}")
         logger.error(traceback.format_exc())
         raise HTTPException(
@@ -162,18 +162,18 @@ async def enable_mfa(
     """
     try:
         # Get user_id from cached auth attributes
-        user_id = getattr(current_user, '_auth_id', None)
+        user_id = getattr(current_user, "_auth_id", None)
         if not user_id:
             raise HTTPException(status_code=401, detail="Invalid user session")
 
         await AuthService.enable_mfa(user_id, request.otp_code)
         return {"message": "MFA enabled successfully"}
     except ValueError as e:
-        user_id = getattr(current_user, '_auth_id', None)
+        user_id = getattr(current_user, "_auth_id", None)
         logger.error(f"MFA enable validation failed for user {user_id}: {str(e)}")
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
     except Exception as e:
-        user_id = getattr(current_user, '_auth_id', None)
+        user_id = getattr(current_user, "_auth_id", None)
         logger.error(f"MFA enable error for user {user_id}: {str(e)}")
         logger.error(traceback.format_exc())
         raise HTTPException(
@@ -191,7 +191,7 @@ async def disable_mfa(
     """
     try:
         # Get user_id from cached auth attributes
-        user_id = getattr(current_user, '_auth_id', None)
+        user_id = getattr(current_user, "_auth_id", None)
         if not user_id:
             raise HTTPException(status_code=401, detail="Invalid user session")
 
@@ -203,11 +203,11 @@ async def disable_mfa(
         )
         return {"message": "MFA disabled successfully"}
     except ValueError as e:
-        user_id = getattr(current_user, '_auth_id', None)
+        user_id = getattr(current_user, "_auth_id", None)
         logger.error(f"MFA disable validation failed for user {user_id}: {str(e)}")
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
     except Exception as e:
-        user_id = getattr(current_user, '_auth_id', None)
+        user_id = getattr(current_user, "_auth_id", None)
         logger.error(f"MFA disable error for user {user_id}: {str(e)}")
         logger.error(traceback.format_exc())
         raise HTTPException(
@@ -232,7 +232,9 @@ async def forgot_password(request: PasswordResetRequest):
         return {"message": "Password reset instructions sent", "token": token}
     except ValueError as e:
         # Don't reveal if email exists
-        logger.warning(f"Password reset requested for non-existent email: {request.email}")
+        logger.warning(
+            f"Password reset requested for non-existent email: {request.email}"
+        )
         return {"message": "If email exists, reset instructions have been sent"}
     except Exception as e:
         logger.error(f"Password reset request error for {request.email}: {str(e)}")
@@ -291,7 +293,9 @@ async def sync_active_directory(request: ADSyncRequest):
                 },
             }
     except ValueError as e:
-        logger.error(f"AD sync validation failed for username {request.username}: {str(e)}")
+        logger.error(
+            f"AD sync validation failed for username {request.username}: {str(e)}"
+        )
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
     except Exception as e:
         logger.error(f"AD sync error for username {request.username}: {str(e)}")
@@ -306,7 +310,7 @@ async def sync_active_directory(request: ADSyncRequest):
 
 @router.get("/me")
 async def get_current_user_info(
-    credentials: HTTPAuthorizationCredentials = Depends(security)
+    credentials: HTTPAuthorizationCredentials = Depends(security),
 ):
     """
     Get current user information
@@ -341,15 +345,19 @@ async def get_current_user_info(
             "phone_number": user.phone_number,
             "mfa_enabled": user.mfa_enabled,
             "is_active": user.is_active,
-            "role": {
-                "id": user.role.id,
-                "name": user.role.name,
-                "display_name": user.role.display_name,
-            }
-            if user.role
-            else None,
+            "role": (
+                {
+                    "id": user.role.id,
+                    "name": user.role.name,
+                    "display_name": user.role.display_name,
+                }
+                if user.role
+                else None
+            ),
             "created_at": user.created_at.isoformat() if user.created_at else None,
-            "last_login_at": user.last_login_at.isoformat() if user.last_login_at else None,
+            "last_login_at": (
+                user.last_login_at.isoformat() if user.last_login_at else None
+            ),
         }
         return result
 
@@ -400,7 +408,7 @@ async def debug_test_otp(email: str, otp_code: str):
                 "otp_test": {
                     "provided_code": otp_code,
                     "code_length": len(otp_code),
-                }
+                },
             }
 
             if not user.mfa_enabled:
@@ -440,7 +448,11 @@ async def debug_test_otp(email: str, otp_code: str):
                         "current": otp_code == current_code,
                         "next": otp_code == next_code,
                     },
-                    "secret_key_preview": f"{user.mfa_secret[:8]}...{user.mfa_secret[-4:]}" if len(user.mfa_secret) > 12 else "***",
+                    "secret_key_preview": (
+                        f"{user.mfa_secret[:8]}...{user.mfa_secret[-4:]}"
+                        if len(user.mfa_secret) > 12
+                        else "***"
+                    ),
                 }
 
                 if is_valid:
@@ -448,7 +460,9 @@ async def debug_test_otp(email: str, otp_code: str):
                     result["message"] = "OTP code is VALID!"
                 else:
                     result["status"] = "OTP_INVALID"
-                    result["message"] = f"OTP code is INVALID. Expected one of: {prev_code}, {current_code}, {next_code}"
+                    result["message"] = (
+                        f"OTP code is INVALID. Expected one of: {prev_code}, {current_code}, {next_code}"
+                    )
                     result["debugging_tips"] = [
                         "Check if device time is synchronized (automatic time)",
                         "Verify you're using the correct account in authenticator app",
@@ -534,8 +548,7 @@ async def debug_get_mfa_secret(email: str):
             # Generate QR code URL
             totp = pyotp.TOTP(user.mfa_secret)
             provisioning_uri = totp.provisioning_uri(
-                name=user.email,
-                issuer_name="Asset Management"
+                name=user.email, issuer_name="Asset Management"
             )
 
             # Generate QR code URL (using Google Charts API)

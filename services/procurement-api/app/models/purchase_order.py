@@ -2,7 +2,17 @@
 Purchase Order models for final procurement orders
 """
 
-from sqlalchemy import Column, Integer, String, DECIMAL, DATE, TIMESTAMP, Text, ForeignKey, Enum as SQLEnum
+from sqlalchemy import (
+    Column,
+    Integer,
+    String,
+    DECIMAL,
+    DATE,
+    TIMESTAMP,
+    Text,
+    ForeignKey,
+    Enum as SQLEnum,
+)
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.models.base import Base
@@ -11,6 +21,7 @@ import enum
 
 class OrderStatus(str, enum.Enum):
     """Order status enumeration"""
+
     PENDING = "PENDING"
     CONFIRMED = "CONFIRMED"
     PROCESSING = "PROCESSING"
@@ -22,6 +33,7 @@ class OrderStatus(str, enum.Enum):
 
 class PaymentStatus(str, enum.Enum):
     """Payment status enumeration"""
+
     PENDING = "PENDING"
     PARTIAL = "PARTIAL"
     PAID = "PAID"
@@ -62,20 +74,13 @@ class PurchaseOrder(Base):
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     order_code = Column(String(50), unique=True, nullable=False, index=True)
     purchase_request_id = Column(
-        Integer,
-        ForeignKey('procurement_db.purchase_requests.id'),
-        nullable=False
+        Integer, ForeignKey("procurement_db.purchase_requests.id"), nullable=False
     )
     quotation_id = Column(
-        Integer,
-        ForeignKey('procurement_db.quotations.id'),
-        nullable=False
+        Integer, ForeignKey("procurement_db.quotations.id"), nullable=False
     )
     vendor_id = Column(
-        Integer,
-        ForeignKey('procurement_db.vendors.id'),
-        nullable=False,
-        index=True
+        Integer, ForeignKey("procurement_db.vendors.id"), nullable=False, index=True
     )
 
     # Order Information
@@ -96,17 +101,11 @@ class PurchaseOrder(Base):
 
     # Payment Information
     payment_terms = Column(Text)
-    payment_status = Column(
-        SQLEnum(PaymentStatus),
-        default=PaymentStatus.PENDING
-    )
+    payment_status = Column(SQLEnum(PaymentStatus), default=PaymentStatus.PENDING)
 
     # Order Status
     status = Column(
-        SQLEnum(OrderStatus),
-        nullable=False,
-        default=OrderStatus.PENDING,
-        index=True
+        SQLEnum(OrderStatus), nullable=False, default=OrderStatus.PENDING, index=True
     )
 
     # Notes
@@ -145,13 +144,12 @@ class PurchaseOrderItem(Base):
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     purchase_order_id = Column(
         Integer,
-        ForeignKey('procurement_db.purchase_orders.id', ondelete='CASCADE'),
+        ForeignKey("procurement_db.purchase_orders.id", ondelete="CASCADE"),
         nullable=False,
-        index=True
+        index=True,
     )
     quotation_item_id = Column(
-        Integer,
-        ForeignKey('procurement_db.quotation_items.id', ondelete='SET NULL')
+        Integer, ForeignKey("procurement_db.quotation_items.id", ondelete="SET NULL")
     )
 
     # Product Information

@@ -34,7 +34,9 @@ def schedule_depreciation_calculation():
         id="monthly_depreciation",
         replace_existing=True,
     )
-    logger.info(f"Scheduled depreciation calculation on day {settings.DEPRECIATION_DAY_OF_MONTH} of each month")
+    logger.info(
+        f"Scheduled depreciation calculation on day {settings.DEPRECIATION_DAY_OF_MONTH} of each month"
+    )
 
 
 def run_depreciation_calculation():

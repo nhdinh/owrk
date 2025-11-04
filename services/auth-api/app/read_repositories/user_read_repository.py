@@ -55,10 +55,7 @@ class UserReadRepository:
         return await self.collection.find_one({"username": username})
 
     async def find_all(
-        self,
-        skip: int = 0,
-        limit: int = 100,
-        filters: Optional[Dict] = None
+        self, skip: int = 0, limit: int = 100, filters: Optional[Dict] = None
     ) -> List[Dict]:
         """
         Get list of users with pagination and filters
@@ -75,11 +72,7 @@ class UserReadRepository:
         cursor = self.collection.find(query).skip(skip).limit(limit)
         return await cursor.to_list(length=limit)
 
-    async def get_active_users(
-        self,
-        skip: int = 0,
-        limit: int = 100
-    ) -> List[Dict]:
+    async def get_active_users(self, skip: int = 0, limit: int = 100) -> List[Dict]:
         """
         Get all active users
 
@@ -90,17 +83,10 @@ class UserReadRepository:
         Returns:
             List of active users
         """
-        return await self.find_all(
-            skip=skip,
-            limit=limit,
-            filters={"is_active": True}
-        )
+        return await self.find_all(skip=skip, limit=limit, filters={"is_active": True})
 
     async def get_users_by_role(
-        self,
-        role_id: int,
-        skip: int = 0,
-        limit: int = 100
+        self, role_id: int, skip: int = 0, limit: int = 100
     ) -> List[Dict]:
         """
         Get users by role ID
@@ -113,17 +99,10 @@ class UserReadRepository:
         Returns:
             List of users with specified role
         """
-        return await self.find_all(
-            skip=skip,
-            limit=limit,
-            filters={"role_id": role_id}
-        )
+        return await self.find_all(skip=skip, limit=limit, filters={"role_id": role_id})
 
     async def get_users_by_department(
-        self,
-        department_id: int,
-        skip: int = 0,
-        limit: int = 100
+        self, department_id: int, skip: int = 0, limit: int = 100
     ) -> List[Dict]:
         """
         Get users by department
@@ -137,16 +116,10 @@ class UserReadRepository:
             List of users in department
         """
         return await self.find_all(
-            skip=skip,
-            limit=limit,
-            filters={"department_id": department_id}
+            skip=skip, limit=limit, filters={"department_id": department_id}
         )
 
-    async def get_users_with_mfa(
-        self,
-        skip: int = 0,
-        limit: int = 100
-    ) -> List[Dict]:
+    async def get_users_with_mfa(self, skip: int = 0, limit: int = 100) -> List[Dict]:
         """
         Get users with MFA enabled
 
@@ -158,16 +131,11 @@ class UserReadRepository:
             List of users with MFA
         """
         return await self.find_all(
-            skip=skip,
-            limit=limit,
-            filters={"mfa_enabled": True}
+            skip=skip, limit=limit, filters={"mfa_enabled": True}
         )
 
     async def search_users(
-        self,
-        search_term: str,
-        skip: int = 0,
-        limit: int = 100
+        self, search_term: str, skip: int = 0, limit: int = 100
     ) -> List[Dict]:
         """
         Search users by name, email, or username
@@ -184,7 +152,7 @@ class UserReadRepository:
             "$or": [
                 {"full_name": {"$regex": search_term, "$options": "i"}},
                 {"email": {"$regex": search_term, "$options": "i"}},
-                {"username": {"$regex": search_term, "$options": "i"}}
+                {"username": {"$regex": search_term, "$options": "i"}},
             ]
         }
         return await self.find_all(skip=skip, limit=limit, filters=query)
@@ -228,8 +196,10 @@ class UserReadRepository:
                         "$sum": {"$cond": [{"$eq": ["$user_type", "local"]}, 1, 0]}
                     },
                     "ad_users": {
-                        "$sum": {"$cond": [{"$eq": ["$user_type", "active_directory"]}, 1, 0]}
-                    }
+                        "$sum": {
+                            "$cond": [{"$eq": ["$user_type", "active_directory"]}, 1, 0]
+                        }
+                    },
                 }
             }
         ]
@@ -247,7 +217,7 @@ class UserReadRepository:
             "active_users": 0,
             "mfa_enabled_users": 0,
             "local_users": 0,
-            "ad_users": 0
+            "ad_users": 0,
         }
 
     async def upsert_user(self, user_data: Dict) -> bool:
@@ -265,15 +235,17 @@ class UserReadRepository:
             return False
 
         # Remove sensitive data before storing
-        safe_data = {k: v for k, v in user_data.items() if k not in ["hashed_password", "mfa_secret"]}
+        safe_data = {
+            k: v
+            for k, v in user_data.items()
+            if k not in ["hashed_password", "mfa_secret"]
+        }
 
         # Add metadata
         safe_data["synced_at"] = datetime.utcnow()
 
         await self.collection.update_one(
-            {"id": user_id},
-            {"$set": safe_data},
-            upsert=True
+            {"id": user_id}, {"$set": safe_data}, upsert=True
         )
         return True
 
@@ -304,9 +276,7 @@ class UserReadRepository:
         await self.collection.create_index("mfa_enabled")
         await self.collection.create_index("user_type")
         # Text index for search
-        await self.collection.create_index([
-            ("full_name", "text"),
-            ("email", "text"),
-            ("username", "text")
-        ])
+        await self.collection.create_index(
+            [("full_name", "text"), ("email", "text"), ("username", "text")]
+        )
         print("✅ MongoDB indexes created for users collection")

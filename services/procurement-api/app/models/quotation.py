@@ -2,7 +2,17 @@
 Quotation models for vendor price quotes
 """
 
-from sqlalchemy import Column, Integer, String, DECIMAL, DATE, TIMESTAMP, Text, ForeignKey, Enum as SQLEnum
+from sqlalchemy import (
+    Column,
+    Integer,
+    String,
+    DECIMAL,
+    DATE,
+    TIMESTAMP,
+    Text,
+    ForeignKey,
+    Enum as SQLEnum,
+)
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.models.base import Base
@@ -11,6 +21,7 @@ import enum
 
 class QuotationStatus(str, enum.Enum):
     """Quotation status enumeration"""
+
     PENDING = "PENDING"
     APPROVED = "APPROVED"
     REJECTED = "REJECTED"
@@ -43,15 +54,12 @@ class Quotation(Base):
     quotation_code = Column(String(50), unique=True, nullable=False, index=True)
     purchase_request_id = Column(
         Integer,
-        ForeignKey('procurement_db.purchase_requests.id', ondelete='CASCADE'),
+        ForeignKey("procurement_db.purchase_requests.id", ondelete="CASCADE"),
         nullable=False,
-        index=True
+        index=True,
     )
     vendor_id = Column(
-        Integer,
-        ForeignKey('procurement_db.vendors.id'),
-        nullable=False,
-        index=True
+        Integer, ForeignKey("procurement_db.vendors.id"), nullable=False, index=True
     )
 
     # Quotation Information
@@ -70,7 +78,7 @@ class Quotation(Base):
         SQLEnum(QuotationStatus),
         nullable=False,
         default=QuotationStatus.PENDING,
-        index=True
+        index=True,
     )
 
     # Metadata
@@ -107,14 +115,14 @@ class QuotationItem(Base):
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     quotation_id = Column(
         Integer,
-        ForeignKey('procurement_db.quotations.id', ondelete='CASCADE'),
+        ForeignKey("procurement_db.quotations.id", ondelete="CASCADE"),
         nullable=False,
-        index=True
+        index=True,
     )
     purchase_request_item_id = Column(
         Integer,
-        ForeignKey('procurement_db.purchase_request_items.id', ondelete='SET NULL'),
-        index=True
+        ForeignKey("procurement_db.purchase_request_items.id", ondelete="SET NULL"),
+        index=True,
     )
 
     # Product Information

@@ -18,7 +18,9 @@ class DepreciationService:
     """Service for depreciation calculation"""
 
     @staticmethod
-    def calculate_monthly_depreciation(asset: Asset, period_month: int) -> AssetDepreciationRecord:
+    def calculate_monthly_depreciation(
+        asset: Asset, period_month: int
+    ) -> AssetDepreciationRecord:
         """
         Calculate depreciation for a specific period
 
@@ -33,7 +35,9 @@ class DepreciationService:
             ValueError: If asset doesn't have depreciation configured
         """
         if not asset.depreciation_method:
-            raise ValueError(f"Asset {asset.asset_code} has no depreciation method configured")
+            raise ValueError(
+                f"Asset {asset.asset_code} has no depreciation method configured"
+            )
 
         if not asset.useful_life_months:
             raise ValueError(f"Asset {asset.asset_code} has no useful life configured")
@@ -53,7 +57,9 @@ class DepreciationService:
         # Calculate depreciation amount based on method
         if asset.depreciation_method == DepreciationMethod.STRAIGHT_LINE:
             # Straight-line: (Cost - Residual) / Useful Life
-            depreciable_amount = asset.purchase_price - (asset.residual_value or Decimal("0.00"))
+            depreciable_amount = asset.purchase_price - (
+                asset.residual_value or Decimal("0.00")
+            )
             monthly_depreciation = depreciable_amount / asset.useful_life_months
         else:
             # Declining balance: (Book Value * Rate) / 12
@@ -61,7 +67,9 @@ class DepreciationService:
                 annual_rate = asset.depreciation_rate / Decimal("100.00")
                 monthly_depreciation = opening_value * annual_rate / Decimal("12.00")
             else:
-                raise ValueError(f"Asset {asset.asset_code} has no depreciation rate configured")
+                raise ValueError(
+                    f"Asset {asset.asset_code} has no depreciation rate configured"
+                )
 
         # Round to 2 decimal places
         depreciation_amount = round(monthly_depreciation, 2)
@@ -109,11 +117,15 @@ class DepreciationService:
                 try:
                     # Check if already calculated for this period
                     if uow.depreciations.record_exists(asset.id, period_month):
-                        logger.info(f"Depreciation already calculated for asset {asset.asset_code} period {period_month}")
+                        logger.info(
+                            f"Depreciation already calculated for asset {asset.asset_code} period {period_month}"
+                        )
                         continue
 
                     # Calculate depreciation
-                    record = DepreciationService.calculate_monthly_depreciation(asset, period_month)
+                    record = DepreciationService.calculate_monthly_depreciation(
+                        asset, period_month
+                    )
 
                     # Save record
                     uow.depreciations.create(record)
@@ -127,11 +139,15 @@ class DepreciationService:
                     )
 
                 except Exception as e:
-                    logger.error(f"Error calculating depreciation for asset {asset.asset_code}: {str(e)}")
+                    logger.error(
+                        f"Error calculating depreciation for asset {asset.asset_code}: {str(e)}"
+                    )
                     continue
 
             uow.commit()
-            logger.info(f"Depreciation calculated for {count} assets in period {period_month}")
+            logger.info(
+                f"Depreciation calculated for {count} assets in period {period_month}"
+            )
             return count
 
     @staticmethod

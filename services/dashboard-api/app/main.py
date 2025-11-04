@@ -8,6 +8,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 import logging
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from apscheduler.triggers.cron import CronTrigger
 
 from app.core.config import settings
 from app.core.message_bus import message_bus
@@ -18,7 +20,9 @@ from app.read_repositories.service_read_repository import ServiceReadRepository
 from app.consumers.service_event_consumer import service_event_consumer
 
 from app.schemas.queries.service_query import GetServicesListQuery
+from app.schemas.commands.service_commands import RegisterServiceCommand
 from app.queries.handlers import GetServicesListQueryHandler
+from app.commands.handlers import RegisterServiceCommandHandler
 
 # Configure logging
 logging.basicConfig(
@@ -26,6 +30,14 @@ logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
 )
 logger = logging.getLogger(__name__)
+
+# Initialize scheduler
+scheduler = AsyncIOScheduler()
+
+
+def schedule_ping_service_availability():
+    # TODO: Implement configured job to ping for service healths
+    pass
 
 
 async def register_cqrs_handlers():
@@ -42,6 +54,12 @@ async def register_cqrs_handlers():
     service_read_repo = ServiceReadRepository(mongo_db)
 
     try:
+        # Register command handler
+        message_bus.register_command_handler(
+            RegisterServiceCommand, RegisterServiceCommandHandler()
+        )
+        logger.info("✅ Command handlers registered")
+
         # Register query handler
         message_bus.register_query_handler(
             GetServicesListQuery, GetServicesListQueryHandler(service_read_repo)

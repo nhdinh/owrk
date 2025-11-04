@@ -2,6 +2,7 @@
 User Read Model for MongoDB
 Denormalized model optimized for query performance
 """
+
 from typing import Optional, Dict, Any
 from datetime import datetime
 from pydantic import BaseModel, EmailStr
@@ -9,6 +10,7 @@ from pydantic import BaseModel, EmailStr
 
 class RoleReadModel(BaseModel):
     """Embedded role information"""
+
     id: int
     name: str
     display_name: str
@@ -17,6 +19,7 @@ class RoleReadModel(BaseModel):
 
 class DepartmentReadModel(BaseModel):
     """Embedded department information"""
+
     id: int
     name: str
     code: Optional[str] = None
@@ -27,6 +30,7 @@ class UserReadModel(BaseModel):
     Denormalized User model for fast reads from MongoDB
     Includes embedded related data to avoid joins
     """
+
     # Primary fields
     id: int
     email: EmailStr
@@ -66,6 +70,4 @@ class UserReadModel(BaseModel):
     version: int = 1
 
     class Config:
-        json_encoders = {
-            datetime: lambda v: v.isoformat() if v else None
-        }
+        json_encoders = {datetime: lambda v: v.isoformat() if v else None}

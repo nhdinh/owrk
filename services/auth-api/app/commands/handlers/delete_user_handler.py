@@ -1,4 +1,5 @@
 """DeleteUserHandler - Soft delete user"""
+
 import logging
 from sqlalchemy.orm import Session
 from app.core.message_bus import CommandHandler
@@ -24,7 +25,7 @@ class DeleteUserHandler(CommandHandler[DeleteUserCommand, bool]):
             user=user,
             changed_by=command.deleted_by,
             change_reason="User deleted",
-            change_type="deleted"
+            change_type="deleted",
         )
         db.add(history_entry)
 

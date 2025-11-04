@@ -1,9 +1,10 @@
 """Query DTOs for read operations"""
+
 from .user_queries import (
     GetUserByIdQuery,
     GetUserByEmailQuery,
     GetUsersListQuery,
-    GetCurrentUserQuery
+    GetCurrentUserQuery,
 )
 
 __all__ = [

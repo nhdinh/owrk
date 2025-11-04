@@ -55,14 +55,13 @@ class TestDepreciationService:
         # Depreciable amount = 12M - 2M = 10M
         # Monthly depreciation = 10M / 60 = 166,666.67
 
-        with patch('app.services.depreciation_service.UnitOfWork') as mock_uow:
+        with patch("app.services.depreciation_service.UnitOfWork") as mock_uow:
             mock_uow_instance = MagicMock()
             mock_uow.return_value.__enter__.return_value = mock_uow_instance
             mock_uow_instance.depreciations.get_latest_record.return_value = None
 
             record = DepreciationService.calculate_monthly_depreciation(
-                sample_straight_line_asset,
-                202401
+                sample_straight_line_asset, 202401
             )
 
             # Verify calculations
@@ -71,20 +70,21 @@ class TestDepreciationService:
             assert record.closing_value == Decimal("11833333.33")
             assert record.accumulated_depreciation == Decimal("166666.67")
 
-    def test_declining_balance_depreciation_calculation(self, sample_declining_balance_asset):
+    def test_declining_balance_depreciation_calculation(
+        self, sample_declining_balance_asset
+    ):
         """Test declining balance depreciation calculation"""
         # Expected calculation:
         # Annual rate = 20%
         # Monthly depreciation = 500M * 0.20 / 12 = 8,333,333.33
 
-        with patch('app.services.depreciation_service.UnitOfWork') as mock_uow:
+        with patch("app.services.depreciation_service.UnitOfWork") as mock_uow:
             mock_uow_instance = MagicMock()
             mock_uow.return_value.__enter__.return_value = mock_uow_instance
             mock_uow_instance.depreciations.get_latest_record.return_value = None
 
             record = DepreciationService.calculate_monthly_depreciation(
-                sample_declining_balance_asset,
-                202401
+                sample_declining_balance_asset, 202401
             )
 
             # Verify calculations
@@ -101,17 +101,18 @@ class TestDepreciationService:
             opening_value=Decimal("12000000"),
             depreciation_amount=Decimal("166666.67"),
             closing_value=Decimal("11833333.33"),
-            accumulated_depreciation=Decimal("166666.67")
+            accumulated_depreciation=Decimal("166666.67"),
         )
 
-        with patch('app.services.depreciation_service.UnitOfWork') as mock_uow:
+        with patch("app.services.depreciation_service.UnitOfWork") as mock_uow:
             mock_uow_instance = MagicMock()
             mock_uow.return_value.__enter__.return_value = mock_uow_instance
-            mock_uow_instance.depreciations.get_latest_record.return_value = previous_record
+            mock_uow_instance.depreciations.get_latest_record.return_value = (
+                previous_record
+            )
 
             record = DepreciationService.calculate_monthly_depreciation(
-                sample_straight_line_asset,
-                202401
+                sample_straight_line_asset, 202401
             )
 
             # Opening value should be previous closing value
@@ -127,17 +128,18 @@ class TestDepreciationService:
             opening_value=Decimal("2100000"),  # Close to residual
             depreciation_amount=Decimal("166666.67"),
             closing_value=Decimal("1933333.33"),
-            accumulated_depreciation=Decimal("9900000")
+            accumulated_depreciation=Decimal("9900000"),
         )
 
-        with patch('app.services.depreciation_service.UnitOfWork') as mock_uow:
+        with patch("app.services.depreciation_service.UnitOfWork") as mock_uow:
             mock_uow_instance = MagicMock()
             mock_uow.return_value.__enter__.return_value = mock_uow_instance
-            mock_uow_instance.depreciations.get_latest_record.return_value = previous_record
+            mock_uow_instance.depreciations.get_latest_record.return_value = (
+                previous_record
+            )
 
             record = DepreciationService.calculate_monthly_depreciation(
-                sample_straight_line_asset,
-                202401
+                sample_straight_line_asset, 202401
             )
 
             # Should not depreciate below residual value
@@ -150,7 +152,7 @@ class TestDepreciationService:
             asset_code="ASSET-001",
             purchase_price=Decimal("10000000"),
             depreciation_method=None,
-            useful_life_months=60
+            useful_life_months=60,
         )
 
         with pytest.raises(ValueError, match="no depreciation method"):
@@ -161,24 +163,25 @@ class TestDepreciationService:
         sample_straight_line_asset.useful_life_months = None
 
         with pytest.raises(ValueError, match="no useful life"):
-            DepreciationService.calculate_monthly_depreciation(sample_straight_line_asset, 202401)
+            DepreciationService.calculate_monthly_depreciation(
+                sample_straight_line_asset, 202401
+            )
 
     def test_declining_balance_no_rate(self, sample_declining_balance_asset):
         """Test error when declining balance has no rate"""
         sample_declining_balance_asset.depreciation_rate = None
 
-        with patch('app.services.depreciation_service.UnitOfWork') as mock_uow:
+        with patch("app.services.depreciation_service.UnitOfWork") as mock_uow:
             mock_uow_instance = MagicMock()
             mock_uow.return_value.__enter__.return_value = mock_uow_instance
             mock_uow_instance.depreciations.get_latest_record.return_value = None
 
             with pytest.raises(ValueError, match="no depreciation rate"):
                 DepreciationService.calculate_monthly_depreciation(
-                    sample_declining_balance_asset,
-                    202401
+                    sample_declining_balance_asset, 202401
                 )
 
-    @patch('app.services.depreciation_service.UnitOfWork')
+    @patch("app.services.depreciation_service.UnitOfWork")
     def test_calculate_all_depreciation(self, mock_uow, sample_straight_line_asset):
         """Test batch depreciation calculation for all assets"""
         mock_uow_instance = MagicMock()
@@ -198,15 +201,19 @@ class TestDepreciationService:
         mock_uow_instance.depreciations.create.assert_called_once()
         mock_uow_instance.commit.assert_called_once()
 
-    @patch('app.services.depreciation_service.UnitOfWork')
-    def test_calculate_all_depreciation_skip_existing(self, mock_uow, sample_straight_line_asset):
+    @patch("app.services.depreciation_service.UnitOfWork")
+    def test_calculate_all_depreciation_skip_existing(
+        self, mock_uow, sample_straight_line_asset
+    ):
         """Test that existing depreciation records are skipped"""
         mock_uow_instance = MagicMock()
         mock_uow.return_value.__enter__.return_value = mock_uow_instance
 
         assets = [sample_straight_line_asset]
         mock_uow_instance.assets.get_fixed_assets_for_depreciation.return_value = assets
-        mock_uow_instance.depreciations.record_exists.return_value = True  # Already exists
+        mock_uow_instance.depreciations.record_exists.return_value = (
+            True  # Already exists
+        )
 
         # Execute
         count = DepreciationService.calculate_all_depreciation(202401)
@@ -229,7 +236,7 @@ class TestDepreciationService:
         expected = today.year * 100 + today.month
         assert period == expected
 
-    @patch('app.services.depreciation_service.UnitOfWork')
+    @patch("app.services.depreciation_service.UnitOfWork")
     def test_get_asset_depreciation_history(self, mock_uow):
         """Test retrieving depreciation history for an asset"""
         mock_uow_instance = MagicMock()
@@ -244,7 +251,7 @@ class TestDepreciationService:
                 opening_value=Decimal("12000000"),
                 depreciation_amount=Decimal("166666.67"),
                 closing_value=Decimal("11833333.33"),
-                accumulated_depreciation=Decimal("166666.67")
+                accumulated_depreciation=Decimal("166666.67"),
             ),
             AssetDepreciationRecord(
                 id=2,
@@ -253,13 +260,14 @@ class TestDepreciationService:
                 opening_value=Decimal("11833333.33"),
                 depreciation_amount=Decimal("166666.67"),
                 closing_value=Decimal("11666666.66"),
-                accumulated_depreciation=Decimal("333333.34")
-            )
+                accumulated_depreciation=Decimal("333333.34"),
+            ),
         ]
         mock_uow_instance.depreciations.get_asset_records.return_value = records
 
         # Execute
         import asyncio
+
         result = asyncio.run(DepreciationService.get_asset_depreciation_history(1))
 
         # Verify

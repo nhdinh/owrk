@@ -15,7 +15,7 @@ from app.core.events import startup_event_publisher, shutdown_event_publisher
 # Configure logging
 logging.basicConfig(
     level=logging.INFO if not settings.DEBUG else logging.DEBUG,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
 )
 logger = logging.getLogger(__name__)
 
@@ -59,7 +59,7 @@ app = FastAPI(
     version="1.0.0",
     docs_url="/docs",
     redoc_url="/redoc",
-    lifespan=lifespan
+    lifespan=lifespan,
 )
 
 # Configure CORS
@@ -79,11 +79,7 @@ async def health_check():
     Health check endpoint
     Returns service status
     """
-    return {
-        "status": "healthy",
-        "service": settings.APP_NAME,
-        "version": "1.0.0"
-    }
+    return {"status": "healthy", "service": settings.APP_NAME, "version": "1.0.0"}
 
 
 # Root endpoint
@@ -97,20 +93,17 @@ async def root():
         "service": settings.APP_NAME,
         "version": "1.0.0",
         "docs": "/docs",
-        "health": "/health"
+        "health": "/health",
     }
 
 
 # Import and include API routers
 from app.api.v1.router import api_router
+
 app.include_router(api_router, prefix="/api/v1")
 
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(
-        "app.main:app",
-        host="0.0.0.0",
-        port=8004,
-        reload=settings.DEBUG
-    )
+
+    uvicorn.run("app.main:app", host="0.0.0.0", port=8004, reload=settings.DEBUG)

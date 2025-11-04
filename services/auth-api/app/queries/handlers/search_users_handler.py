@@ -1,6 +1,7 @@
 """
 SearchUsersHandler - Query handler for full-text search
 """
+
 import logging
 from typing import List, Dict
 from app.core.message_bus import QueryHandler
@@ -35,9 +36,7 @@ class SearchUsersHandler(QueryHandler[GetUsersListQuery, List[Dict]]):
         logger.debug(f"Searching users: {query.search}")
 
         users = await self.user_read_repo.search_users(
-            search_term=query.search,
-            skip=query.skip,
-            limit=query.limit
+            search_term=query.search, skip=query.skip, limit=query.limit
         )
 
         logger.debug(f"Found {len(users)} matching users")

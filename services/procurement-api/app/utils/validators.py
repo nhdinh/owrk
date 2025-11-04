@@ -10,9 +10,7 @@ from fastapi import HTTPException, status
 
 
 def validate_date_range(
-    start_date: date,
-    end_date: date,
-    allow_past: bool = False
+    start_date: date, end_date: date, allow_past: bool = False
 ) -> None:
     """
     Validate date range
@@ -31,21 +29,19 @@ def validate_date_range(
     if end_date <= start_date:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="End date must be after start date"
+            detail="End date must be after start date",
         )
 
     # Check if start date is in the past
     if not allow_past and start_date < today:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Start date cannot be in the past"
+            detail="Start date cannot be in the past",
         )
 
 
 def validate_positive_amount(
-    amount: Decimal,
-    field_name: str = "Amount",
-    allow_zero: bool = False
+    amount: Decimal, field_name: str = "Amount", allow_zero: bool = False
 ) -> None:
     """
     Validate that amount is positive
@@ -62,13 +58,13 @@ def validate_positive_amount(
         if amount < 0:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"{field_name} cannot be negative"
+                detail=f"{field_name} cannot be negative",
             )
     else:
         if amount <= 0:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"{field_name} must be greater than zero"
+                detail=f"{field_name} must be greater than zero",
             )
 
 
@@ -76,7 +72,7 @@ def validate_quantity(
     quantity: int,
     field_name: str = "Quantity",
     min_value: int = 1,
-    max_value: Optional[int] = None
+    max_value: Optional[int] = None,
 ) -> None:
     """
     Validate quantity
@@ -93,13 +89,13 @@ def validate_quantity(
     if quantity < min_value:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"{field_name} must be at least {min_value}"
+            detail=f"{field_name} must be at least {min_value}",
         )
 
     if max_value is not None and quantity > max_value:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"{field_name} cannot exceed {max_value}"
+            detail=f"{field_name} cannot exceed {max_value}",
         )
 
 
@@ -115,12 +111,11 @@ def validate_email(email: str) -> None:
     """
     import re
 
-    email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    email_pattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
 
     if not re.match(email_pattern, email):
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid email format"
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid email format"
         )
 
 
@@ -137,12 +132,14 @@ def validate_phone(phone: str) -> None:
     import re
 
     # Allow formats: +84123456789, 0123456789, (012) 345-6789
-    phone_pattern = r'^[\+]?[(]?[0-9]{1,4}[)]?[-\s\.]?[(]?[0-9]{1,4}[)]?[-\s\.]?[0-9]{1,9}$'
+    phone_pattern = (
+        r"^[\+]?[(]?[0-9]{1,4}[)]?[-\s\.]?[(]?[0-9]{1,4}[)]?[-\s\.]?[0-9]{1,9}$"
+    )
 
-    if not re.match(phone_pattern, phone.replace(' ', '')):
+    if not re.match(phone_pattern, phone.replace(" ", "")):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid phone number format"
+            detail="Invalid phone number format",
         )
 
 
@@ -160,7 +157,7 @@ def validate_tax_code(tax_code: str) -> None:
     if not tax_code.isdigit() or len(tax_code) not in [10, 13]:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Tax code must be 10 or 13 digits"
+            detail="Tax code must be 10 or 13 digits",
         )
 
 
@@ -177,14 +174,11 @@ def validate_rating(rating: Decimal) -> None:
     if not (0 <= rating <= 5):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Rating must be between 0.00 and 5.00"
+            detail="Rating must be between 0.00 and 5.00",
         )
 
 
-def validate_percentage(
-    percentage: Decimal,
-    field_name: str = "Percentage"
-) -> None:
+def validate_percentage(percentage: Decimal, field_name: str = "Percentage") -> None:
     """
     Validate percentage (0 - 100)
 
@@ -198,7 +192,7 @@ def validate_percentage(
     if not (0 <= percentage <= 100):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"{field_name} must be between 0 and 100"
+            detail=f"{field_name} must be between 0 and 100",
         )
 
 
@@ -217,14 +211,11 @@ def validate_priority(priority: str) -> None:
     if priority.upper() not in valid_priorities:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Priority must be one of: {', '.join(valid_priorities)}"
+            detail=f"Priority must be one of: {', '.join(valid_priorities)}",
         )
 
 
-def validate_approval_transition(
-    current_status: str,
-    new_status: str
-) -> None:
+def validate_approval_transition(current_status: str, new_status: str) -> None:
     """
     Validate approval status transition
     Ensures workflow follows proper sequence
@@ -244,7 +235,7 @@ def validate_approval_transition(
         "LEVEL2_APPROVED": ["APPROVED", "REJECTED", "CANCELLED"],
         "APPROVED": ["CANCELLED"],
         "REJECTED": [],
-        "CANCELLED": []
+        "CANCELLED": [],
     }
 
     allowed = valid_transitions.get(current_status, [])
@@ -252,5 +243,5 @@ def validate_approval_transition(
     if new_status not in allowed:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Cannot transition from {current_status} to {new_status}"
+            detail=f"Cannot transition from {current_status} to {new_status}",
         )

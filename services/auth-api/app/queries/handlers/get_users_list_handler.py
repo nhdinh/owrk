@@ -1,6 +1,7 @@
 """
 GetUsersListHandler - Query handler for getting paginated users list
 """
+
 import logging
 from typing import List, Dict
 from app.core.message_bus import QueryHandler
@@ -42,9 +43,7 @@ class GetUsersListHandler(QueryHandler[GetUsersListQuery, Dict]):
 
         # Get users
         users = await self.user_read_repo.find_all(
-            skip=query.skip,
-            limit=query.limit,
-            filters=filters
+            skip=query.skip, limit=query.limit, filters=filters
         )
 
         # Get total count
@@ -56,5 +55,5 @@ class GetUsersListHandler(QueryHandler[GetUsersListQuery, Dict]):
             "users": users,
             "total": total,
             "skip": query.skip,
-            "limit": query.limit
+            "limit": query.limit,
         }

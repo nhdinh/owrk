@@ -14,11 +14,18 @@ class AssetDepreciationRecord(BaseModel):
     __tablename__ = "asset_depreciation_records"
     __table_args__ = (
         UniqueConstraint("asset_id", "period_month", name="uk_asset_period"),
-        {"schema": "asset_db"}
+        {"schema": "asset_db"},
     )
 
-    asset_id = Column(Integer, ForeignKey("asset_db.assets.id", ondelete="CASCADE"), nullable=False, index=True)
-    period_month = Column(Integer, nullable=False, index=True)  # Format: YYYYMM (e.g., 202501)
+    asset_id = Column(
+        Integer,
+        ForeignKey("asset_db.assets.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    period_month = Column(
+        Integer, nullable=False, index=True
+    )  # Format: YYYYMM (e.g., 202501)
 
     # Values
     opening_value = Column(Numeric(15, 2), nullable=False)

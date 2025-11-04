@@ -1,4 +1,5 @@
 """ActivateUserHandler - Activate user account"""
+
 import logging
 from sqlalchemy.orm import Session
 from app.core.message_bus import CommandHandler
@@ -25,7 +26,7 @@ class ActivateUserHandler(CommandHandler[ActivateUserCommand, UserResponse]):
             user=user,
             changed_by=command.activated_by,
             change_reason="User activated",
-            change_type="activated"
+            change_type="activated",
         )
         db.add(history_entry)
 

@@ -1,4 +1,5 @@
 """DeactivateUserHandler - Deactivate user account"""
+
 import logging
 from sqlalchemy.orm import Session
 from app.core.message_bus import CommandHandler
@@ -25,7 +26,7 @@ class DeactivateUserHandler(CommandHandler[DeactivateUserCommand, UserResponse])
             user=user,
             changed_by=command.deactivated_by,
             change_reason="User deactivated",
-            change_type="deactivated"
+            change_type="deactivated",
         )
         db.add(history_entry)
 

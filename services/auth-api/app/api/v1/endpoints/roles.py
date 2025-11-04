@@ -15,9 +15,7 @@ router = APIRouter(prefix="/roles", tags=["Role Management"])
 
 
 @router.get("")
-async def get_roles(
-    current_user: User = Depends(require_permission("role:read"))
-):
+async def get_roles(current_user: User = Depends(require_permission("role:read"))):
     """
     Get all roles
     Requires 'role:read' permission
@@ -33,36 +31,40 @@ async def get_roles(
             permissions_data = []
             if role.permissions:
                 for perm in role.permissions:
-                    permissions_data.append({
-                        "id": perm.id,
-                        "name": perm.name,
-                        "code": perm.name,
-                        "resource": perm.resource,
-                        "action": perm.action,
-                        "description": perm.description,
-                    })
+                    permissions_data.append(
+                        {
+                            "id": perm.id,
+                            "name": perm.name,
+                            "code": perm.name,
+                            "resource": perm.resource,
+                            "action": perm.action,
+                            "description": perm.description,
+                        }
+                    )
 
-            result.append({
-                "id": role.id,
-                "name": role.name,
-                "display_name": role.display_name,
-                "description": role.description,
-                "is_active": role.is_active,
-                "permissions": permissions_data,
-                "created_at": role.created_at.isoformat() if role.created_at else None,
-                "updated_at": role.updated_at.isoformat() if role.updated_at else None,
-            })
+            result.append(
+                {
+                    "id": role.id,
+                    "name": role.name,
+                    "display_name": role.display_name,
+                    "description": role.description,
+                    "is_active": role.is_active,
+                    "permissions": permissions_data,
+                    "created_at": (
+                        role.created_at.isoformat() if role.created_at else None
+                    ),
+                    "updated_at": (
+                        role.updated_at.isoformat() if role.updated_at else None
+                    ),
+                }
+            )
 
-        return {
-            "roles": result,
-            "total": total_count
-        }
+        return {"roles": result, "total": total_count}
 
 
 @router.get("/{role_id}")
 async def get_role(
-    role_id: int,
-    current_user: User = Depends(require_permission("role:read"))
+    role_id: int, current_user: User = Depends(require_permission("role:read"))
 ):
     """
     Get role by ID
@@ -71,21 +73,25 @@ async def get_role(
     with UnitOfWork() as uow:
         role = uow.roles.get_by_id(role_id)
         if not role:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Role not found")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Role not found"
+            )
 
         # Serialize data within session context
         # Include permissions array
         permissions_data = []
         if role.permissions:
             for perm in role.permissions:
-                permissions_data.append({
-                    "id": perm.id,
-                    "name": perm.name,
-                    "code": perm.name,  # Alias for frontend compatibility
-                    "resource": perm.resource,
-                    "action": perm.action,
-                    "description": perm.description,
-                })
+                permissions_data.append(
+                    {
+                        "id": perm.id,
+                        "name": perm.name,
+                        "code": perm.name,  # Alias for frontend compatibility
+                        "resource": perm.resource,
+                        "action": perm.action,
+                        "description": perm.description,
+                    }
+                )
 
         return {
             "id": role.id,
@@ -101,7 +107,7 @@ async def get_role(
 
 @router.get("/permissions/all")
 async def get_all_permissions(
-    current_user: User = Depends(require_permission("role:read"))
+    current_user: User = Depends(require_permission("role:read")),
 ):
     """
     Get all available permissions
@@ -113,16 +119,26 @@ async def get_all_permissions(
         # Serialize data within session context
         result = []
         for permission in permissions:
-            result.append({
-                "id": permission.id,
-                "name": permission.name,
-                "code": permission.name,  # Alias for frontend compatibility
-                "resource": permission.resource,
-                "action": permission.action,
-                "description": permission.description,
-                "created_at": permission.created_at.isoformat() if permission.created_at else None,
-                "updated_at": permission.updated_at.isoformat() if permission.updated_at else None,
-            })
+            result.append(
+                {
+                    "id": permission.id,
+                    "name": permission.name,
+                    "code": permission.name,  # Alias for frontend compatibility
+                    "resource": permission.resource,
+                    "action": permission.action,
+                    "description": permission.description,
+                    "created_at": (
+                        permission.created_at.isoformat()
+                        if permission.created_at
+                        else None
+                    ),
+                    "updated_at": (
+                        permission.updated_at.isoformat()
+                        if permission.updated_at
+                        else None
+                    ),
+                }
+            )
 
         return result
 
@@ -130,7 +146,7 @@ async def get_all_permissions(
 @router.post("", response_model=RoleResponse, status_code=status.HTTP_201_CREATED)
 async def create_role(
     role_data: RoleCreate,
-    current_user: User = Depends(require_permission("role:create"))
+    current_user: User = Depends(require_permission("role:create")),
 ):
     """
     Create a new role
@@ -142,7 +158,7 @@ async def create_role(
         if existing:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Role with name '{role_data.name}' already exists"
+                detail=f"Role with name '{role_data.name}' already exists",
             )
 
         # Create new role
@@ -150,7 +166,7 @@ async def create_role(
             name=role_data.name,
             display_name=role_data.display_name,
             description=role_data.description,
-            is_active=role_data.is_active
+            is_active=role_data.is_active,
         )
 
         created_role = uow.roles.create(new_role)
@@ -163,8 +179,12 @@ async def create_role(
             "display_name": created_role.display_name,
             "description": created_role.description,
             "is_active": created_role.is_active,
-            "created_at": created_role.created_at.isoformat() if created_role.created_at else None,
-            "updated_at": created_role.updated_at.isoformat() if created_role.updated_at else None,
+            "created_at": (
+                created_role.created_at.isoformat() if created_role.created_at else None
+            ),
+            "updated_at": (
+                created_role.updated_at.isoformat() if created_role.updated_at else None
+            ),
         }
 
 
@@ -172,7 +192,7 @@ async def create_role(
 async def update_role(
     role_id: int,
     role_data: RoleUpdate,
-    current_user: User = Depends(require_permission("role:update"))
+    current_user: User = Depends(require_permission("role:update")),
 ):
     """
     Update role
@@ -181,7 +201,9 @@ async def update_role(
     with UnitOfWork() as uow:
         role = uow.roles.get_by_id(role_id)
         if not role:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Role not found")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Role not found"
+            )
 
         # Update fields if provided
         if role_data.name is not None:
@@ -190,7 +212,7 @@ async def update_role(
             if existing and existing.id != role_id:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
-                    detail=f"Role with name '{role_data.name}' already exists"
+                    detail=f"Role with name '{role_data.name}' already exists",
                 )
             role.name = role_data.name
 
@@ -213,15 +235,18 @@ async def update_role(
             "display_name": updated_role.display_name,
             "description": updated_role.description,
             "is_active": updated_role.is_active,
-            "created_at": updated_role.created_at.isoformat() if updated_role.created_at else None,
-            "updated_at": updated_role.updated_at.isoformat() if updated_role.updated_at else None,
+            "created_at": (
+                updated_role.created_at.isoformat() if updated_role.created_at else None
+            ),
+            "updated_at": (
+                updated_role.updated_at.isoformat() if updated_role.updated_at else None
+            ),
         }
 
 
 @router.delete("/{role_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_role(
-    role_id: int,
-    current_user: User = Depends(require_permission("role:delete"))
+    role_id: int, current_user: User = Depends(require_permission("role:delete"))
 ):
     """
     Delete role (soft delete - set inactive)
@@ -230,14 +255,16 @@ async def delete_role(
     with UnitOfWork() as uow:
         role = uow.roles.get_by_id(role_id)
         if not role:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Role not found")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Role not found"
+            )
 
         # Check if role is assigned to any users
         users_with_role = uow.users.get_by_role_id(role_id)
         if users_with_role:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Cannot delete role. {len(users_with_role)} user(s) still have this role assigned."
+                detail=f"Cannot delete role. {len(users_with_role)} user(s) still have this role assigned.",
             )
 
         # Soft delete - set inactive
@@ -248,11 +275,13 @@ async def delete_role(
         return None
 
 
-@router.post("/{role_id}/permissions/{permission_id}", status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/{role_id}/permissions/{permission_id}", status_code=status.HTTP_201_CREATED
+)
 async def add_permission_to_role(
     role_id: int,
     permission_id: int,
-    current_user: User = Depends(require_permission("role:update"))
+    current_user: User = Depends(require_permission("role:update")),
 ):
     """
     Add permission to role
@@ -261,17 +290,21 @@ async def add_permission_to_role(
     with UnitOfWork() as uow:
         role = uow.roles.get_by_id(role_id)
         if not role:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Role not found")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Role not found"
+            )
 
         permission = uow.permissions.get_by_id(permission_id)
         if not permission:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Permission not found")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Permission not found"
+            )
 
         # Check if permission already assigned
         if permission in role.permissions:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Permission already assigned to this role"
+                detail="Permission already assigned to this role",
             )
 
         # Add permission
@@ -281,11 +314,13 @@ async def add_permission_to_role(
         return {"message": "Permission added successfully"}
 
 
-@router.delete("/{role_id}/permissions/{permission_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+    "/{role_id}/permissions/{permission_id}", status_code=status.HTTP_204_NO_CONTENT
+)
 async def remove_permission_from_role(
     role_id: int,
     permission_id: int,
-    current_user: User = Depends(require_permission("role:update"))
+    current_user: User = Depends(require_permission("role:update")),
 ):
     """
     Remove permission from role
@@ -294,17 +329,21 @@ async def remove_permission_from_role(
     with UnitOfWork() as uow:
         role = uow.roles.get_by_id(role_id)
         if not role:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Role not found")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Role not found"
+            )
 
         permission = uow.permissions.get_by_id(permission_id)
         if not permission:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Permission not found")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Permission not found"
+            )
 
         # Check if permission is assigned
         if permission not in role.permissions:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Permission not assigned to this role"
+                detail="Permission not assigned to this role",
             )
 
         # Remove permission

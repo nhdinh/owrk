@@ -2,6 +2,7 @@
 Users CQRS Endpoints - Demo endpoints using CQRS pattern via Message Bus
 This demonstrates the new architecture with Command/Query separation
 """
+
 from typing import List, Dict
 from fastapi import APIRouter, Depends, HTTPException, status, Query as QueryParam
 
@@ -16,12 +17,12 @@ from app.schemas.commands.user_commands import (
     UpdateUserCommand,
     DeleteUserCommand,
     ActivateUserCommand,
-    DeactivateUserCommand
+    DeactivateUserCommand,
 )
 from app.schemas.queries.user_queries import (
     GetUserByIdQuery,
     GetUsersListQuery,
-    GetUserHistoryQuery
+    GetUserHistoryQuery,
 )
 
 router = APIRouter(prefix="/users-cqrs", tags=["users-cqrs"])
@@ -32,7 +33,7 @@ async def create_user_cqrs(
     user_data: UserCreate,
     db: Session = Depends(get_db),
     bus: MessageBus = Depends(get_message_bus),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
 ):
     """
     Create new user using CQRS Command pattern
@@ -45,7 +46,7 @@ async def create_user_cqrs(
     """
     # Create command
     # Use _auth_id to avoid detached instance error
-    current_user_id = getattr(current_user, '_auth_id', None)
+    current_user_id = getattr(current_user, "_auth_id", None)
     if not current_user_id:
         raise HTTPException(status_code=401, detail="Invalid user session")
 
@@ -58,7 +59,7 @@ async def create_user_cqrs(
         phone_number=user_data.phone_number,
         position=user_data.position,
         user_type=user_data.user_type or "local",
-        created_by=current_user_id
+        created_by=current_user_id,
     )
 
     # Dispatch command via Message Bus with database session
@@ -66,14 +67,11 @@ async def create_user_cqrs(
         result = await bus.execute_command(command, db=db)
         return result
     except ValueError as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(e)
-        )
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to create user: {str(e)}"
+            detail=f"Failed to create user: {str(e)}",
         )
 
 
@@ -83,7 +81,7 @@ async def update_user_cqrs(
     user_data: UserUpdate,
     db: Session = Depends(get_db),
     bus: MessageBus = Depends(get_message_bus),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
 ):
     """
     Update user using CQRS Command pattern
@@ -94,7 +92,7 @@ async def update_user_cqrs(
     - Publishes UserUpdated event
     """
     # Use _auth_id to avoid detached instance error
-    current_user_id = getattr(current_user, '_auth_id', None)
+    current_user_id = getattr(current_user, "_auth_id", None)
     if not current_user_id:
         raise HTTPException(status_code=401, detail="Invalid user session")
 
@@ -106,21 +104,18 @@ async def update_user_cqrs(
         position=user_data.position,
         department_id=user_data.department_id,
         role_id=user_data.role_id,
-        updated_by=current_user_id
+        updated_by=current_user_id,
     )
 
     try:
         result = await bus.execute_command(command, db=db)
         return result
     except ValueError as e:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=str(e)
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to update user: {str(e)}"
+            detail=f"Failed to update user: {str(e)}",
         )
 
 
@@ -129,28 +124,22 @@ async def delete_user_cqrs(
     user_id: int,
     db: Session = Depends(get_db),
     bus: MessageBus = Depends(get_message_bus),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
 ):
     """
     Delete (soft delete) user using CQRS Command pattern
     """
-    current_user_id = getattr(current_user, '_auth_id', None)
+    current_user_id = getattr(current_user, "_auth_id", None)
     if not current_user_id:
         raise HTTPException(status_code=401, detail="Invalid user session")
 
-    command = DeleteUserCommand(
-        user_id=user_id,
-        deleted_by=current_user_id
-    )
+    command = DeleteUserCommand(user_id=user_id, deleted_by=current_user_id)
 
     try:
         await bus.execute_command(command, db=db)
         return None
     except ValueError as e:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=str(e)
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
 
 
 @router.post("/{user_id}/activate", response_model=UserResponse)
@@ -158,28 +147,22 @@ async def activate_user_cqrs(
     user_id: int,
     db: Session = Depends(get_db),
     bus: MessageBus = Depends(get_message_bus),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
 ):
     """
     Activate user account using CQRS Command pattern
     """
-    current_user_id = getattr(current_user, '_auth_id', None)
+    current_user_id = getattr(current_user, "_auth_id", None)
     if not current_user_id:
         raise HTTPException(status_code=401, detail="Invalid user session")
 
-    command = ActivateUserCommand(
-        user_id=user_id,
-        activated_by=current_user_id
-    )
+    command = ActivateUserCommand(user_id=user_id, activated_by=current_user_id)
 
     try:
         result = await bus.execute_command(command, db=db)
         return result
     except ValueError as e:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=str(e)
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
 
 
 @router.post("/{user_id}/deactivate", response_model=UserResponse)
@@ -187,35 +170,29 @@ async def deactivate_user_cqrs(
     user_id: int,
     db: Session = Depends(get_db),
     bus: MessageBus = Depends(get_message_bus),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
 ):
     """
     Deactivate user account using CQRS Command pattern
     """
-    current_user_id = getattr(current_user, '_auth_id', None)
+    current_user_id = getattr(current_user, "_auth_id", None)
     if not current_user_id:
         raise HTTPException(status_code=401, detail="Invalid user session")
 
-    command = DeactivateUserCommand(
-        user_id=user_id,
-        deactivated_by=current_user_id
-    )
+    command = DeactivateUserCommand(user_id=user_id, deactivated_by=current_user_id)
 
     try:
         result = await bus.execute_command(command, db=db)
         return result
     except ValueError as e:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=str(e)
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
 
 
 @router.get("/{user_id}", response_model=Dict)
 async def get_user_cqrs(
     user_id: int,
     bus: MessageBus = Depends(get_message_bus),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
 ):
     """
     Get user by ID using CQRS Query pattern
@@ -232,13 +209,13 @@ async def get_user_cqrs(
         if not result:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"User with ID {user_id} not found"
+                detail=f"User with ID {user_id} not found",
             )
         return result
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to get user: {str(e)}"
+            detail=f"Failed to get user: {str(e)}",
         )
 
 
@@ -251,7 +228,7 @@ async def get_users_list_cqrs(
     department_id: int = QueryParam(None),
     search: str = QueryParam(None),
     bus: MessageBus = Depends(get_message_bus),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
 ):
     """
     Get paginated users list using CQRS Query pattern
@@ -267,7 +244,7 @@ async def get_users_list_cqrs(
         is_active=is_active,
         role_id=role_id,
         department_id=department_id,
-        search=search
+        search=search,
     )
 
     try:
@@ -276,7 +253,7 @@ async def get_users_list_cqrs(
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to get users list: {str(e)}"
+            detail=f"Failed to get users list: {str(e)}",
         )
 
 
@@ -287,7 +264,7 @@ async def get_user_history_cqrs(
     limit: int = QueryParam(50, ge=1, le=100),
     db: Session = Depends(get_db),
     bus: MessageBus = Depends(get_message_bus),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
 ):
     """
     Get user version history using CQRS Query pattern
@@ -298,11 +275,7 @@ async def get_user_history_cqrs(
     - Supports pagination
     - Ordered by version DESC
     """
-    query = GetUserHistoryQuery(
-        user_id=user_id,
-        skip=skip,
-        limit=limit
-    )
+    query = GetUserHistoryQuery(user_id=user_id, skip=skip, limit=limit)
 
     try:
         result = await bus.execute_query(query, db=db)
@@ -310,5 +283,5 @@ async def get_user_history_cqrs(
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to get user history: {str(e)}"
+            detail=f"Failed to get user history: {str(e)}",
         )

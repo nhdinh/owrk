@@ -16,19 +16,33 @@ class CategoryRepository(BaseRepository[AssetCategory]):
 
     def get_by_code(self, code: str) -> Optional[AssetCategory]:
         """Get category by code"""
-        return self.session.query(AssetCategory).filter(AssetCategory.code == code).first()
+        return (
+            self.session.query(AssetCategory).filter(AssetCategory.code == code).first()
+        )
 
     def get_active_categories(self) -> List[AssetCategory]:
         """Get all active categories"""
-        return self.session.query(AssetCategory).filter(AssetCategory.is_active == True).all()
+        return (
+            self.session.query(AssetCategory)
+            .filter(AssetCategory.is_active == True)
+            .all()
+        )
 
     def get_root_categories(self) -> List[AssetCategory]:
         """Get categories without parent (root level)"""
-        return self.session.query(AssetCategory).filter(AssetCategory.parent_id == None).all()
+        return (
+            self.session.query(AssetCategory)
+            .filter(AssetCategory.parent_id == None)
+            .all()
+        )
 
     def get_children(self, parent_id: int) -> List[AssetCategory]:
         """Get child categories of a parent"""
-        return self.session.query(AssetCategory).filter(AssetCategory.parent_id == parent_id).all()
+        return (
+            self.session.query(AssetCategory)
+            .filter(AssetCategory.parent_id == parent_id)
+            .all()
+        )
 
     def deactivate(self, id: int) -> bool:
         """Deactivate a category"""

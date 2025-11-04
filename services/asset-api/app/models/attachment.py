@@ -11,6 +11,7 @@ from app.models.base import BaseModel
 
 class FileType(str, enum.Enum):
     """File type enumeration"""
+
     INVOICE = "INVOICE"
     WARRANTY = "WARRANTY"
     PHOTO = "PHOTO"
@@ -23,7 +24,12 @@ class AssetAttachment(BaseModel):
     __tablename__ = "asset_attachments"
     __table_args__ = {"schema": "asset_db"}
 
-    asset_id = Column(Integer, ForeignKey("asset_db.assets.id", ondelete="CASCADE"), nullable=False, index=True)
+    asset_id = Column(
+        Integer,
+        ForeignKey("asset_db.assets.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
     file_name = Column(String(255), nullable=False)
     file_type = Column(SQLEnum(FileType), nullable=False, index=True)
     file_url = Column(String(500), nullable=False)

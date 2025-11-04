@@ -2,6 +2,7 @@
 UpdateUserHandler - Command handler for updating users
 Implements versioning by incrementing version and saving history
 """
+
 import logging
 from sqlalchemy.orm import Session
 from app.core.message_bus import CommandHandler
@@ -48,7 +49,7 @@ class UpdateUserHandler(CommandHandler[UpdateUserCommand, UserResponse]):
             user=user,
             changed_by=command.updated_by,
             change_reason="User updated",
-            change_type="updated"
+            change_type="updated",
         )
         db.add(history_entry)
 
@@ -92,7 +93,9 @@ class UpdateUserHandler(CommandHandler[UpdateUserCommand, UserResponse]):
                 "version": user.version,
                 "created_at": user.created_at.isoformat() if user.created_at else None,
                 "updated_at": user.updated_at.isoformat() if user.updated_at else None,
-                "last_login_at": user.last_login_at.isoformat() if user.last_login_at else None
+                "last_login_at": (
+                    user.last_login_at.isoformat() if user.last_login_at else None
+                ),
             }
             await publish_event("user.updated", event_data)
             logger.info(f"Published UserUpdated event for user {user.id}")

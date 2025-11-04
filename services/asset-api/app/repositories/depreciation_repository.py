@@ -16,26 +16,43 @@ class DepreciationRepository(BaseRepository[AssetDepreciationRecord]):
 
     def get_asset_records(self, asset_id: int) -> List[AssetDepreciationRecord]:
         """Get all depreciation records for an asset"""
-        return self.session.query(AssetDepreciationRecord).filter(
-            AssetDepreciationRecord.asset_id == asset_id
-        ).order_by(AssetDepreciationRecord.period_month.desc()).all()
+        return (
+            self.session.query(AssetDepreciationRecord)
+            .filter(AssetDepreciationRecord.asset_id == asset_id)
+            .order_by(AssetDepreciationRecord.period_month.desc())
+            .all()
+        )
 
-    def get_period_record(self, asset_id: int, period_month: int) -> Optional[AssetDepreciationRecord]:
+    def get_period_record(
+        self, asset_id: int, period_month: int
+    ) -> Optional[AssetDepreciationRecord]:
         """Get depreciation record for specific period"""
-        return self.session.query(AssetDepreciationRecord).filter(
-            AssetDepreciationRecord.asset_id == asset_id,
-            AssetDepreciationRecord.period_month == period_month
-        ).first()
+        return (
+            self.session.query(AssetDepreciationRecord)
+            .filter(
+                AssetDepreciationRecord.asset_id == asset_id,
+                AssetDepreciationRecord.period_month == period_month,
+            )
+            .first()
+        )
 
     def get_latest_record(self, asset_id: int) -> Optional[AssetDepreciationRecord]:
         """Get the latest depreciation record for an asset"""
-        return self.session.query(AssetDepreciationRecord).filter(
-            AssetDepreciationRecord.asset_id == asset_id
-        ).order_by(AssetDepreciationRecord.period_month.desc()).first()
+        return (
+            self.session.query(AssetDepreciationRecord)
+            .filter(AssetDepreciationRecord.asset_id == asset_id)
+            .order_by(AssetDepreciationRecord.period_month.desc())
+            .first()
+        )
 
     def record_exists(self, asset_id: int, period_month: int) -> bool:
         """Check if record exists for asset and period"""
-        return self.session.query(AssetDepreciationRecord).filter(
-            AssetDepreciationRecord.asset_id == asset_id,
-            AssetDepreciationRecord.period_month == period_month
-        ).first() is not None
+        return (
+            self.session.query(AssetDepreciationRecord)
+            .filter(
+                AssetDepreciationRecord.asset_id == asset_id,
+                AssetDepreciationRecord.period_month == period_month,
+            )
+            .first()
+            is not None
+        )

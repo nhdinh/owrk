@@ -11,12 +11,14 @@ from app.models.base import BaseModel
 
 class AssignmentStatus(str, enum.Enum):
     """Assignment status enumeration"""
+
     ACTIVE = "ACTIVE"
     RETURNED = "RETURNED"
 
 
 class ReturnCondition(str, enum.Enum):
     """Return condition enumeration"""
+
     GOOD = "GOOD"
     DAMAGED = "DAMAGED"
     BROKEN = "BROKEN"
@@ -28,7 +30,12 @@ class AssetAssignment(BaseModel):
     __tablename__ = "asset_assignments"
     __table_args__ = {"schema": "asset_db"}
 
-    asset_id = Column(Integer, ForeignKey("asset_db.assets.id", ondelete="CASCADE"), nullable=False, index=True)
+    asset_id = Column(
+        Integer,
+        ForeignKey("asset_db.assets.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
     user_id = Column(Integer, nullable=False, index=True)
     department_id = Column(Integer, nullable=False)
 
@@ -45,7 +52,12 @@ class AssetAssignment(BaseModel):
     return_notes = Column(Text, nullable=True)
 
     # Status
-    status = Column(SQLEnum(AssignmentStatus), default=AssignmentStatus.ACTIVE, nullable=False, index=True)
+    status = Column(
+        SQLEnum(AssignmentStatus),
+        default=AssignmentStatus.ACTIVE,
+        nullable=False,
+        index=True,
+    )
 
     # Relationships
     asset = relationship("Asset", back_populates="assignments")

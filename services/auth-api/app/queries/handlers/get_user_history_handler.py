@@ -1,6 +1,7 @@
 """
 GetUserHistoryHandler - Query handler for user version history
 """
+
 import logging
 from typing import List, Dict
 from sqlalchemy.orm import Session
@@ -34,9 +35,11 @@ class GetUserHistoryHandler(QueryHandler[GetUserHistoryQuery, Dict]):
         logger.debug(f"Getting history for user ID: {query.user_id}")
 
         # Query history entries
-        history_query = db.query(UserHistory).filter(
-            UserHistory.user_id == query.user_id
-        ).order_by(UserHistory.version.desc())
+        history_query = (
+            db.query(UserHistory)
+            .filter(UserHistory.user_id == query.user_id)
+            .order_by(UserHistory.version.desc())
+        )
 
         # Get total count
         total = history_query.count()
@@ -47,19 +50,23 @@ class GetUserHistoryHandler(QueryHandler[GetUserHistoryQuery, Dict]):
         # Convert to dicts
         history_data = []
         for entry in history_entries:
-            history_data.append({
-                "id": entry.id,
-                "version": entry.version,
-                "changed_at": entry.changed_at.isoformat() if entry.changed_at else None,
-                "changed_by": entry.changed_by,
-                "change_reason": entry.change_reason,
-                "change_type": entry.change_type,
-                "email": entry.email,
-                "full_name": entry.full_name,
-                "is_active": entry.is_active,
-                "role_id": entry.role_id,
-                "department_id": entry.department_id
-            })
+            history_data.append(
+                {
+                    "id": entry.id,
+                    "version": entry.version,
+                    "changed_at": (
+                        entry.changed_at.isoformat() if entry.changed_at else None
+                    ),
+                    "changed_by": entry.changed_by,
+                    "change_reason": entry.change_reason,
+                    "change_type": entry.change_type,
+                    "email": entry.email,
+                    "full_name": entry.full_name,
+                    "is_active": entry.is_active,
+                    "role_id": entry.role_id,
+                    "department_id": entry.department_id,
+                }
+            )
 
         logger.debug(f"Found {len(history_data)} history entries, total: {total}")
 
@@ -67,5 +74,5 @@ class GetUserHistoryHandler(QueryHandler[GetUserHistoryQuery, Dict]):
             "history": history_data,
             "total": total,
             "skip": query.skip,
-            "limit": query.limit
+            "limit": query.limit,
         }

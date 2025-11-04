@@ -22,7 +22,7 @@ from app.models import (
     Quotation,
     QuotationItem,
     PurchaseOrder,
-    PurchaseOrderItem
+    PurchaseOrderItem,
 )
 
 # this is the Alembic Config object, which provides

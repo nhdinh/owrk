@@ -12,6 +12,7 @@ class RabbitMQConnection:
     """
     RabbitMQ connection manager - Singleton pattern
     """
+
     _instance = None
     _connection = None
     _channel = None
@@ -24,9 +25,7 @@ class RabbitMQConnection:
     async def connect(self):
         """Establish connection to RabbitMQ"""
         if self._connection is None or self._connection.is_closed:
-            self._connection = await aio_pika.connect_robust(
-                settings.RABBITMQ_URL
-            )
+            self._connection = await aio_pika.connect_robust(settings.RABBITMQ_URL)
             self._channel = await self._connection.channel()
             print("✅ Connected to RabbitMQ")
 
@@ -49,7 +48,9 @@ class RabbitMQConnection:
 rabbitmq = RabbitMQConnection()
 
 
-async def publish_event(routing_key: str, event_data: dict, exchange_name: str = "auth.events"):
+async def publish_event(
+    routing_key: str, event_data: dict, exchange_name: str = "auth.events"
+):
     """
     Publish event to RabbitMQ
 
@@ -64,22 +65,19 @@ async def publish_event(routing_key: str, event_data: dict, exchange_name: str =
 
     # Declare exchange (idempotent)
     exchange = await channel.declare_exchange(
-        exchange_name,
-        aio_pika.ExchangeType.TOPIC,
-        durable=True
+        exchange_name, aio_pika.ExchangeType.TOPIC, durable=True
     )
 
     # Construct full event object
     event = {
         "event_type": routing_key,
         "timestamp": datetime.utcnow().isoformat(),
-        "data": event_data
+        "data": event_data,
     }
 
     # Publish message
     message = aio_pika.Message(
-        body=json.dumps(event).encode(),
-        delivery_mode=aio_pika.DeliveryMode.PERSISTENT
+        body=json.dumps(event).encode(), delivery_mode=aio_pika.DeliveryMode.PERSISTENT
     )
 
     await exchange.publish(message, routing_key=routing_key)
@@ -87,10 +85,7 @@ async def publish_event(routing_key: str, event_data: dict, exchange_name: str =
 
 
 async def consume_events(
-    exchange_name: str,
-    queue_name: str,
-    routing_keys: list,
-    callback: Callable
+    exchange_name: str, queue_name: str, routing_keys: list, callback: Callable
 ):
     """
     Consume events from RabbitMQ
@@ -105,9 +100,7 @@ async def consume_events(
 
     # Declare exchange
     exchange = await channel.declare_exchange(
-        exchange_name,
-        aio_pika.ExchangeType.TOPIC,
-        durable=True
+        exchange_name, aio_pika.ExchangeType.TOPIC, durable=True
     )
 
     # Declare queue

@@ -9,11 +9,11 @@ from app.models.base import Base
 
 # Association table for many-to-many relationship between roles and permissions
 role_permissions = Table(
-    'role_permissions',
+    "role_permissions",
     Base.metadata,
-    Column('role_id', ForeignKey('auth_db.roles.id'), primary_key=True),
-    Column('permission_id', ForeignKey('auth_db.permissions.id'), primary_key=True),
-    schema='auth_db'
+    Column("role_id", ForeignKey("auth_db.roles.id"), primary_key=True),
+    Column("permission_id", ForeignKey("auth_db.permissions.id"), primary_key=True),
+    schema="auth_db",
 )
 
 
@@ -21,8 +21,9 @@ class Role(Base):
     """
     Role model for RBAC (Role-Based Access Control)
     """
+
     __tablename__ = "roles"
-    __table_args__ = {'schema': 'auth_db'}
+    __table_args__ = {"schema": "auth_db"}
 
     # Basic Information
     name = Column(String(50), unique=True, nullable=False, index=True)
@@ -38,8 +39,15 @@ class Role(Base):
 
     # Relationships
     users = relationship("User", back_populates="role")
-    permissions = relationship("Permission", secondary=role_permissions, back_populates="roles")
-    history = relationship("RoleHistory", backref="role", lazy="dynamic", order_by="RoleHistory.version.desc()")
+    permissions = relationship(
+        "Permission", secondary=role_permissions, back_populates="roles"
+    )
+    history = relationship(
+        "RoleHistory",
+        backref="role",
+        lazy="dynamic",
+        order_by="RoleHistory.version.desc()",
+    )
 
     # Timestamps inherited from Base
 
@@ -51,17 +59,22 @@ class Permission(Base):
     """
     Permission model for fine-grained access control
     """
+
     __tablename__ = "permissions"
-    __table_args__ = {'schema': 'auth_db'}
+    __table_args__ = {"schema": "auth_db"}
 
     # Basic Information
     name = Column(String(100), unique=True, nullable=False, index=True)
     resource = Column(String(50), nullable=False)  # e.g., 'asset', 'user', 'report'
-    action = Column(String(50), nullable=False)  # e.g., 'create', 'read', 'update', 'delete'
+    action = Column(
+        String(50), nullable=False
+    )  # e.g., 'create', 'read', 'update', 'delete'
     description = Column(Text, nullable=True)
 
     # Relationships
-    roles = relationship("Role", secondary=role_permissions, back_populates="permissions")
+    roles = relationship(
+        "Role", secondary=role_permissions, back_populates="permissions"
+    )
 
     # Timestamps inherited from Base
 

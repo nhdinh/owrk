@@ -26,9 +26,12 @@ def generate_vendor_code(db: Session) -> str:
     prefix = f"VND{today}"
 
     # Get the latest vendor code for today
-    latest = db.query(Vendor).filter(
-        Vendor.vendor_code.like(f"{prefix}%")
-    ).order_by(Vendor.vendor_code.desc()).first()
+    latest = (
+        db.query(Vendor)
+        .filter(Vendor.vendor_code.like(f"{prefix}%"))
+        .order_by(Vendor.vendor_code.desc())
+        .first()
+    )
 
     if latest:
         # Extract the sequential number and increment
@@ -58,9 +61,12 @@ def generate_contract_code(db: Session, vendor_code: str) -> str:
     prefix = f"FC{vendor_code}{year_month}"
 
     # Get the latest contract code for this vendor and month
-    latest = db.query(FrameworkContract).filter(
-        FrameworkContract.contract_code.like(f"{prefix}%")
-    ).order_by(FrameworkContract.contract_code.desc()).first()
+    latest = (
+        db.query(FrameworkContract)
+        .filter(FrameworkContract.contract_code.like(f"{prefix}%"))
+        .order_by(FrameworkContract.contract_code.desc())
+        .first()
+    )
 
     if latest:
         seq_num = int(latest.contract_code[-3:]) + 1
@@ -90,9 +96,12 @@ def generate_request_code(db: Session, department_id: Optional[int] = None) -> s
     prefix = f"PR{today}{dept_str}"
 
     # Get the latest request code for today and department
-    latest = db.query(PurchaseRequest).filter(
-        PurchaseRequest.request_code.like(f"{prefix}%")
-    ).order_by(PurchaseRequest.request_code.desc()).first()
+    latest = (
+        db.query(PurchaseRequest)
+        .filter(PurchaseRequest.request_code.like(f"{prefix}%"))
+        .order_by(PurchaseRequest.request_code.desc())
+        .first()
+    )
 
     if latest:
         seq_num = int(latest.request_code[-3:]) + 1
@@ -122,9 +131,12 @@ def generate_quotation_code(db: Session, vendor_code: str, request_code: str) ->
     prefix = f"QT{request_code}{vendor_suffix}"
 
     # Get the latest quotation code for this request and vendor
-    latest = db.query(Quotation).filter(
-        Quotation.quotation_code.like(f"{prefix}%")
-    ).order_by(Quotation.quotation_code.desc()).first()
+    latest = (
+        db.query(Quotation)
+        .filter(Quotation.quotation_code.like(f"{prefix}%"))
+        .order_by(Quotation.quotation_code.desc())
+        .first()
+    )
 
     if latest:
         seq_num = int(latest.quotation_code[-3:]) + 1
@@ -154,9 +166,12 @@ def generate_order_code(db: Session, quotation_code: str) -> str:
     prefix = f"PO{today}{quotation_suffix}"
 
     # Get the latest order code for today and quotation
-    latest = db.query(PurchaseOrder).filter(
-        PurchaseOrder.order_code.like(f"{prefix}%")
-    ).order_by(PurchaseOrder.order_code.desc()).first()
+    latest = (
+        db.query(PurchaseOrder)
+        .filter(PurchaseOrder.order_code.like(f"{prefix}%"))
+        .order_by(PurchaseOrder.order_code.desc())
+        .first()
+    )
 
     if latest:
         seq_num = int(latest.order_code[-3:]) + 1

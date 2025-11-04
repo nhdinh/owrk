@@ -19,5 +19,5 @@ __all__ = [
     "role_permissions",
     "RefreshToken",
     "PasswordResetToken",
-    "MFABackupCode"
+    "MFABackupCode",
 ]

@@ -1,6 +1,7 @@
 """
 GetUserByIdHandler - Query handler for getting user by ID from MongoDB
 """
+
 import logging
 from typing import Optional, Dict
 from app.core.message_bus import QueryHandler

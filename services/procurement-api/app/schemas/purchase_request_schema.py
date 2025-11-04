@@ -13,25 +13,37 @@ from app.models.purchase_request import Priority, ProcurementType, ApprovalStatu
 
 # Purchase Request Item Schemas
 
+
 class PurchaseRequestItemBase(BaseModel):
     """Base schema for purchase request items"""
-    product_name: str = Field(..., min_length=1, max_length=255, description="Product name")
+
+    product_name: str = Field(
+        ..., min_length=1, max_length=255, description="Product name"
+    )
     product_description: Optional[str] = Field(None, description="Product description")
     specification: Optional[str] = Field(None, description="Technical specifications")
-    unit: str = Field(..., min_length=1, max_length=50, description="Unit of measurement")
+    unit: str = Field(
+        ..., min_length=1, max_length=50, description="Unit of measurement"
+    )
     quantity: int = Field(..., gt=0, description="Quantity requested")
-    estimated_unit_price: Optional[Decimal] = Field(None, ge=0, description="Estimated price per unit")
-    estimated_total: Optional[Decimal] = Field(None, ge=0, description="Estimated total price")
+    estimated_unit_price: Optional[Decimal] = Field(
+        None, ge=0, description="Estimated price per unit"
+    )
+    estimated_total: Optional[Decimal] = Field(
+        None, ge=0, description="Estimated total price"
+    )
     reason: Optional[str] = Field(None, description="Reason for purchase")
 
 
 class PurchaseRequestItemCreate(PurchaseRequestItemBase):
     """Schema for creating a purchase request item"""
+
     pass
 
 
 class PurchaseRequestItemUpdate(BaseModel):
     """Schema for updating a purchase request item"""
+
     product_name: Optional[str] = Field(None, min_length=1, max_length=255)
     product_description: Optional[str] = None
     specification: Optional[str] = None
@@ -44,6 +56,7 @@ class PurchaseRequestItemUpdate(BaseModel):
 
 class PurchaseRequestItemResponse(PurchaseRequestItemBase):
     """Schema for purchase request item response"""
+
     id: int
     purchase_request_id: int
     created_at: datetime
@@ -55,26 +68,38 @@ class PurchaseRequestItemResponse(PurchaseRequestItemBase):
 
 # Purchase Request Schemas
 
+
 class PurchaseRequestBase(BaseModel):
     """Base schema for purchase requests"""
+
     title: str = Field(..., min_length=1, max_length=255, description="Request title")
     description: Optional[str] = Field(None, description="Detailed description")
     department_id: int = Field(..., gt=0, description="Department ID")
     priority: Priority = Field(..., description="Request priority")
     request_date: date = Field(..., description="Date of request")
-    expected_delivery_date: Optional[date] = Field(None, description="Expected delivery date")
+    expected_delivery_date: Optional[date] = Field(
+        None, description="Expected delivery date"
+    )
     procurement_type: ProcurementType = Field(..., description="Type of procurement")
-    framework_contract_id: Optional[int] = Field(None, description="Optional framework contract ID")
-    estimated_total: Optional[Decimal] = Field(None, ge=0, description="Estimated total cost")
+    framework_contract_id: Optional[int] = Field(
+        None, description="Optional framework contract ID"
+    )
+    estimated_total: Optional[Decimal] = Field(
+        None, ge=0, description="Estimated total cost"
+    )
 
 
 class PurchaseRequestCreate(PurchaseRequestBase):
     """Schema for creating a purchase request"""
-    items: List[PurchaseRequestItemCreate] = Field(..., min_items=1, description="List of items to purchase")
+
+    items: List[PurchaseRequestItemCreate] = Field(
+        ..., min_items=1, description="List of items to purchase"
+    )
 
 
 class PurchaseRequestUpdate(BaseModel):
     """Schema for updating a purchase request"""
+
     title: Optional[str] = Field(None, min_length=1, max_length=255)
     description: Optional[str] = None
     department_id: Optional[int] = Field(None, gt=0)
@@ -88,6 +113,7 @@ class PurchaseRequestUpdate(BaseModel):
 
 class PurchaseRequestResponse(PurchaseRequestBase):
     """Schema for purchase request response"""
+
     id: int
     request_code: str
     requested_by: int
@@ -114,6 +140,7 @@ class PurchaseRequestResponse(PurchaseRequestBase):
 
 class PurchaseRequestListResponse(BaseModel):
     """Schema for paginated purchase request list"""
+
     requests: List[PurchaseRequestResponse]
     total: int
     page: int
@@ -122,25 +149,35 @@ class PurchaseRequestListResponse(BaseModel):
 
 # Approval Schemas
 
+
 class ApprovalRequest(BaseModel):
     """Schema for approving a purchase request"""
-    notes: Optional[str] = Field(None, max_length=1000, description="Approval notes/comments")
+
+    notes: Optional[str] = Field(
+        None, max_length=1000, description="Approval notes/comments"
+    )
 
 
 class RejectionRequest(BaseModel):
     """Schema for rejecting a purchase request"""
-    reason: str = Field(..., min_length=10, description="Reason for rejection (min 10 characters)")
+
+    reason: str = Field(
+        ..., min_length=10, description="Reason for rejection (min 10 characters)"
+    )
 
 
 class SubmitForApprovalRequest(BaseModel):
     """Schema for submitting a purchase request for approval"""
+
     pass  # No additional fields needed
 
 
 # Summary Schema
 
+
 class PurchaseRequestSummary(BaseModel):
     """Summary schema for purchase request (for dropdowns/references)"""
+
     id: int
     request_code: str
     title: str

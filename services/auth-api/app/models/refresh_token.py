@@ -11,12 +11,13 @@ class RefreshToken(Base):
     """
     Refresh Token model for JWT token refresh mechanism
     """
+
     __tablename__ = "refresh_tokens"
-    __table_args__ = {'schema': 'auth_db'}
+    __table_args__ = {"schema": "auth_db"}
 
     # Token Information
     token = Column(String(255), unique=True, index=True, nullable=False)
-    user_id = Column(Integer, ForeignKey('auth_db.users.id'), nullable=False)
+    user_id = Column(Integer, ForeignKey("auth_db.users.id"), nullable=False)
 
     # Token Metadata
     expires_at = Column(DateTime(timezone=True), nullable=False)
@@ -41,12 +42,13 @@ class PasswordResetToken(Base):
     """
     Password Reset Token model
     """
+
     __tablename__ = "password_reset_tokens"
-    __table_args__ = {'schema': 'auth_db'}
+    __table_args__ = {"schema": "auth_db"}
 
     # Token Information
     token = Column(String(255), unique=True, index=True, nullable=False)
-    user_id = Column(Integer, ForeignKey('auth_db.users.id'), nullable=False)
+    user_id = Column(Integer, ForeignKey("auth_db.users.id"), nullable=False)
 
     # Token Metadata
     expires_at = Column(DateTime(timezone=True), nullable=False)
@@ -69,12 +71,13 @@ class MFABackupCode(Base):
     """
     MFA Backup Codes for account recovery
     """
+
     __tablename__ = "mfa_backup_codes"
-    __table_args__ = {'schema': 'auth_db'}
+    __table_args__ = {"schema": "auth_db"}
 
     # Code Information
     code_hash = Column(String(255), nullable=False)
-    user_id = Column(Integer, ForeignKey('auth_db.users.id'), nullable=False)
+    user_id = Column(Integer, ForeignKey("auth_db.users.id"), nullable=False)
 
     # Status
     is_used = Column(Boolean, default=False, nullable=False)

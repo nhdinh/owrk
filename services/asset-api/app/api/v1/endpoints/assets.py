@@ -32,8 +32,7 @@ router.include_router(categories.router, prefix="/categories", tags=["categories
 
 @router.post("/", response_model=AssetResponse, status_code=status.HTTP_201_CREATED)
 async def create_asset(
-    asset_data: AssetCreate,
-    current_user: dict = Depends(get_current_user)
+    asset_data: AssetCreate, current_user: dict = Depends(get_current_user)
 ):
     """Create new asset"""
     try:
@@ -49,14 +48,16 @@ async def create_asset(
 
 @router.get("/", response_model=AssetListResponse)
 async def list_assets(
-    search: Optional[str] = Query(None, description="Search by code, name, manufacturer, model"),
+    search: Optional[str] = Query(
+        None, description="Search by code, name, manufacturer, model"
+    ),
     category_id: Optional[int] = Query(None, description="Filter by category"),
     status: Optional[str] = Query(None, description="Filter by status"),
     asset_type: Optional[str] = Query(None, description="Filter by asset type"),
     department_id: Optional[int] = Query(None, description="Filter by department"),
     page: int = Query(1, ge=1, description="Page number"),
     page_size: int = Query(20, ge=1, le=100, description="Items per page"),
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
 ):
     """List assets with search and filters"""
     try:
@@ -66,14 +67,18 @@ async def list_assets(
             try:
                 parsed_status = AssetStatus(status)
             except ValueError:
-                raise HTTPException(status_code=400, detail=f"Invalid status value: {status}")
+                raise HTTPException(
+                    status_code=400, detail=f"Invalid status value: {status}"
+                )
 
         parsed_asset_type = None
         if asset_type and asset_type.strip():
             try:
                 parsed_asset_type = AssetType(asset_type)
             except ValueError:
-                raise HTTPException(status_code=400, detail=f"Invalid asset_type value: {asset_type}")
+                raise HTTPException(
+                    status_code=400, detail=f"Invalid asset_type value: {asset_type}"
+                )
 
         assets, total = await AssetService.search_assets(
             search=search,
@@ -95,10 +100,7 @@ async def list_assets(
 
 
 @router.get("/{asset_id}", response_model=AssetResponse)
-async def get_asset(
-    asset_id: int,
-    current_user: dict = Depends(get_current_user)
-):
+async def get_asset(asset_id: int, current_user: dict = Depends(get_current_user)):
     """Get asset by ID"""
     try:
         asset = await AssetService.get_asset(asset_id)
@@ -113,7 +115,7 @@ async def get_asset(
 async def update_asset(
     asset_id: int,
     asset_data: AssetUpdate,
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
 ):
     """Update asset"""
     try:
@@ -126,10 +128,7 @@ async def update_asset(
 
 
 @router.delete("/{asset_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_asset(
-    asset_id: int,
-    current_user: dict = Depends(get_current_user)
-):
+async def delete_asset(asset_id: int, current_user: dict = Depends(get_current_user)):
     """Delete asset (soft delete)"""
     try:
         await AssetService.delete_asset(asset_id)
@@ -141,9 +140,11 @@ async def delete_asset(
 
 @router.get("/assignments/", response_model=List[AssignmentResponse])
 async def list_assignments(
-    status: Optional[str] = Query(None, description="Filter by status (active/returned)"),
+    status: Optional[str] = Query(
+        None, description="Filter by status (active/returned)"
+    ),
     user_id: Optional[int] = Query(None, description="Filter by user ID"),
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
 ):
     """List all assignments with optional filters"""
     try:
@@ -159,9 +160,13 @@ async def list_assignments(
                 # Get all assignments
                 if status and status.lower() == "active":
                     from app.models.assignment import AssignmentStatus
-                    assignments = uow.session.query(uow.assignments.model).filter(
-                        uow.assignments.model.status == AssignmentStatus.ACTIVE
-                    ).order_by(uow.assignments.model.assigned_date.desc()).all()
+
+                    assignments = (
+                        uow.session.query(uow.assignments.model)
+                        .filter(uow.assignments.model.status == AssignmentStatus.ACTIVE)
+                        .order_by(uow.assignments.model.assigned_date.desc())
+                        .all()
+                    )
                 else:
                     assignments = uow.assignments.get_all()
 
@@ -170,11 +175,15 @@ async def list_assignments(
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
 
-@router.post("/{asset_id}/assign", response_model=AssignmentResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/{asset_id}/assign",
+    response_model=AssignmentResponse,
+    status_code=status.HTTP_201_CREATED,
+)
 async def assign_asset(
     asset_id: int,
     assignment_data: AssignmentCreate,
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
 ):
     """Assign asset to user"""
     try:
@@ -194,7 +203,7 @@ async def assign_asset(
 async def return_asset(
     asset_id: int,
     return_data: AssignmentReturn,
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
 ):
     """Return asset from user"""
     try:
@@ -209,8 +218,7 @@ async def return_asset(
 
 @router.get("/{asset_id}/history", response_model=List[AssignmentResponse])
 async def get_asset_history(
-    asset_id: int,
-    current_user: dict = Depends(get_current_user)
+    asset_id: int, current_user: dict = Depends(get_current_user)
 ):
     """Get assignment history for asset"""
     try:
@@ -222,8 +230,7 @@ async def get_asset_history(
 
 @router.get("/{asset_id}/depreciation", response_model=List[DepreciationRecordResponse])
 async def get_asset_depreciation(
-    asset_id: int,
-    current_user: dict = Depends(get_current_user)
+    asset_id: int, current_user: dict = Depends(get_current_user)
 ):
     """Get depreciation history for asset"""
     try:
@@ -245,12 +252,12 @@ async def get_statistics(current_user: dict = Depends(get_current_user)):
 
 @router.get("/{asset_id}/qrcode")
 async def get_asset_qrcode(
-    asset_id: int,
-    current_user: dict = Depends(get_current_user)
+    asset_id: int, current_user: dict = Depends(get_current_user)
 ):
     """Get QR code for asset"""
     try:
         from app.core.security import generate_qr_code
+
         asset = await AssetService.get_asset(asset_id)
         if not asset.qr_code:
             # Generate QR code if not exists
@@ -265,11 +272,12 @@ async def get_asset_qrcode(
 
 # ==================== MAINTENANCE ENDPOINTS ====================
 
+
 @router.get("/maintenance/", response_model=List[MaintenanceResponse])
 async def list_maintenance(
     status: Optional[str] = Query(None, description="Filter by status"),
     asset_id: Optional[int] = Query(None, description="Filter by asset ID"),
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
 ):
     """List all maintenance records with optional filters"""
     try:
@@ -294,8 +302,8 @@ async def list_maintenance(
                 asset = uow.assets.get_by_id(record.asset_id)
                 record_dict = record.__dict__.copy()
                 if asset:
-                    record_dict['asset_code'] = asset.asset_code
-                    record_dict['asset_name'] = asset.name
+                    record_dict["asset_code"] = asset.asset_code
+                    record_dict["asset_name"] = asset.name
                 result.append(record_dict)
 
             return result
@@ -305,8 +313,7 @@ async def list_maintenance(
 
 @router.get("/maintenance/{maintenance_id}", response_model=MaintenanceResponse)
 async def get_maintenance(
-    maintenance_id: int,
-    current_user: dict = Depends(get_current_user)
+    maintenance_id: int, current_user: dict = Depends(get_current_user)
 ):
     """Get a specific maintenance record"""
     try:
@@ -315,14 +322,16 @@ async def get_maintenance(
         with UnitOfWork() as uow:
             record = uow.maintenance.get_by_id(maintenance_id)
             if not record:
-                raise HTTPException(status_code=404, detail="Maintenance record not found")
+                raise HTTPException(
+                    status_code=404, detail="Maintenance record not found"
+                )
 
             # Enrich with asset details
             asset = uow.assets.get_by_id(record.asset_id)
             record_dict = record.__dict__.copy()
             if asset:
-                record_dict['asset_code'] = asset.asset_code
-                record_dict['asset_name'] = asset.name
+                record_dict["asset_code"] = asset.asset_code
+                record_dict["asset_name"] = asset.name
 
             return record_dict
     except HTTPException:
@@ -331,10 +340,13 @@ async def get_maintenance(
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
 
-@router.post("/maintenance/", response_model=MaintenanceResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/maintenance/",
+    response_model=MaintenanceResponse,
+    status_code=status.HTTP_201_CREATED,
+)
 async def create_maintenance(
-    data: MaintenanceCreate,
-    current_user: dict = Depends(get_current_user)
+    data: MaintenanceCreate, current_user: dict = Depends(get_current_user)
 ):
     """Create a new maintenance record"""
     try:
@@ -349,7 +361,7 @@ async def create_maintenance(
 
             # Create maintenance record
             maintenance_data = data.model_dump()
-            maintenance_data['status'] = 'pending'  # Default status
+            maintenance_data["status"] = "pending"  # Default status
 
             record = MaintenanceRecord(**maintenance_data)
             created_record = uow.maintenance.create(record)
@@ -357,8 +369,8 @@ async def create_maintenance(
 
             # Enrich with asset details
             record_dict = created_record.__dict__.copy()
-            record_dict['asset_code'] = asset.asset_code
-            record_dict['asset_name'] = asset.name
+            record_dict["asset_code"] = asset.asset_code
+            record_dict["asset_name"] = asset.name
 
             return record_dict
     except HTTPException:
@@ -371,7 +383,7 @@ async def create_maintenance(
 async def update_maintenance(
     maintenance_id: int,
     data: MaintenanceUpdate,
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
 ):
     """Update a maintenance record"""
     try:
@@ -380,7 +392,9 @@ async def update_maintenance(
         with UnitOfWork() as uow:
             record = uow.maintenance.get_by_id(maintenance_id)
             if not record:
-                raise HTTPException(status_code=404, detail="Maintenance record not found")
+                raise HTTPException(
+                    status_code=404, detail="Maintenance record not found"
+                )
 
             # Update fields
             update_data = data.model_dump(exclude_unset=True)
@@ -391,8 +405,8 @@ async def update_maintenance(
             asset = uow.assets.get_by_id(updated_record.asset_id)
             record_dict = updated_record.__dict__.copy()
             if asset:
-                record_dict['asset_code'] = asset.asset_code
-                record_dict['asset_name'] = asset.name
+                record_dict["asset_code"] = asset.asset_code
+                record_dict["asset_name"] = asset.name
 
             return record_dict
     except HTTPException:
@@ -403,8 +417,7 @@ async def update_maintenance(
 
 @router.delete("/maintenance/{maintenance_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_maintenance(
-    maintenance_id: int,
-    current_user: dict = Depends(get_current_user)
+    maintenance_id: int, current_user: dict = Depends(get_current_user)
 ):
     """Delete a maintenance record"""
     try:
@@ -413,7 +426,9 @@ async def delete_maintenance(
         with UnitOfWork() as uow:
             record = uow.maintenance.get_by_id(maintenance_id)
             if not record:
-                raise HTTPException(status_code=404, detail="Maintenance record not found")
+                raise HTTPException(
+                    status_code=404, detail="Maintenance record not found"
+                )
 
             uow.maintenance.delete(maintenance_id)
             uow.commit()

@@ -17,7 +17,7 @@ from app.schemas.vendor_schema import (
     VendorResponse,
     VendorListResponse,
     VendorRatingUpdate,
-    VendorBlacklistRequest
+    VendorBlacklistRequest,
 )
 from app.models.vendor import VendorStatus
 
@@ -28,7 +28,7 @@ router = APIRouter(prefix="/vendors", tags=["Vendors"])
 async def create_vendor(
     vendor_data: VendorCreate,
     current_user: dict = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """
     Create a new vendor
@@ -57,12 +57,18 @@ async def create_vendor(
 @router.get("/", response_model=VendorListResponse)
 async def list_vendors(
     skip: int = Query(0, ge=0, description="Number of records to skip"),
-    limit: int = Query(100, ge=1, le=100, description="Maximum number of records to return"),
+    limit: int = Query(
+        100, ge=1, le=100, description="Maximum number of records to return"
+    ),
     status: Optional[VendorStatus] = Query(None, description="Filter by vendor status"),
-    search: Optional[str] = Query(None, description="Search in company name, vendor code, email"),
-    min_rating: Optional[Decimal] = Query(None, ge=0, le=5, description="Minimum rating filter"),
+    search: Optional[str] = Query(
+        None, description="Search in company name, vendor code, email"
+    ),
+    min_rating: Optional[Decimal] = Query(
+        None, ge=0, le=5, description="Minimum rating filter"
+    ),
     current_user: dict = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """
     List vendors with pagination and filters
@@ -82,11 +88,7 @@ async def list_vendors(
     """
     service = VendorService(db)
     return service.list_vendors(
-        skip=skip,
-        limit=limit,
-        status=status,
-        search=search,
-        min_rating=min_rating
+        skip=skip, limit=limit, status=status, search=search, min_rating=min_rating
     )
 
 
@@ -94,7 +96,7 @@ async def list_vendors(
 async def get_vendor(
     vendor_id: int = Path(..., gt=0, description="Vendor ID"),
     current_user: dict = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """
     Get vendor details by ID
@@ -120,7 +122,7 @@ async def update_vendor(
     vendor_data: VendorUpdate,
     vendor_id: int = Path(..., gt=0, description="Vendor ID"),
     current_user: dict = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """
     Update vendor information
@@ -148,7 +150,7 @@ async def update_vendor(
 async def delete_vendor(
     vendor_id: int = Path(..., gt=0, description="Vendor ID"),
     current_user: dict = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """
     Delete vendor (soft delete - sets status to INACTIVE)
@@ -176,7 +178,7 @@ async def delete_vendor(
 async def activate_vendor(
     vendor_id: int = Path(..., gt=0, description="Vendor ID"),
     current_user: dict = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """
     Activate a vendor
@@ -204,7 +206,7 @@ async def activate_vendor(
 async def deactivate_vendor(
     vendor_id: int = Path(..., gt=0, description="Vendor ID"),
     current_user: dict = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """
     Deactivate a vendor
@@ -232,7 +234,7 @@ async def blacklist_vendor(
     blacklist_data: VendorBlacklistRequest,
     vendor_id: int = Path(..., gt=0, description="Vendor ID"),
     current_user: dict = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """
     Blacklist a vendor
@@ -265,7 +267,7 @@ async def update_vendor_rating(
     rating_data: VendorRatingUpdate,
     vendor_id: int = Path(..., gt=0, description="Vendor ID"),
     current_user: dict = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """
     Update vendor rating
@@ -293,8 +295,7 @@ async def update_vendor_rating(
 
 @router.get("/active/list", response_model=list[VendorResponse])
 async def get_active_vendors(
-    current_user: dict = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    current_user: dict = Depends(get_current_user), db: Session = Depends(get_db)
 ):
     """
     Get all active vendors
@@ -314,7 +315,7 @@ async def get_active_vendors(
 async def get_top_rated_vendors(
     limit: int = Query(10, ge=1, le=50, description="Number of top vendors to return"),
     current_user: dict = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """
     Get top-rated active vendors

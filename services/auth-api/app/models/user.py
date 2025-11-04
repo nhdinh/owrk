@@ -13,8 +13,9 @@ class User(Base):
     User model for authentication and authorization
     Supports both local users and Active Directory users
     """
+
     __tablename__ = "users"
-    __table_args__ = {'schema': 'auth_db'}
+    __table_args__ = {"schema": "auth_db"}
 
     # Basic Information
     email = Column(String(255), unique=True, index=True, nullable=False)
@@ -23,7 +24,9 @@ class User(Base):
     hashed_password = Column(String(255), nullable=True)  # Nullable for AD users
 
     # User Type
-    user_type = Column(String(20), default="local", nullable=False)  # local | active_directory
+    user_type = Column(
+        String(20), default="local", nullable=False
+    )  # local | active_directory
     ad_sync_id = Column(String(255), unique=True, nullable=True)  # AD user ID
 
     # Status
@@ -53,21 +56,32 @@ class User(Base):
     position = Column(String(100), nullable=True)
 
     # Foreign Keys
-    role_id = Column(Integer, ForeignKey('auth_db.roles.id'), nullable=True)
+    role_id = Column(Integer, ForeignKey("auth_db.roles.id"), nullable=True)
 
     # Versioning (for history tracking)
     version = Column(Integer, default=1, nullable=False)  # Incremented on each update
 
     # Relationships
     role = relationship("Role", back_populates="users")
-    refresh_tokens = relationship("RefreshToken", back_populates="user", cascade="all, delete-orphan")
-    password_reset_tokens = relationship("PasswordResetToken", back_populates="user", cascade="all, delete-orphan")
-    history = relationship("UserHistory", backref="user", lazy="dynamic", order_by="UserHistory.version.desc()")
+    refresh_tokens = relationship(
+        "RefreshToken", back_populates="user", cascade="all, delete-orphan"
+    )
+    password_reset_tokens = relationship(
+        "PasswordResetToken", back_populates="user", cascade="all, delete-orphan"
+    )
+    history = relationship(
+        "UserHistory",
+        backref="user",
+        lazy="dynamic",
+        order_by="UserHistory.version.desc()",
+    )
 
     # Timestamps inherited from Base: created_at, updated_at
 
     def __repr__(self):
-        return f"<User(id={self.id}, email='{self.email}', full_name='{self.full_name}')>"
+        return (
+            f"<User(id={self.id}, email='{self.email}', full_name='{self.full_name}')>"
+        )
 
     @property
     def is_locked(self):

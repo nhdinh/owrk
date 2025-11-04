@@ -20,7 +20,9 @@ class DomainEvents:
     EXCHANGE_NAME = "auth.events"
 
     @staticmethod
-    async def publish(event_type: str, data: Dict[str, Any], metadata: Optional[Dict] = None):
+    async def publish(
+        event_type: str, data: Dict[str, Any], metadata: Optional[Dict] = None
+    ):
         """
         Publish domain event to RabbitMQ
 
@@ -34,16 +36,18 @@ class DomainEvents:
             "timestamp": datetime.utcnow().isoformat(),
             "data": data,
             "metadata": metadata or {},
-            "service": "auth-service"
+            "service": "auth-service",
         }
 
         try:
             await publish_event(
                 routing_key=event_type,
                 event_data=data,
-                exchange_name=DomainEvents.EXCHANGE_NAME
+                exchange_name=DomainEvents.EXCHANGE_NAME,
             )
-            logger.info(f"📤 Published event: {event_type} for entity ID: {data.get('id')}")
+            logger.info(
+                f"📤 Published event: {event_type} for entity ID: {data.get('id')}"
+            )
         except Exception as e:
             logger.error(f"❌ Failed to publish event {event_type}: {str(e)}")
             # Don't raise - event publishing failure shouldn't break the operation
@@ -60,10 +64,7 @@ class UserEvents:
         Args:
             user_data: User entity data
         """
-        await DomainEvents.publish(
-            event_type="user.created",
-            data=user_data
-        )
+        await DomainEvents.publish(event_type="user.created", data=user_data)
 
     @staticmethod
     async def user_updated(user_data: Dict):
@@ -73,10 +74,7 @@ class UserEvents:
         Args:
             user_data: Updated user data
         """
-        await DomainEvents.publish(
-            event_type="user.updated",
-            data=user_data
-        )
+        await DomainEvents.publish(event_type="user.updated", data=user_data)
 
     @staticmethod
     async def user_deleted(user_id: int):
@@ -86,10 +84,7 @@ class UserEvents:
         Args:
             user_id: Deleted user ID
         """
-        await DomainEvents.publish(
-            event_type="user.deleted",
-            data={"id": user_id}
-        )
+        await DomainEvents.publish(event_type="user.deleted", data={"id": user_id})
 
     @staticmethod
     async def user_activated(user_id: int, user_email: str):
@@ -101,8 +96,7 @@ class UserEvents:
             user_email: User email
         """
         await DomainEvents.publish(
-            event_type="user.activated",
-            data={"id": user_id, "email": user_email}
+            event_type="user.activated", data={"id": user_id, "email": user_email}
         )
 
     @staticmethod
@@ -115,8 +109,7 @@ class UserEvents:
             user_email: User email
         """
         await DomainEvents.publish(
-            event_type="user.deactivated",
-            data={"id": user_id, "email": user_email}
+            event_type="user.deactivated", data={"id": user_id, "email": user_email}
         )
 
     @staticmethod
@@ -132,7 +125,7 @@ class UserEvents:
         await DomainEvents.publish(
             event_type="user.logged_in",
             data={"id": user_id, "email": user_email},
-            metadata={"ip_address": ip_address}
+            metadata={"ip_address": ip_address},
         )
 
     @staticmethod
@@ -146,7 +139,7 @@ class UserEvents:
         """
         await DomainEvents.publish(
             event_type="user.mfa_enabled",
-            data={"id": user_id, "email": user_email, "mfa_enabled": True}
+            data={"id": user_id, "email": user_email, "mfa_enabled": True},
         )
 
     @staticmethod
@@ -160,7 +153,7 @@ class UserEvents:
         """
         await DomainEvents.publish(
             event_type="user.mfa_disabled",
-            data={"id": user_id, "email": user_email, "mfa_enabled": False}
+            data={"id": user_id, "email": user_email, "mfa_enabled": False},
         )
 
     @staticmethod
@@ -174,7 +167,7 @@ class UserEvents:
         """
         await DomainEvents.publish(
             event_type="user.password_changed",
-            data={"id": user_id, "email": user_email}
+            data={"id": user_id, "email": user_email},
         )
 
 
@@ -189,10 +182,7 @@ class RoleEvents:
         Args:
             role_data: Role entity data
         """
-        await DomainEvents.publish(
-            event_type="role.created",
-            data=role_data
-        )
+        await DomainEvents.publish(event_type="role.created", data=role_data)
 
     @staticmethod
     async def role_updated(role_data: Dict):
@@ -202,10 +192,7 @@ class RoleEvents:
         Args:
             role_data: Updated role data
         """
-        await DomainEvents.publish(
-            event_type="role.updated",
-            data=role_data
-        )
+        await DomainEvents.publish(event_type="role.updated", data=role_data)
 
     @staticmethod
     async def role_deleted(role_id: int):
@@ -215,10 +202,7 @@ class RoleEvents:
         Args:
             role_id: Deleted role ID
         """
-        await DomainEvents.publish(
-            event_type="role.deleted",
-            data={"id": role_id}
-        )
+        await DomainEvents.publish(event_type="role.deleted", data={"id": role_id})
 
 
 def user_to_event_data(user) -> Dict:
@@ -247,14 +231,16 @@ def user_to_event_data(user) -> Dict:
         "locked_until": user.locked_until.isoformat() if user.locked_until else None,
         "last_login_at": user.last_login_at.isoformat() if user.last_login_at else None,
         "last_login_ip": user.last_login_ip,
-        "password_changed_at": user.password_changed_at.isoformat() if user.password_changed_at else None,
+        "password_changed_at": (
+            user.password_changed_at.isoformat() if user.password_changed_at else None
+        ),
         "department_id": user.department_id,
         "phone_number": user.phone_number,
         "address": user.address,
         "position": user.position,
         "role_id": user.role_id,
         "created_at": user.created_at.isoformat() if user.created_at else None,
-        "updated_at": user.updated_at.isoformat() if user.updated_at else None
+        "updated_at": user.updated_at.isoformat() if user.updated_at else None,
     }
 
 
@@ -275,5 +261,5 @@ def role_to_event_data(role) -> Dict:
         "permissions": role.permissions,
         "is_active": role.is_active,
         "created_at": role.created_at.isoformat() if role.created_at else None,
-        "updated_at": role.updated_at.isoformat() if role.updated_at else None
+        "updated_at": role.updated_at.isoformat() if role.updated_at else None,
     }

@@ -22,6 +22,7 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # ==================== PASSWORD UTILITIES ====================
 
+
 def hash_password(password: str) -> str:
     """
     Hash a password using bcrypt
@@ -38,7 +39,10 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 
 # ==================== JWT TOKEN UTILITIES ====================
 
-def create_access_token(data: Dict[str, Any], expires_delta: Optional[timedelta] = None) -> str:
+
+def create_access_token(
+    data: Dict[str, Any], expires_delta: Optional[timedelta] = None
+) -> str:
     """
     Create JWT access token
 
@@ -54,19 +58,21 @@ def create_access_token(data: Dict[str, Any], expires_delta: Optional[timedelta]
     if expires_delta:
         expire = datetime.utcnow() + expires_delta
     else:
-        expire = datetime.utcnow() + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+        expire = datetime.utcnow() + timedelta(
+            minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
+        )
 
-    to_encode.update({
-        "exp": expire,
-        "iat": datetime.utcnow(),
-        "type": "access"
-    })
+    to_encode.update({"exp": expire, "iat": datetime.utcnow(), "type": "access"})
 
-    encoded_jwt = jwt.encode(to_encode, settings.JWT_SECRET, algorithm=settings.JWT_ALGORITHM)
+    encoded_jwt = jwt.encode(
+        to_encode, settings.JWT_SECRET, algorithm=settings.JWT_ALGORITHM
+    )
     return encoded_jwt
 
 
-def create_refresh_token(data: Dict[str, Any], expires_delta: Optional[timedelta] = None) -> str:
+def create_refresh_token(
+    data: Dict[str, Any], expires_delta: Optional[timedelta] = None
+) -> str:
     """
     Create JWT refresh token
 
@@ -84,13 +90,11 @@ def create_refresh_token(data: Dict[str, Any], expires_delta: Optional[timedelta
     else:
         expire = datetime.utcnow() + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
 
-    to_encode.update({
-        "exp": expire,
-        "iat": datetime.utcnow(),
-        "type": "refresh"
-    })
+    to_encode.update({"exp": expire, "iat": datetime.utcnow(), "type": "refresh"})
 
-    encoded_jwt = jwt.encode(to_encode, settings.JWT_SECRET, algorithm=settings.JWT_ALGORITHM)
+    encoded_jwt = jwt.encode(
+        to_encode, settings.JWT_SECRET, algorithm=settings.JWT_ALGORITHM
+    )
     return encoded_jwt
 
 
@@ -108,13 +112,11 @@ def create_temp_token(data: Dict[str, Any], expires_minutes: int = 5) -> str:
     to_encode = data.copy()
     expire = datetime.utcnow() + timedelta(minutes=expires_minutes)
 
-    to_encode.update({
-        "exp": expire,
-        "iat": datetime.utcnow(),
-        "type": "temp"
-    })
+    to_encode.update({"exp": expire, "iat": datetime.utcnow(), "type": "temp"})
 
-    encoded_jwt = jwt.encode(to_encode, settings.JWT_SECRET, algorithm=settings.JWT_ALGORITHM)
+    encoded_jwt = jwt.encode(
+        to_encode, settings.JWT_SECRET, algorithm=settings.JWT_ALGORITHM
+    )
     return encoded_jwt
 
 
@@ -129,13 +131,18 @@ def decode_token(token: str) -> Optional[Dict[str, Any]]:
         Decoded payload or None if invalid
     """
     try:
-        payload = jwt.decode(token, settings.JWT_SECRET, algorithms=[settings.JWT_ALGORITHM])
+        payload = jwt.decode(
+            token, settings.JWT_SECRET, algorithms=[settings.JWT_ALGORITHM]
+        )
         return payload
     except JWTError as e:
         import logging
+
         logger = logging.getLogger(__name__)
         logger.error(f"JWT decode error: {str(e)}")
-        logger.error(f"Token (first 20 chars): {token[:20] if len(token) > 20 else token}")
+        logger.error(
+            f"Token (first 20 chars): {token[:20] if len(token) > 20 else token}"
+        )
         logger.error(f"JWT_SECRET (first 10 chars): {settings.JWT_SECRET[:10]}...")
         logger.error(f"JWT_ALGORITHM: {settings.JWT_ALGORITHM}")
         return None
@@ -160,6 +167,7 @@ def verify_token_type(token: str, expected_type: str) -> bool:
 
 # ==================== MFA/OTP UTILITIES ====================
 
+
 def generate_totp_secret() -> str:
     """
     Generate a random base32 secret for TOTP
@@ -182,10 +190,7 @@ def generate_totp_uri(secret: str, email: str) -> str:
         TOTP URI string
     """
     totp = pyotp.TOTP(secret)
-    uri = totp.provisioning_uri(
-        name=email,
-        issuer_name=settings.MFA_ISSUER
-    )
+    uri = totp.provisioning_uri(name=email, issuer_name=settings.MFA_ISSUER)
     return uri
 
 
@@ -242,7 +247,9 @@ def generate_backup_codes(count: int = 10) -> list[str]:
     codes = []
     for _ in range(count):
         # Generate 8-character alphanumeric code
-        code = ''.join(secrets.choice(string.ascii_uppercase + string.digits) for _ in range(8))
+        code = "".join(
+            secrets.choice(string.ascii_uppercase + string.digits) for _ in range(8)
+        )
         # Format as XXXX-XXXX for readability
         formatted_code = f"{code[:4]}-{code[4:]}"
         codes.append(formatted_code)
@@ -278,6 +285,7 @@ def verify_backup_code(code: str, hashed_code: str) -> bool:
 
 # ==================== PASSWORD RESET TOKEN ====================
 
+
 def generate_reset_token() -> str:
     """
     Generate secure random token for password reset
@@ -290,6 +298,7 @@ def generate_reset_token() -> str:
 
 # ==================== UTILITY FUNCTIONS ====================
 
+
 def generate_random_password(length: int = 12) -> str:
     """
     Generate a random strong password
@@ -301,5 +310,5 @@ def generate_random_password(length: int = 12) -> str:
         Random password
     """
     alphabet = string.ascii_letters + string.digits + string.punctuation
-    password = ''.join(secrets.choice(alphabet) for _ in range(length))
+    password = "".join(secrets.choice(alphabet) for _ in range(length))
     return password

@@ -2,7 +2,17 @@
 Framework Contract model for long-term vendor agreements
 """
 
-from sqlalchemy import Column, Integer, String, DECIMAL, DATE, TIMESTAMP, Text, ForeignKey, Enum as SQLEnum
+from sqlalchemy import (
+    Column,
+    Integer,
+    String,
+    DECIMAL,
+    DATE,
+    TIMESTAMP,
+    Text,
+    ForeignKey,
+    Enum as SQLEnum,
+)
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.models.base import Base
@@ -11,6 +21,7 @@ import enum
 
 class ContractStatus(str, enum.Enum):
     """Contract status enumeration"""
+
     ACTIVE = "ACTIVE"
     EXPIRED = "EXPIRED"
     TERMINATED = "TERMINATED"
@@ -44,7 +55,9 @@ class FrameworkContract(Base):
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     contract_code = Column(String(50), unique=True, nullable=False, index=True)
     contract_name = Column(String(255), nullable=False)
-    vendor_id = Column(Integer, ForeignKey('procurement_db.vendors.id'), nullable=False, index=True)
+    vendor_id = Column(
+        Integer, ForeignKey("procurement_db.vendors.id"), nullable=False, index=True
+    )
 
     # Contract Information
     contract_value = Column(DECIMAL(15, 2), nullable=False)
@@ -64,7 +77,7 @@ class FrameworkContract(Base):
         SQLEnum(ContractStatus),
         nullable=False,
         default=ContractStatus.ACTIVE,
-        index=True
+        index=True,
     )
 
     # Metadata

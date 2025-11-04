@@ -2,7 +2,17 @@
 User History Model - Separate Versioning Table
 Tracks all changes to User entity for audit and rollback
 """
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, Text, ForeignKey, Numeric
+
+from sqlalchemy import (
+    Column,
+    Integer,
+    String,
+    Boolean,
+    DateTime,
+    Text,
+    ForeignKey,
+    Numeric,
+)
 from sqlalchemy.sql import func
 from app.models.base import Base
 
@@ -12,21 +22,28 @@ class UserHistory(Base):
     User version history table
     Stores snapshot of user entity on every update
     """
+
     __tablename__ = "user_history"
-    __table_args__ = {'schema': 'auth_db'}
+    __table_args__ = {"schema": "auth_db"}
 
     # Primary key
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
 
     # Foreign key to original user
-    user_id = Column(Integer, ForeignKey('auth_db.users.id'), nullable=False, index=True)
+    user_id = Column(
+        Integer, ForeignKey("auth_db.users.id"), nullable=False, index=True
+    )
 
     # Version metadata
     version = Column(Integer, nullable=False)  # Version number (1, 2, 3, ...)
-    changed_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    changed_at = Column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
     changed_by = Column(Integer, nullable=True)  # User ID who made the change
     change_reason = Column(String(500), nullable=True)  # Optional reason for change
-    change_type = Column(String(50), nullable=False)  # 'created', 'updated', 'deleted', 'activated', 'deactivated'
+    change_type = Column(
+        String(50), nullable=False
+    )  # 'created', 'updated', 'deleted', 'activated', 'deactivated'
 
     # Snapshot of user data at this version
     email = Column(String(255), nullable=False)
@@ -35,7 +52,7 @@ class UserHistory(Base):
     hashed_password = Column(String(255), nullable=True)
 
     # User type
-    user_type = Column(String(20), nullable=False, default='local')
+    user_type = Column(String(20), nullable=False, default="local")
     ad_sync_id = Column(String(255), nullable=True)
 
     # Status
@@ -74,7 +91,13 @@ class UserHistory(Base):
         return f"<UserHistory(user_id={self.user_id}, version={self.version}, changed_at={self.changed_at})>"
 
     @classmethod
-    def from_user(cls, user, changed_by: int = None, change_reason: str = None, change_type: str = "updated"):
+    def from_user(
+        cls,
+        user,
+        changed_by: int = None,
+        change_reason: str = None,
+        change_type: str = "updated",
+    ):
         """
         Create a history entry from a User object
 
@@ -116,5 +139,5 @@ class UserHistory(Base):
             position=user.position,
             role_id=user.role_id,
             original_created_at=user.created_at,
-            original_updated_at=user.updated_at
+            original_updated_at=user.updated_at,
         )

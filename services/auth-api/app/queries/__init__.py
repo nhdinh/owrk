@@ -1,9 +1,10 @@
 """Query handlers for CQRS read operations"""
+
 from .handlers import (
     GetUserByIdHandler,
     GetUsersListHandler,
     SearchUsersHandler,
-    GetUserHistoryHandler
+    GetUserHistoryHandler,
 )
 
 __all__ = [

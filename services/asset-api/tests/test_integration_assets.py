@@ -13,7 +13,7 @@ from app.core.dependencies import get_current_user
 @pytest.fixture(autouse=True)
 def mock_auth(mock_current_user):
     """Mock authentication for all tests"""
-    with patch.object(get_current_user, '__call__', return_value=mock_current_user):
+    with patch.object(get_current_user, "__call__", return_value=mock_current_user):
         yield
 
 
@@ -30,14 +30,10 @@ class TestAssetEndpoints:
             "description": "Dell Latitude 5520",
             "purchase_price": "1299.99",
             "purchase_date": "2023-01-15",
-            "created_by": 1
+            "created_by": 1,
         }
 
-        response = client.post(
-            "/api/v1/assets/",
-            json=asset_data,
-            headers=auth_headers
-        )
+        response = client.post("/api/v1/assets/", json=asset_data, headers=auth_headers)
 
         assert response.status_code == 201
         data = response.json()
@@ -56,24 +52,17 @@ class TestAssetEndpoints:
             "asset_type": "FIXED_ASSET",
             "purchase_price": "999.99",
             "purchase_date": "2023-01-15",
-            "created_by": 1
+            "created_by": 1,
         }
 
-        response = client.post(
-            "/api/v1/assets/",
-            json=asset_data,
-            headers=auth_headers
-        )
+        response = client.post("/api/v1/assets/", json=asset_data, headers=auth_headers)
 
         assert response.status_code == 400
         assert "already exists" in response.json()["detail"].lower()
 
     def test_list_assets(self, client, sample_asset, auth_headers):
         """Test listing assets"""
-        response = client.get(
-            "/api/v1/assets/",
-            headers=auth_headers
-        )
+        response = client.get("/api/v1/assets/", headers=auth_headers)
 
         assert response.status_code == 200
         data = response.json()
@@ -83,10 +72,7 @@ class TestAssetEndpoints:
 
     def test_list_assets_with_filters(self, client, sample_asset, auth_headers):
         """Test listing assets with status filter"""
-        response = client.get(
-            "/api/v1/assets/?status=NEW",
-            headers=auth_headers
-        )
+        response = client.get("/api/v1/assets/?status=NEW", headers=auth_headers)
 
         assert response.status_code == 200
         data = response.json()
@@ -94,10 +80,7 @@ class TestAssetEndpoints:
 
     def test_get_asset(self, client, sample_asset, auth_headers):
         """Test getting a single asset"""
-        response = client.get(
-            f"/api/v1/assets/{sample_asset.id}",
-            headers=auth_headers
-        )
+        response = client.get(f"/api/v1/assets/{sample_asset.id}", headers=auth_headers)
 
         assert response.status_code == 200
         data = response.json()
@@ -107,10 +90,7 @@ class TestAssetEndpoints:
 
     def test_get_asset_not_found(self, client, auth_headers):
         """Test getting non-existent asset"""
-        response = client.get(
-            "/api/v1/assets/99999",
-            headers=auth_headers
-        )
+        response = client.get("/api/v1/assets/99999", headers=auth_headers)
 
         assert response.status_code == 404
 
@@ -118,13 +98,11 @@ class TestAssetEndpoints:
         """Test updating an asset"""
         update_data = {
             "name": "Updated Laptop Name",
-            "description": "Updated description"
+            "description": "Updated description",
         }
 
         response = client.put(
-            f"/api/v1/assets/{sample_asset.id}",
-            json=update_data,
-            headers=auth_headers
+            f"/api/v1/assets/{sample_asset.id}", json=update_data, headers=auth_headers
         )
 
         assert response.status_code == 200
@@ -136,24 +114,21 @@ class TestAssetEndpoints:
     def test_delete_asset(self, client, sample_asset, auth_headers):
         """Test deleting an asset"""
         response = client.delete(
-            f"/api/v1/assets/{sample_asset.id}",
-            headers=auth_headers
+            f"/api/v1/assets/{sample_asset.id}", headers=auth_headers
         )
 
         assert response.status_code == 204
 
         # Verify asset is deleted
         get_response = client.get(
-            f"/api/v1/assets/{sample_asset.id}",
-            headers=auth_headers
+            f"/api/v1/assets/{sample_asset.id}", headers=auth_headers
         )
         assert get_response.status_code == 404
 
     def test_get_asset_qrcode(self, client, sample_asset, auth_headers):
         """Test getting asset QR code"""
         response = client.get(
-            f"/api/v1/assets/{sample_asset.id}/qrcode",
-            headers=auth_headers
+            f"/api/v1/assets/{sample_asset.id}/qrcode", headers=auth_headers
         )
 
         assert response.status_code == 200
@@ -164,10 +139,7 @@ class TestAssetEndpoints:
 
     def test_get_asset_statistics(self, client, sample_asset, auth_headers):
         """Test getting asset statistics"""
-        response = client.get(
-            "/api/v1/assets/statistics/summary",
-            headers=auth_headers
-        )
+        response = client.get("/api/v1/assets/statistics/summary", headers=auth_headers)
 
         assert response.status_code == 200
         data = response.json()
@@ -186,11 +158,7 @@ class TestAssetValidation:
             # Missing asset_code, category_id, etc.
         }
 
-        response = client.post(
-            "/api/v1/assets/",
-            json=asset_data,
-            headers=auth_headers
-        )
+        response = client.post("/api/v1/assets/", json=asset_data, headers=auth_headers)
 
         assert response.status_code == 422  # Validation error
 
@@ -203,14 +171,10 @@ class TestAssetValidation:
             "asset_type": "FIXED_ASSET",
             "purchase_price": "-100",  # Negative price
             "purchase_date": "2023-01-15",
-            "created_by": 1
+            "created_by": 1,
         }
 
-        response = client.post(
-            "/api/v1/assets/",
-            json=asset_data,
-            headers=auth_headers
-        )
+        response = client.post("/api/v1/assets/", json=asset_data, headers=auth_headers)
 
         # Should either reject or handle gracefully
         assert response.status_code in [400, 422]
@@ -224,14 +188,10 @@ class TestAssetValidation:
             "asset_type": "FIXED_ASSET",
             "purchase_price": "1299.99",
             "purchase_date": "invalid-date",
-            "created_by": 1
+            "created_by": 1,
         }
 
-        response = client.post(
-            "/api/v1/assets/",
-            json=asset_data,
-            headers=auth_headers
-        )
+        response = client.post("/api/v1/assets/", json=asset_data, headers=auth_headers)
 
         assert response.status_code == 422
 
@@ -239,7 +199,9 @@ class TestAssetValidation:
 class TestAssetPagination:
     """Test asset list pagination"""
 
-    def test_list_assets_pagination(self, client, db_session, sample_category, auth_headers):
+    def test_list_assets_pagination(
+        self, client, db_session, sample_category, auth_headers
+    ):
         """Test asset listing with pagination"""
         from app.models.asset import Asset, AssetType, AssetStatus
         from decimal import Decimal
@@ -254,15 +216,14 @@ class TestAssetPagination:
                 purchase_price=Decimal("100.00"),
                 purchase_date=date(2023, 1, 1),
                 status=AssetStatus.NEW,
-                created_by=1
+                created_by=1,
             )
             db_session.add(asset)
         db_session.commit()
 
         # Test first page
         response = client.get(
-            "/api/v1/assets/?page=1&page_size=10",
-            headers=auth_headers
+            "/api/v1/assets/?page=1&page_size=10", headers=auth_headers
         )
 
         assert response.status_code == 200
@@ -273,8 +234,7 @@ class TestAssetPagination:
 
         # Test second page
         response = client.get(
-            "/api/v1/assets/?page=2&page_size=10",
-            headers=auth_headers
+            "/api/v1/assets/?page=2&page_size=10", headers=auth_headers
         )
 
         assert response.status_code == 200

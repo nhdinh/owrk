@@ -143,21 +143,35 @@ class UserRepository(BaseRepository[User]):
 
     def get_active_users(self, skip: int = 0, limit: int = 100) -> list[User]:
         """Get all active users"""
-        return self.db.query(User).filter(
-            User.is_active == True
-        ).offset(skip).limit(limit).all()
+        return (
+            self.db.query(User)
+            .filter(User.is_active == True)
+            .offset(skip)
+            .limit(limit)
+            .all()
+        )
 
-    def get_users_by_type(self, user_type: str, skip: int = 0, limit: int = 100) -> list[User]:
+    def get_users_by_type(
+        self, user_type: str, skip: int = 0, limit: int = 100
+    ) -> list[User]:
         """Get users by type (local or active_directory)"""
-        return self.db.query(User).filter(
-            User.user_type == user_type
-        ).offset(skip).limit(limit).all()
+        return (
+            self.db.query(User)
+            .filter(User.user_type == user_type)
+            .offset(skip)
+            .limit(limit)
+            .all()
+        )
 
     def get_users_with_mfa_enabled(self, skip: int = 0, limit: int = 100) -> list[User]:
         """Get users with MFA enabled"""
-        return self.db.query(User).filter(
-            User.mfa_enabled == True
-        ).offset(skip).limit(limit).all()
+        return (
+            self.db.query(User)
+            .filter(User.mfa_enabled == True)
+            .offset(skip)
+            .limit(limit)
+            .all()
+        )
 
     def email_exists(self, email: str) -> bool:
         """Check if email already exists"""
@@ -165,4 +179,7 @@ class UserRepository(BaseRepository[User]):
 
     def username_exists(self, username: str) -> bool:
         """Check if username already exists"""
-        return self.db.query(User.id).filter(User.username == username).scalar() is not None
+        return (
+            self.db.query(User.id).filter(User.username == username).scalar()
+            is not None
+        )

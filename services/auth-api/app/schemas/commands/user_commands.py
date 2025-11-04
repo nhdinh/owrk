@@ -1,4 +1,5 @@
 """User Command DTOs"""
+
 from dataclasses import dataclass
 from typing import Optional
 from app.core.message_bus import Command
@@ -7,6 +8,7 @@ from app.core.message_bus import Command
 @dataclass
 class CreateUserCommand(Command):
     """Command to create a new user"""
+
     email: str
     full_name: str
     password: str
@@ -21,6 +23,7 @@ class CreateUserCommand(Command):
 @dataclass
 class UpdateUserCommand(Command):
     """Command to update user information"""
+
     user_id: int
     full_name: Optional[str] = None
     phone_number: Optional[str] = None
@@ -33,6 +36,7 @@ class UpdateUserCommand(Command):
 @dataclass
 class DeleteUserCommand(Command):
     """Command to delete a user (soft delete)"""
+
     user_id: int
     deleted_by: Optional[int] = None  # User ID who deleted
 
@@ -40,6 +44,7 @@ class DeleteUserCommand(Command):
 @dataclass
 class ActivateUserCommand(Command):
     """Command to activate a user"""
+
     user_id: int
     activated_by: Optional[int] = None
 
@@ -47,6 +52,7 @@ class ActivateUserCommand(Command):
 @dataclass
 class DeactivateUserCommand(Command):
     """Command to deactivate a user"""
+
     user_id: int
     deactivated_by: Optional[int] = None
 
@@ -54,6 +60,7 @@ class DeactivateUserCommand(Command):
 @dataclass
 class ChangePasswordCommand(Command):
     """Command to change user password"""
+
     user_id: int
     current_password: str
     new_password: str
@@ -62,6 +69,7 @@ class ChangePasswordCommand(Command):
 @dataclass
 class ResetPasswordCommand(Command):
     """Command to reset user password"""
+
     user_id: int
     new_password: str
     reset_by: Optional[int] = None

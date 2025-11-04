@@ -7,12 +7,12 @@ from app.utils.code_generator import (
     generate_contract_code,
     generate_request_code,
     generate_quotation_code,
-    generate_order_code
+    generate_order_code,
 )
 from app.utils.validators import (
     validate_date_range,
     validate_positive_amount,
-    validate_quantity
+    validate_quantity,
 )
 
 __all__ = [
@@ -22,7 +22,6 @@ __all__ = [
     "generate_request_code",
     "generate_quotation_code",
     "generate_order_code",
-
     # Validators
     "validate_date_range",
     "validate_positive_amount",

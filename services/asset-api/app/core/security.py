@@ -22,7 +22,9 @@ def decode_token(token: str) -> Optional[Dict[str, Any]]:
         Decoded payload or None if invalid
     """
     try:
-        payload = jwt.decode(token, settings.JWT_SECRET, algorithms=[settings.JWT_ALGORITHM])
+        payload = jwt.decode(
+            token, settings.JWT_SECRET, algorithms=[settings.JWT_ALGORITHM]
+        )
         return payload
     except JWTError:
         return None

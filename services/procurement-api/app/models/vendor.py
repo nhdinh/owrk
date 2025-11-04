@@ -2,7 +2,15 @@
 Vendor model for supplier management
 """
 
-from sqlalchemy import Column, Integer, String, DECIMAL, TIMESTAMP, Text, Enum as SQLEnum
+from sqlalchemy import (
+    Column,
+    Integer,
+    String,
+    DECIMAL,
+    TIMESTAMP,
+    Text,
+    Enum as SQLEnum,
+)
 from sqlalchemy.sql import func
 from app.models.base import Base
 import enum
@@ -10,6 +18,7 @@ import enum
 
 class VendorStatus(str, enum.Enum):
     """Vendor status enumeration"""
+
     ACTIVE = "ACTIVE"
     INACTIVE = "INACTIVE"
     BLACKLISTED = "BLACKLISTED"
@@ -66,10 +75,7 @@ class Vendor(Base):
     # Rating & Status
     rating = Column(DECIMAL(3, 2), default=0.00)  # 0.00 to 5.00
     status = Column(
-        SQLEnum(VendorStatus),
-        nullable=False,
-        default=VendorStatus.ACTIVE,
-        index=True
+        SQLEnum(VendorStatus), nullable=False, default=VendorStatus.ACTIVE, index=True
     )
 
     # Metadata

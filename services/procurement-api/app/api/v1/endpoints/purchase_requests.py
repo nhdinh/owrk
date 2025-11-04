@@ -18,7 +18,7 @@ from app.schemas.purchase_request_schema import (
     PurchaseRequestListResponse,
     ApprovalRequest,
     RejectionRequest,
-    SubmitForApprovalRequest
+    SubmitForApprovalRequest,
 )
 from app.models.purchase_request import ApprovalStatus, Priority
 
@@ -29,7 +29,7 @@ router = APIRouter(prefix="/purchase-requests", tags=["Purchase Requests"])
 async def create_purchase_request(
     request_data: PurchaseRequestCreate,
     current_user: dict = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """
     Create a new purchase request in DRAFT status
@@ -58,15 +58,23 @@ async def create_purchase_request(
 @router.get("/", response_model=PurchaseRequestListResponse)
 async def list_purchase_requests(
     skip: int = Query(0, ge=0, description="Number of records to skip"),
-    limit: int = Query(100, ge=1, le=100, description="Maximum number of records to return"),
-    status: Optional[ApprovalStatus] = Query(None, description="Filter by approval status"),
+    limit: int = Query(
+        100, ge=1, le=100, description="Maximum number of records to return"
+    ),
+    status: Optional[ApprovalStatus] = Query(
+        None, description="Filter by approval status"
+    ),
     priority: Optional[Priority] = Query(None, description="Filter by priority"),
-    requested_by: Optional[int] = Query(None, description="Filter by requester user ID"),
+    requested_by: Optional[int] = Query(
+        None, description="Filter by requester user ID"
+    ),
     department_id: Optional[int] = Query(None, description="Filter by department ID"),
-    from_date: Optional[date] = Query(None, description="Filter by request date (from)"),
+    from_date: Optional[date] = Query(
+        None, description="Filter by request date (from)"
+    ),
     to_date: Optional[date] = Query(None, description="Filter by request date (to)"),
     current_user: dict = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """
     List purchase requests with pagination and filters
@@ -96,7 +104,7 @@ async def list_purchase_requests(
         requested_by=requested_by,
         department_id=department_id,
         from_date=from_date,
-        to_date=to_date
+        to_date=to_date,
     )
 
 
@@ -104,7 +112,7 @@ async def list_purchase_requests(
 async def get_purchase_request(
     request_id: int = Path(..., gt=0, description="Purchase request ID"),
     current_user: dict = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """
     Get purchase request by ID
@@ -121,7 +129,7 @@ async def update_purchase_request(
     request_id: int = Path(..., gt=0, description="Purchase request ID"),
     request_data: PurchaseRequestUpdate = ...,
     current_user: dict = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """
     Update purchase request (only allowed in DRAFT status)
@@ -142,7 +150,7 @@ async def submit_for_approval(
     request_id: int = Path(..., gt=0, description="Purchase request ID"),
     submit_data: SubmitForApprovalRequest = ...,
     current_user: dict = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """
     Submit purchase request for approval
@@ -163,7 +171,7 @@ async def approve_level1(
     request_id: int = Path(..., gt=0, description="Purchase request ID"),
     approval_data: ApprovalRequest = ...,
     current_user: dict = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """
     Level 1 Approval (Department Manager)
@@ -184,7 +192,7 @@ async def approve_level2(
     request_id: int = Path(..., gt=0, description="Purchase request ID"),
     approval_data: ApprovalRequest = ...,
     current_user: dict = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """
     Level 2 Approval (HR Manager)
@@ -205,7 +213,7 @@ async def approve_level3(
     request_id: int = Path(..., gt=0, description="Purchase request ID"),
     approval_data: ApprovalRequest = ...,
     current_user: dict = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """
     Level 3 Approval (Director) - Final Approval
@@ -227,7 +235,7 @@ async def reject_purchase_request(
     request_id: int = Path(..., gt=0, description="Purchase request ID"),
     rejection_data: RejectionRequest = ...,
     current_user: dict = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """
     Reject purchase request at any approval level
@@ -241,14 +249,16 @@ async def reject_purchase_request(
     - Updated purchase request in REJECTED status
     """
     service = PurchaseRequestService(db)
-    return service.reject_purchase_request(request_id, rejection_data, current_user["id"])
+    return service.reject_purchase_request(
+        request_id, rejection_data, current_user["id"]
+    )
 
 
 @router.post("/{request_id}/cancel", response_model=PurchaseRequestResponse)
 async def cancel_purchase_request(
     request_id: int = Path(..., gt=0, description="Purchase request ID"),
     current_user: dict = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """
     Cancel purchase request
@@ -268,7 +278,7 @@ async def cancel_purchase_request(
 async def get_pending_approvals(
     level: int = Query(1, ge=1, le=3, description="Approval level (1, 2, or 3)"),
     current_user: dict = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """
     Get purchase requests pending approval at a specific level

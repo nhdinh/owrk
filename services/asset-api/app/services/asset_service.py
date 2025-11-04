@@ -58,8 +58,10 @@ class AssetService:
             # Calculate warranty end date if warranty_months provided
             if asset_data.warranty_months and asset_data.warranty_start_date:
                 from dateutil.relativedelta import relativedelta
-                asset.warranty_end_date = asset_data.warranty_start_date + relativedelta(
-                    months=asset_data.warranty_months
+
+                asset.warranty_end_date = (
+                    asset_data.warranty_start_date
+                    + relativedelta(months=asset_data.warranty_months)
                 )
 
             asset = uow.assets.create(asset)
@@ -180,10 +182,14 @@ class AssetService:
 
             # Check if asset is available
             if asset.status not in [AssetStatus.NEW, AssetStatus.AVAILABLE]:
-                raise ValueError(f"Asset is not available for assignment (status: {asset.status})")
+                raise ValueError(
+                    f"Asset is not available for assignment (status: {asset.status})"
+                )
 
             # Check for existing active assignment
-            active_assignment = uow.assignments.get_active_assignment(assignment_data.asset_id)
+            active_assignment = uow.assignments.get_active_assignment(
+                assignment_data.asset_id
+            )
             if active_assignment:
                 raise ValueError("Asset already has an active assignment")
 

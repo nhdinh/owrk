@@ -12,7 +12,7 @@ from app.core.dependencies import get_current_user
 @pytest.fixture(autouse=True)
 def mock_auth(mock_current_user):
     """Mock authentication for all tests"""
-    with patch.object(get_current_user, '__call__', return_value=mock_current_user):
+    with patch.object(get_current_user, "__call__", return_value=mock_current_user):
         yield
 
 
@@ -21,10 +21,7 @@ class TestAssignmentEndpoints:
 
     def test_list_assignments_empty(self, client, auth_headers):
         """Test listing assignments when none exist"""
-        response = client.get(
-            "/api/v1/assets/assignments/",
-            headers=auth_headers
-        )
+        response = client.get("/api/v1/assets/assignments/", headers=auth_headers)
 
         assert response.status_code == 200
         data = response.json()
@@ -36,13 +33,13 @@ class TestAssignmentEndpoints:
             "user_id": 2,
             "department_id": 1,
             "assigned_date": str(date.today()),
-            "notes": "Test assignment"
+            "notes": "Test assignment",
         }
 
         response = client.post(
             f"/api/v1/assets/{sample_asset.id}/assign",
             json=assignment_data,
-            headers=auth_headers
+            headers=auth_headers,
         )
 
         assert response.status_code == 200
@@ -52,7 +49,9 @@ class TestAssignmentEndpoints:
         assert data["status"] == "active"
         assert "id" in data
 
-    def test_assign_already_assigned_asset(self, client, db_session, sample_asset, auth_headers):
+    def test_assign_already_assigned_asset(
+        self, client, db_session, sample_asset, auth_headers
+    ):
         """Test assigning an already assigned asset"""
         from app.models.assignment import AssetAssignment, AssignmentStatus
 
@@ -63,7 +62,7 @@ class TestAssignmentEndpoints:
             department_id=1,
             assigned_date=date.today(),
             assigned_by=1,
-            status=AssignmentStatus.ACTIVE
+            status=AssignmentStatus.ACTIVE,
         )
         db_session.add(assignment)
         db_session.commit()
@@ -72,13 +71,13 @@ class TestAssignmentEndpoints:
         assignment_data = {
             "user_id": 3,
             "department_id": 1,
-            "assigned_date": str(date.today())
+            "assigned_date": str(date.today()),
         }
 
         response = client.post(
             f"/api/v1/assets/{sample_asset.id}/assign",
             json=assignment_data,
-            headers=auth_headers
+            headers=auth_headers,
         )
 
         # Should fail
@@ -96,7 +95,7 @@ class TestAssignmentEndpoints:
             department_id=1,
             assigned_date=date.today(),
             assigned_by=1,
-            status=AssignmentStatus.ACTIVE
+            status=AssignmentStatus.ACTIVE,
         )
         db_session.add(assignment)
         db_session.commit()
@@ -105,13 +104,13 @@ class TestAssignmentEndpoints:
         return_data = {
             "returned_date": str(date.today()),
             "return_condition": "good",
-            "return_notes": "Returned in good condition"
+            "return_notes": "Returned in good condition",
         }
 
         response = client.post(
             f"/api/v1/assets/{sample_asset.id}/return",
             json=return_data,
-            headers=auth_headers
+            headers=auth_headers,
         )
 
         assert response.status_code == 200
@@ -122,21 +121,20 @@ class TestAssignmentEndpoints:
 
     def test_return_unassigned_asset(self, client, sample_asset, auth_headers):
         """Test returning an asset that isn't assigned"""
-        return_data = {
-            "returned_date": str(date.today()),
-            "return_condition": "good"
-        }
+        return_data = {"returned_date": str(date.today()), "return_condition": "good"}
 
         response = client.post(
             f"/api/v1/assets/{sample_asset.id}/return",
             json=return_data,
-            headers=auth_headers
+            headers=auth_headers,
         )
 
         # Should fail
         assert response.status_code == 400
 
-    def test_list_assignments_with_filter(self, client, db_session, sample_asset, auth_headers):
+    def test_list_assignments_with_filter(
+        self, client, db_session, sample_asset, auth_headers
+    ):
         """Test listing assignments with status filter"""
         from app.models.assignment import AssetAssignment, AssignmentStatus
 
@@ -147,15 +145,14 @@ class TestAssignmentEndpoints:
             department_id=1,
             assigned_date=date.today(),
             assigned_by=1,
-            status=AssignmentStatus.ACTIVE
+            status=AssignmentStatus.ACTIVE,
         )
         db_session.add(assignment1)
         db_session.commit()
 
         # Test filtering by status
         response = client.get(
-            "/api/v1/assets/assignments/?status=active",
-            headers=auth_headers
+            "/api/v1/assets/assignments/?status=active", headers=auth_headers
         )
 
         assert response.status_code == 200
@@ -174,14 +171,13 @@ class TestAssignmentEndpoints:
                 department_id=1,
                 assigned_date=date.today(),
                 assigned_by=1,
-                status=AssignmentStatus.RETURNED if i < 2 else AssignmentStatus.ACTIVE
+                status=AssignmentStatus.RETURNED if i < 2 else AssignmentStatus.ACTIVE,
             )
             db_session.add(assignment)
         db_session.commit()
 
         response = client.get(
-            f"/api/v1/assets/{sample_asset.id}/history",
-            headers=auth_headers
+            f"/api/v1/assets/{sample_asset.id}/history", headers=auth_headers
         )
 
         assert response.status_code == 200
@@ -197,14 +193,14 @@ class TestAssignmentValidation:
         """Test assigning without user_id"""
         assignment_data = {
             "department_id": 1,
-            "assigned_date": str(date.today())
+            "assigned_date": str(date.today()),
             # Missing user_id
         }
 
         response = client.post(
             f"/api/v1/assets/{sample_asset.id}/assign",
             json=assignment_data,
-            headers=auth_headers
+            headers=auth_headers,
         )
 
         assert response.status_code == 422
@@ -214,18 +210,20 @@ class TestAssignmentValidation:
         assignment_data = {
             "user_id": 2,
             "department_id": 1,
-            "assigned_date": "invalid-date"
+            "assigned_date": "invalid-date",
         }
 
         response = client.post(
             f"/api/v1/assets/{sample_asset.id}/assign",
             json=assignment_data,
-            headers=auth_headers
+            headers=auth_headers,
         )
 
         assert response.status_code == 422
 
-    def test_return_missing_condition(self, client, db_session, sample_asset, auth_headers):
+    def test_return_missing_condition(
+        self, client, db_session, sample_asset, auth_headers
+    ):
         """Test returning without condition"""
         from app.models.assignment import AssetAssignment, AssignmentStatus
 
@@ -236,7 +234,7 @@ class TestAssignmentValidation:
             department_id=1,
             assigned_date=date.today(),
             assigned_by=1,
-            status=AssignmentStatus.ACTIVE
+            status=AssignmentStatus.ACTIVE,
         )
         db_session.add(assignment)
         db_session.commit()
@@ -249,7 +247,7 @@ class TestAssignmentValidation:
         response = client.post(
             f"/api/v1/assets/{sample_asset.id}/return",
             json=return_data,
-            headers=auth_headers
+            headers=auth_headers,
         )
 
         assert response.status_code == 422

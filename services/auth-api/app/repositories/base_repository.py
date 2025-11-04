@@ -8,7 +8,7 @@ from sqlalchemy import and_
 
 from app.models.base import Base
 
-T = TypeVar('T', bound=Base)
+T = TypeVar("T", bound=Base)
 
 
 class BaseRepository(Generic[T]):
@@ -69,7 +69,10 @@ class BaseRepository(Generic[T]):
 
     def exists(self, id: int) -> bool:
         """Check if entity exists"""
-        return self.db.query(self.model.id).filter(self.model.id == id).scalar() is not None
+        return (
+            self.db.query(self.model.id).filter(self.model.id == id).scalar()
+            is not None
+        )
 
     def count(self, **filters) -> int:
         """Count entities"""

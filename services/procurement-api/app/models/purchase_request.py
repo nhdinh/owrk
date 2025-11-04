@@ -2,7 +2,17 @@
 Purchase Request models for procurement requests with multi-level approval
 """
 
-from sqlalchemy import Column, Integer, String, DECIMAL, DATE, TIMESTAMP, Text, ForeignKey, Enum as SQLEnum
+from sqlalchemy import (
+    Column,
+    Integer,
+    String,
+    DECIMAL,
+    DATE,
+    TIMESTAMP,
+    Text,
+    ForeignKey,
+    Enum as SQLEnum,
+)
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.models.base import Base
@@ -11,6 +21,7 @@ import enum
 
 class Priority(str, enum.Enum):
     """Priority level enumeration"""
+
     LOW = "LOW"
     MEDIUM = "MEDIUM"
     HIGH = "HIGH"
@@ -19,12 +30,14 @@ class Priority(str, enum.Enum):
 
 class ProcurementType(str, enum.Enum):
     """Procurement type enumeration"""
+
     FRAMEWORK_CONTRACT = "FRAMEWORK_CONTRACT"
     ONE_TIME = "ONE_TIME"
 
 
 class ApprovalStatus(str, enum.Enum):
     """Approval status enumeration"""
+
     DRAFT = "DRAFT"
     PENDING = "PENDING"
     LEVEL1_APPROVED = "LEVEL1_APPROVED"
@@ -86,7 +99,9 @@ class PurchaseRequest(Base):
 
     # Procurement Type
     procurement_type = Column(SQLEnum(ProcurementType), nullable=False)
-    framework_contract_id = Column(Integer, ForeignKey('procurement_db.framework_contracts.id'))
+    framework_contract_id = Column(
+        Integer, ForeignKey("procurement_db.framework_contracts.id")
+    )
 
     # Estimated Total
     estimated_total = Column(DECIMAL(15, 2))
@@ -96,7 +111,7 @@ class PurchaseRequest(Base):
         SQLEnum(ApprovalStatus),
         nullable=False,
         default=ApprovalStatus.DRAFT,
-        index=True
+        index=True,
     )
 
     # Level 1 Approval (Department Manager)
@@ -125,7 +140,11 @@ class PurchaseRequest(Base):
     deleted_at = Column(TIMESTAMP)
 
     # Relationships
-    items = relationship("PurchaseRequestItem", back_populates="purchase_request", cascade="all, delete-orphan")
+    items = relationship(
+        "PurchaseRequestItem",
+        back_populates="purchase_request",
+        cascade="all, delete-orphan",
+    )
 
     def __repr__(self):
         return f"<PurchaseRequest(id={self.id}, code='{self.request_code}', status='{self.approval_status}')>"
@@ -156,9 +175,9 @@ class PurchaseRequestItem(Base):
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     purchase_request_id = Column(
         Integer,
-        ForeignKey('procurement_db.purchase_requests.id', ondelete='CASCADE'),
+        ForeignKey("procurement_db.purchase_requests.id", ondelete="CASCADE"),
         nullable=False,
-        index=True
+        index=True,
     )
 
     # Product Information

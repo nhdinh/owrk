@@ -23,9 +23,13 @@ class RoleRepository(BaseRepository[Role]):
 
     def get_active_roles(self, skip: int = 0, limit: int = 100) -> List[Role]:
         """Get all active roles"""
-        return self.db.query(Role).filter(
-            Role.is_active == True
-        ).offset(skip).limit(limit).all()
+        return (
+            self.db.query(Role)
+            .filter(Role.is_active == True)
+            .offset(skip)
+            .limit(limit)
+            .all()
+        )
 
     def add_permission_to_role(self, role_id: int, permission_id: int) -> bool:
         """Add permission to role"""
@@ -33,7 +37,9 @@ class RoleRepository(BaseRepository[Role]):
         if not role:
             return False
 
-        permission = self.db.query(Permission).filter(Permission.id == permission_id).first()
+        permission = (
+            self.db.query(Permission).filter(Permission.id == permission_id).first()
+        )
         if not permission:
             return False
 
@@ -49,7 +55,9 @@ class RoleRepository(BaseRepository[Role]):
         if not role:
             return False
 
-        permission = self.db.query(Permission).filter(Permission.id == permission_id).first()
+        permission = (
+            self.db.query(Permission).filter(Permission.id == permission_id).first()
+        )
         if not permission:
             return False
 
@@ -87,12 +95,15 @@ class PermissionRepository(BaseRepository[Permission]):
         """Get permission by name"""
         return self.db.query(Permission).filter(Permission.name == name).first()
 
-    def get_by_resource_action(self, resource: str, action: str) -> Optional[Permission]:
+    def get_by_resource_action(
+        self, resource: str, action: str
+    ) -> Optional[Permission]:
         """Get permission by resource and action"""
-        return self.db.query(Permission).filter(
-            Permission.resource == resource,
-            Permission.action == action
-        ).first()
+        return (
+            self.db.query(Permission)
+            .filter(Permission.resource == resource, Permission.action == action)
+            .first()
+        )
 
     def get_by_resource(self, resource: str) -> List[Permission]:
         """Get all permissions for a resource"""

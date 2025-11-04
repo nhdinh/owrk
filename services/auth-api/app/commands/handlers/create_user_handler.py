@@ -2,6 +2,7 @@
 CreateUserHandler - Command handler for creating new users
 Implements CQRS pattern with versioning and event publishing
 """
+
 import logging
 from sqlalchemy.orm import Session
 from app.core.message_bus import CommandHandler
@@ -58,7 +59,7 @@ class CreateUserHandler(CommandHandler[CreateUserCommand, UserResponse]):
             department_id=command.department_id,
             phone_number=command.phone_number,
             position=command.position,
-            version=1  # Initial version
+            version=1,  # Initial version
         )
 
         # Add to database
@@ -70,7 +71,7 @@ class CreateUserHandler(CommandHandler[CreateUserCommand, UserResponse]):
             user=new_user,
             changed_by=command.created_by,
             change_reason="User created",
-            change_type="created"
+            change_type="created",
         )
         db.add(history_entry)
 
@@ -78,7 +79,9 @@ class CreateUserHandler(CommandHandler[CreateUserCommand, UserResponse]):
         db.commit()
         db.refresh(new_user)
 
-        logger.info(f"User created successfully: ID={new_user.id}, Email={new_user.email}")
+        logger.info(
+            f"User created successfully: ID={new_user.id}, Email={new_user.email}"
+        )
 
         # Publish event to RabbitMQ for read model sync
         try:
@@ -97,9 +100,17 @@ class CreateUserHandler(CommandHandler[CreateUserCommand, UserResponse]):
                 "role_id": new_user.role_id,
                 "department_id": new_user.department_id,
                 "version": new_user.version,
-                "created_at": new_user.created_at.isoformat() if new_user.created_at else None,
-                "updated_at": new_user.updated_at.isoformat() if new_user.updated_at else None,
-                "last_login_at": new_user.last_login_at.isoformat() if new_user.last_login_at else None
+                "created_at": (
+                    new_user.created_at.isoformat() if new_user.created_at else None
+                ),
+                "updated_at": (
+                    new_user.updated_at.isoformat() if new_user.updated_at else None
+                ),
+                "last_login_at": (
+                    new_user.last_login_at.isoformat()
+                    if new_user.last_login_at
+                    else None
+                ),
             }
             await publish_event("user.created", event_data)
             logger.info(f"Published UserCreated event for user {new_user.id}")

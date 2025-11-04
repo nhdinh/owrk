@@ -25,10 +25,9 @@ def login_admin():
     global access_token, current_user_id
 
     # Step 1: Login
-    response = requests.post(f"{AUTH_API}/login", json={
-        "email": ADMIN_EMAIL,
-        "password": ADMIN_PASSWORD
-    })
+    response = requests.post(
+        f"{AUTH_API}/login", json={"email": ADMIN_EMAIL, "password": ADMIN_PASSWORD}
+    )
 
     if response.status_code != 200:
         print(f"[FAIL] Login failed: {response.text}")
@@ -38,10 +37,9 @@ def login_admin():
     print(f"[OK] Login successful")
 
     # Step 2: Verify OTP
-    response = requests.post(f"{AUTH_API}/verify-otp", json={
-        "temp_token": temp_token,
-        "otp_code": "000000"
-    })
+    response = requests.post(
+        f"{AUTH_API}/verify-otp", json={"temp_token": temp_token, "otp_code": "000000"}
+    )
 
     if response.status_code != 200:
         print(f"[FAIL] OTP verification failed: {response.text}")
@@ -58,7 +56,7 @@ def get_headers():
     """Get headers with authorization token"""
     return {
         "Authorization": f"Bearer {access_token}",
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
     }
 
 
@@ -79,7 +77,9 @@ def create_categories():
     if response.status_code == 200:
         existing_cats = response.json()
         for cat_data in categories:
-            existing = next((c for c in existing_cats if c['code'] == cat_data['code']), None)
+            existing = next(
+                (c for c in existing_cats if c["code"] == cat_data["code"]), None
+            )
             if existing:
                 created.append(existing)
                 print(f"[EXISTS] {existing['name']} (ID: {existing['id']})")
@@ -87,7 +87,9 @@ def create_categories():
 
             # Create new
             cat_data["is_active"] = True
-            response = requests.post(f"{ASSET_API}/categories/", headers=get_headers(), json=cat_data)
+            response = requests.post(
+                f"{ASSET_API}/categories/", headers=get_headers(), json=cat_data
+            )
             if response.status_code == 201:
                 category = response.json()
                 created.append(category)
@@ -106,14 +108,14 @@ def create_assets(categories):
         print("[FAIL] No categories")
         return []
 
-    it_cat = next((c for c in categories if c['code'] == 'IT-HW'), categories[0])
-    furn_cat = next((c for c in categories if c['code'] == 'FURN'), categories[0])
+    it_cat = next((c for c in categories if c["code"] == "IT-HW"), categories[0])
+    furn_cat = next((c for c in categories if c["code"] == "FURN"), categories[0])
 
     assets = [
         {
             "asset_code": "LAP-001",
             "name": "Dell Laptop",
-            "category_id": it_cat['id'],
+            "category_id": it_cat["id"],
             "asset_type": "FIXED_ASSET",
             "description": "Dell Latitude 5520",
             "serial_number": "DL001",
@@ -122,12 +124,12 @@ def create_assets(categories):
             "depreciation_method": "STRAIGHT_LINE",
             "useful_life_months": 48,
             "location": "IT Storage",
-            "created_by": current_user_id
+            "created_by": current_user_id,
         },
         {
             "asset_code": "LAP-002",
             "name": "HP Laptop",
-            "category_id": it_cat['id'],
+            "category_id": it_cat["id"],
             "asset_type": "FIXED_ASSET",
             "description": "HP EliteBook 840",
             "serial_number": "HP001",
@@ -136,12 +138,12 @@ def create_assets(categories):
             "depreciation_method": "STRAIGHT_LINE",
             "useful_life_months": 48,
             "location": "IT Dept",
-            "created_by": current_user_id
+            "created_by": current_user_id,
         },
         {
             "asset_code": "CHR-001",
             "name": "Office Chair",
-            "category_id": furn_cat['id'],
+            "category_id": furn_cat["id"],
             "asset_type": "FIXED_ASSET",
             "description": "Ergonomic Chair",
             "serial_number": "CHR001",
@@ -150,12 +152,12 @@ def create_assets(categories):
             "depreciation_method": "STRAIGHT_LINE",
             "useful_life_months": 120,
             "location": "Office",
-            "created_by": current_user_id
+            "created_by": current_user_id,
         },
         {
             "asset_code": "DSK-001",
             "name": "Standing Desk",
-            "category_id": furn_cat['id'],
+            "category_id": furn_cat["id"],
             "asset_type": "FIXED_ASSET",
             "description": "Electric Desk",
             "serial_number": "DSK001",
@@ -164,25 +166,27 @@ def create_assets(categories):
             "depreciation_method": "STRAIGHT_LINE",
             "useful_life_months": 120,
             "location": "IT Dept",
-            "created_by": current_user_id
+            "created_by": current_user_id,
         },
         {
             "asset_code": "TOOL-001",
             "name": "Cordless Drill",
-            "category_id": it_cat['id'],
+            "category_id": it_cat["id"],
             "asset_type": "TOOL",
             "description": "DeWalt 20V Drill",
             "serial_number": "DW001",
             "purchase_price": "249.99",
             "purchase_date": "2023-05-10",
             "location": "Maintenance",
-            "created_by": current_user_id
-        }
+            "created_by": current_user_id,
+        },
     ]
 
     created = []
     for asset_data in assets:
-        response = requests.post(f"{ASSET_API}/", headers=get_headers(), json=asset_data)
+        response = requests.post(
+            f"{ASSET_API}/", headers=get_headers(), json=asset_data
+        )
 
         if response.status_code == 201:
             asset = response.json()

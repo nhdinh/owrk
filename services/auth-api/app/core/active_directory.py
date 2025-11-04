@@ -23,7 +23,9 @@ class ActiveDirectoryService:
         self.search_base = settings.AD_SEARCH_BASE
         self.enabled = settings.AD_ENABLED
 
-    def _get_connection(self, user_dn: Optional[str] = None, password: Optional[str] = None) -> Optional[Connection]:
+    def _get_connection(
+        self, user_dn: Optional[str] = None, password: Optional[str] = None
+    ) -> Optional[Connection]:
         """
         Create LDAP connection
 
@@ -49,7 +51,7 @@ class ActiveDirectoryService:
                 user=dn,
                 password=pwd,
                 authentication=ldap3.SIMPLE,
-                auto_bind=True
+                auto_bind=True,
             )
             return conn
         except LDAPException as e:
@@ -82,8 +84,15 @@ class ActiveDirectoryService:
                 search_base=self.search_base,
                 search_filter=search_filter,
                 search_scope=SUBTREE,
-                attributes=['mail', 'displayName', 'department', 'telephoneNumber',
-                           'title', 'distinguishedName', 'objectGUID']
+                attributes=[
+                    "mail",
+                    "displayName",
+                    "department",
+                    "telephoneNumber",
+                    "title",
+                    "distinguishedName",
+                    "objectGUID",
+                ],
             )
 
             if not conn.entries:
@@ -105,13 +114,31 @@ class ActiveDirectoryService:
             # Authentication successful, extract user info
             user_info = {
                 "username": username,
-                "email": user_entry.mail.value if hasattr(user_entry, 'mail') else None,
-                "full_name": user_entry.displayName.value if hasattr(user_entry, 'displayName') else username,
-                "department": user_entry.department.value if hasattr(user_entry, 'department') else None,
-                "phone_number": user_entry.telephoneNumber.value if hasattr(user_entry, 'telephoneNumber') else None,
-                "position": user_entry.title.value if hasattr(user_entry, 'title') else None,
-                "ad_sync_id": str(user_entry.objectGUID.value) if hasattr(user_entry, 'objectGUID') else None,
-                "user_type": "active_directory"
+                "email": user_entry.mail.value if hasattr(user_entry, "mail") else None,
+                "full_name": (
+                    user_entry.displayName.value
+                    if hasattr(user_entry, "displayName")
+                    else username
+                ),
+                "department": (
+                    user_entry.department.value
+                    if hasattr(user_entry, "department")
+                    else None
+                ),
+                "phone_number": (
+                    user_entry.telephoneNumber.value
+                    if hasattr(user_entry, "telephoneNumber")
+                    else None
+                ),
+                "position": (
+                    user_entry.title.value if hasattr(user_entry, "title") else None
+                ),
+                "ad_sync_id": (
+                    str(user_entry.objectGUID.value)
+                    if hasattr(user_entry, "objectGUID")
+                    else None
+                ),
+                "user_type": "active_directory",
             }
 
             user_conn.unbind()
@@ -144,8 +171,16 @@ class ActiveDirectoryService:
                 search_base=self.search_base,
                 search_filter=search_filter,
                 search_scope=SUBTREE,
-                attributes=['mail', 'displayName', 'department', 'telephoneNumber',
-                           'title', 'objectGUID', 'whenCreated', 'whenChanged']
+                attributes=[
+                    "mail",
+                    "displayName",
+                    "department",
+                    "telephoneNumber",
+                    "title",
+                    "objectGUID",
+                    "whenCreated",
+                    "whenChanged",
+                ],
             )
 
             if not conn.entries:
@@ -154,13 +189,31 @@ class ActiveDirectoryService:
             user_entry = conn.entries[0]
             user_info = {
                 "username": username,
-                "email": user_entry.mail.value if hasattr(user_entry, 'mail') else None,
-                "full_name": user_entry.displayName.value if hasattr(user_entry, 'displayName') else username,
-                "department": user_entry.department.value if hasattr(user_entry, 'department') else None,
-                "phone_number": user_entry.telephoneNumber.value if hasattr(user_entry, 'telephoneNumber') else None,
-                "position": user_entry.title.value if hasattr(user_entry, 'title') else None,
-                "ad_sync_id": str(user_entry.objectGUID.value) if hasattr(user_entry, 'objectGUID') else None,
-                "user_type": "active_directory"
+                "email": user_entry.mail.value if hasattr(user_entry, "mail") else None,
+                "full_name": (
+                    user_entry.displayName.value
+                    if hasattr(user_entry, "displayName")
+                    else username
+                ),
+                "department": (
+                    user_entry.department.value
+                    if hasattr(user_entry, "department")
+                    else None
+                ),
+                "phone_number": (
+                    user_entry.telephoneNumber.value
+                    if hasattr(user_entry, "telephoneNumber")
+                    else None
+                ),
+                "position": (
+                    user_entry.title.value if hasattr(user_entry, "title") else None
+                ),
+                "ad_sync_id": (
+                    str(user_entry.objectGUID.value)
+                    if hasattr(user_entry, "objectGUID")
+                    else None
+                ),
+                "user_type": "active_directory",
             }
 
             conn.unbind()
@@ -191,22 +244,47 @@ class ActiveDirectoryService:
                 search_base=self.search_base,
                 search_filter=search_filter,
                 search_scope=SUBTREE,
-                attributes=['sAMAccountName', 'mail', 'displayName', 'department',
-                           'telephoneNumber', 'title', 'objectGUID']
+                attributes=[
+                    "sAMAccountName",
+                    "mail",
+                    "displayName",
+                    "department",
+                    "telephoneNumber",
+                    "title",
+                    "objectGUID",
+                ],
             )
 
             users = []
             for entry in conn.entries:
-                if hasattr(entry, 'sAMAccountName'):
+                if hasattr(entry, "sAMAccountName"):
                     user_info = {
                         "username": entry.sAMAccountName.value,
-                        "email": entry.mail.value if hasattr(entry, 'mail') else None,
-                        "full_name": entry.displayName.value if hasattr(entry, 'displayName') else entry.sAMAccountName.value,
-                        "department": entry.department.value if hasattr(entry, 'department') else None,
-                        "phone_number": entry.telephoneNumber.value if hasattr(entry, 'telephoneNumber') else None,
-                        "position": entry.title.value if hasattr(entry, 'title') else None,
-                        "ad_sync_id": str(entry.objectGUID.value) if hasattr(entry, 'objectGUID') else None,
-                        "user_type": "active_directory"
+                        "email": entry.mail.value if hasattr(entry, "mail") else None,
+                        "full_name": (
+                            entry.displayName.value
+                            if hasattr(entry, "displayName")
+                            else entry.sAMAccountName.value
+                        ),
+                        "department": (
+                            entry.department.value
+                            if hasattr(entry, "department")
+                            else None
+                        ),
+                        "phone_number": (
+                            entry.telephoneNumber.value
+                            if hasattr(entry, "telephoneNumber")
+                            else None
+                        ),
+                        "position": (
+                            entry.title.value if hasattr(entry, "title") else None
+                        ),
+                        "ad_sync_id": (
+                            str(entry.objectGUID.value)
+                            if hasattr(entry, "objectGUID")
+                            else None
+                        ),
+                        "user_type": "active_directory",
                     }
                     users.append(user_info)
 

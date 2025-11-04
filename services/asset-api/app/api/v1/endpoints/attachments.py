@@ -13,12 +13,16 @@ from app.services.file_service import FileService
 router = APIRouter()
 
 
-@router.post("/{asset_id}/attachments", response_model=AttachmentResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/{asset_id}/attachments",
+    response_model=AttachmentResponse,
+    status_code=status.HTTP_201_CREATED,
+)
 async def upload_attachment(
     asset_id: int,
     file: UploadFile = File(...),
     file_type: FileType = Form(...),
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
 ):
     """Upload file attachment for asset"""
     try:
@@ -26,7 +30,7 @@ async def upload_attachment(
             asset_id=asset_id,
             file=file,
             file_type=file_type,
-            uploaded_by=current_user["sub"]
+            uploaded_by=current_user["sub"],
         )
         return attachment
     except ValueError as e:
@@ -37,8 +41,7 @@ async def upload_attachment(
 
 @router.get("/{asset_id}/attachments", response_model=List[AttachmentResponse])
 async def list_attachments(
-    asset_id: int,
-    current_user: dict = Depends(get_current_user)
+    asset_id: int, current_user: dict = Depends(get_current_user)
 ):
     """List all attachments for an asset"""
     try:
@@ -50,8 +53,7 @@ async def list_attachments(
 
 @router.delete("/attachments/{attachment_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_attachment(
-    attachment_id: int,
-    current_user: dict = Depends(get_current_user)
+    attachment_id: int, current_user: dict = Depends(get_current_user)
 ):
     """Delete attachment"""
     try:
