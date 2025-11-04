@@ -53,7 +53,7 @@ from app.read_repositories.user_read_repository import UserReadRepository
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
-    format="%(asctime)s - %(name)s:%(lineno) - %(levelname)s - %(message)s",
+    format="%(asctime)s - %(name)s:%(lineno)s - %(levelname)s - %(message)s",
 )
 logger = logging.getLogger(__name__)
 

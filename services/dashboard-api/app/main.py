@@ -21,7 +21,7 @@ from app.api.v1.router import api_router
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
-    format="%(asctime)s - %(name)s:%(lineno) - %(levelname)s - %(message)s",
+    format="%(asctime)s - %(name)s:%(lineno)s - %(levelname)s - %(message)s",
 )
 logger = logging.getLogger(__name__)
 

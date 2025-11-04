@@ -16,7 +16,7 @@ from .data import load_services, save_services, reset_services
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
-    format="%(asctime)s - %(name)s:%(lineno) - %(levelname)s - %(message)s",
+    format="%(asctime)s - %(name)s:%(lineno)s - %(levelname)s - %(message)s",
 )
 logger = logging.getLogger(__name__)
 

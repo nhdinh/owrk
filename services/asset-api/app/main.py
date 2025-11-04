@@ -17,7 +17,7 @@ from app.services.depreciation_service import DepreciationService
 # Configure logging
 logging.basicConfig(
     level=logging.INFO if not settings.DEBUG else logging.DEBUG,
-    format="%(asctime)s - %(name)s:%(lineno) - %(levelname)s - %(message)s",
+    format="%(asctime)s - %(name)s:%(lineno)s - %(levelname)s - %(message)s",
 )
 
 logger = logging.getLogger(__name__)
