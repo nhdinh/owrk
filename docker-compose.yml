@@ -121,9 +121,7 @@ services:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./nginx/ssl:/etc/nginx/ssl:ro
       - ./nginx/html:/usr/share/nginx/html:ro
-      - ./scripts/fe-crontab:/etc/cron.d/mycron:ro
-      - ./scripts/register_service.sh:/register_service.sh
-      - ./scripts/nginx-entrypoint-wrapper.sh:/entrypoint-wrapper.sh
+      - ./scripts/register_service.sh:/rs_template:ro
     depends_on:
       auth-api:
         condition: service_healthy
@@ -342,6 +340,12 @@ services:
     # No environment variables needed - uses relative path /api/v1 which nginx proxies to auth-api
     ports:
       - "3100:80"
+    volumes:
+      - ./scripts/register_service.sh:/rs_template:ro
+    environment:
+      HOST_NAME: auth-fe
+      HOST_PORT: 80
+      HEALTH_ENDPOINT: /
     depends_on:
       auth-api:
         condition: service_healthy
@@ -365,6 +369,12 @@ services:
     # No environment variables needed - uses relative path /api/v1 which nginx proxies to asset-api
     ports:
       - "3200:80"
+    volumes:
+      - ./scripts/register_service.sh:/rs_template:ro
+    environment:
+      HOST_NAME: asset-fe
+      HOST_PORT: 80
+      HEALTH_ENDPOINT: /
     depends_on:
       asset-api:
         condition: service_healthy
@@ -456,8 +466,7 @@ services:
     ports:
       - "3300:80"
     volumes:
-      - ./scripts/fe-crontab:/etc/crontabs/root
-      - ./scripts/register_service.sh:/register_service.sh
+      - ./scripts/register_service.sh:/rs_template:ro
     environment:
       HOST_NAME: dashboard-fe
       HOST_PORT: 80
