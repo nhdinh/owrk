@@ -2,6 +2,7 @@
 Configuration settings for Auth Service
 """
 
+from enum import StrEnum
 from pydantic_settings import BaseSettings
 from typing import List
 import os
@@ -11,6 +12,11 @@ mongo_passwd_file = os.getenv("MONGO_PASSWD_FILE")
 if mongo_passwd_file and os.path.exists(mongo_passwd_file):
     with open(mongo_passwd_file, "r") as f:
         MONGO_PASSWD = f.read().strip()
+
+
+class HealthCheckMethods(StrEnum):
+    PING = "PING"
+    HTTPX = "HTTPX"
 
 
 class Settings(BaseSettings):
@@ -35,6 +41,8 @@ class Settings(BaseSettings):
         f"?authSource=admin"  # Authenticate against admin database
     )
     MONGODB_DB_NAME: str = "service_registry"
+
+    SERVICE_HEALTH_CHECK: HealthCheckMethods = HealthCheckMethods.HTTPX
 
     class Config:
         env_file = ".env"

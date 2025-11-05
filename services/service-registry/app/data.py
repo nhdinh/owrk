@@ -33,17 +33,29 @@ this_service = {service_name: service_data}
 
 def load_services():
     if os.path.exists(service_file_path):
+        services = {}
         logger.info(f"Read cached data from {service_file_path}")
 
-        with open(service_file_path, "r") as f:
-            saved_services = json.loads(f.read())
+        try:
+            with open(service_file_path, "r") as f:
+                services = json.loads(f.read().strip())
 
-            if service_name not in saved_services.keys():
-                saved_services[service_name] = service_data
+                if service_name not in services.keys():
+                    services[service_name] = dict(service_data)
 
-            return saved_services
+            for name, service in services.items():
+                services[name]["address"] = get_host_address(service["hostname"])
 
-    return this_service
+            save_services(services)
+
+            return services
+        except:
+            pass
+
+    services = {service_name: dict(service_data)}
+    save_services(services)
+
+    return services
 
 
 def save_services(g_services):

@@ -12,7 +12,7 @@ class Settings(BaseSettings):
 
     # Service
     SERVICE_NAME: str = "dashboard-api"
-    SERVICE_ADDRESS: str = "dashboard-api"
+    SERVICE_HOSTNAME: str = "dashboard-api"
     SERVICE_PORT: int = int(os.getenv("SERVICE_PORT", 8000))
     DEBUG: bool = True
     API_V1_PREFIX: str = "/api/v1"

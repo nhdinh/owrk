@@ -35,7 +35,7 @@ async def lifespan(app: FastAPI):
     async with httpx.AsyncClient() as client:
         data = {
             "name": settings.SERVICE_NAME,
-            "address": settings.SERVICE_HOSTNAME,
+            "hostname": settings.SERVICE_HOSTNAME,
             "port": settings.SERVICE_PORT,
             "health_endpoint": "/health",
         }
