@@ -48,6 +48,14 @@ export interface DashboardHealth {
   overall_status: 'healthy' | 'degraded' | 'down';
 }
 
+export interface ServiceRegistryStatusResponse {
+  name: string;
+  hostname: string;
+  address:string;
+  response_time: number;
+  last_check: number;
+}
+
 export const dashboardAPI = {
   getOverview: async (): Promise<DashboardOverview> => {
     const response = await apiClient.get('/dashboard/overview');
@@ -66,6 +74,17 @@ export const dashboardAPI = {
 
   getHealth: async (): Promise<DashboardHealth> => {
     const response = await apiClient.get('/dashboard/health');
+    return response.data;
+  },
+
+  registerService: async(): Promise<ServiceRegistryStatusResponse>=>{
+    const params = {
+      "name": "dashboard-fe",
+      "hostname": "dashboard-fe",
+      "port": 80,
+      "health_endpoint": "/dashboard"
+    };
+    const response = await apiClient.post('http://service-registry:3000/register', {params});
     return response.data;
   },
 };

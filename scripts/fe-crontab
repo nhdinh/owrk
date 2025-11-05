@@ -1,0 +1,2 @@
+# Example: Run a script every 60 minutes
+*/1 * * * * /register_service.sh >> /var/log/cron.log 2>&1

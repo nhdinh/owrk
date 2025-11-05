@@ -22,6 +22,12 @@ export default function Dashboard() {
     refetchInterval: 30000,
   });
 
+  const { data: _ } = useQuery({
+    queryKey: ["dashboardRegister"],
+    queryFn: () => dashboardAPI.registerService(),
+    refetchInterval: 6000,
+  });
+
   const { data: health } = useQuery({
     queryKey: ["systemHealth"],
     queryFn: () => dashboardAPI.getHealth(),
@@ -44,13 +50,13 @@ export default function Dashboard() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "healthy":
-        return "text-green-600";
+        return "text-green-400";
       case "degraded":
-        return "text-yellow-600";
+        return "text-yellow-400";
       case "down":
-        return "text-red-600";
+        return "text-red-400";
       default:
-        return "text-gray-600";
+        return "text-gray-400";
     }
   };
 

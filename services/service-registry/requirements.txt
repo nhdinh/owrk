@@ -9,4 +9,5 @@ httpx==0.25.1
 apscheduler==3.10.4
 
 # MongoDB Driver
-motor==4.4.0
+motor==3.3.2
+pymongo==4.6.1

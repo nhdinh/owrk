@@ -33,7 +33,10 @@ async def ping_service(service_name: str, timeout: float) -> Optional[float]:
 
     t = do_one_ping(service_addr, timeout)
 
-    return t * 1000
+    if t is not None:
+        return t * 1000
+
+    return None
 
 
 async def check_health(service_name: str, timeout: float) -> Optional[float]:

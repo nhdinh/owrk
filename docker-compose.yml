@@ -110,7 +110,9 @@ services:
   # ======================
 
   nginx:
-    image: nginx:alpine
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
     container_name: api-gateway
     ports:
       - "8000:8000"
@@ -119,7 +121,9 @@ services:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./nginx/ssl:/etc/nginx/ssl:ro
       - ./nginx/html:/usr/share/nginx/html:ro
-      - ./common-ui:/usr/share/nginx/common-ui:ro
+      - ./scripts/fe-crontab:/etc/cron.d/mycron:ro
+      - ./scripts/register_service.sh:/register_service.sh
+      - ./scripts/nginx-entrypoint-wrapper.sh:/entrypoint-wrapper.sh
     depends_on:
       auth-api:
         condition: service_healthy
@@ -133,6 +137,10 @@ services:
         condition: service_started
       dashboard-fe:
         condition: service_started
+    environment:
+      HOST_NAME: api-gateway
+      HOST_PORT: 8000
+      HEALTH_ENDPOINT: /health
     networks:
       - backend
     restart: unless-stopped
@@ -447,6 +455,13 @@ services:
     # No environment variables needed - uses relative path /api/v1 which nginx proxies to dashboard-api
     ports:
       - "3300:80"
+    volumes:
+      - ./scripts/fe-crontab:/etc/crontabs/root
+      - ./scripts/register_service.sh:/register_service.sh
+    environment:
+      HOST_NAME: dashboard-fe
+      HOST_PORT: 80
+      HEALTH_ENDPOINT: /dashboard
     depends_on:
       dashboard-api:
         condition: service_healthy
