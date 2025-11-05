@@ -460,9 +460,9 @@ async def debug_test_otp(email: str, otp_code: str):
                     result["message"] = "OTP code is VALID!"
                 else:
                     result["status"] = "OTP_INVALID"
-                    result["message"] = (
-                        f"OTP code is INVALID. Expected one of: {prev_code}, {current_code}, {next_code}"
-                    )
+                    result[
+                        "message"
+                    ] = f"OTP code is INVALID. Expected one of: {prev_code}, {current_code}, {next_code}"
                     result["debugging_tips"] = [
                         "Check if device time is synchronized (automatic time)",
                         "Verify you're using the correct account in authenticator app",

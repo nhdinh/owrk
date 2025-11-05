@@ -29,9 +29,7 @@ class Settings:
         with open(DB_PASSWORD_FILE, "r") as f:
             DB_PASSWORD = f.read().strip()
 
-    DATABASE_URL: str = (
-        f"mysql+pymysql://{DB_USER}:{quote_plus(DB_PASSWORD)}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
-    )
+    DATABASE_URL: str = f"mysql+pymysql://{DB_USER}:{quote_plus(DB_PASSWORD)}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 
     # MongoDB (Read - for CQRS)
     MONGODB_HOST: str = os.getenv("MONGODB_HOST", "mongodb")
@@ -46,9 +44,7 @@ class Settings:
             MONGODB_PASSWORD = f.read().strip()
 
     MONGODB_DATABASE: str = os.getenv("MONGODB_DATABASE", "procurement_read_db")
-    MONGODB_URL: str = (
-        f"mongodb://{MONGODB_USER}:{quote_plus(MONGODB_PASSWORD)}@{MONGODB_HOST}:{MONGODB_PORT}/"
-    )
+    MONGODB_URL: str = f"mongodb://{MONGODB_USER}:{quote_plus(MONGODB_PASSWORD)}@{MONGODB_HOST}:{MONGODB_PORT}/"
 
     # Redis
     REDIS_HOST: str = os.getenv("REDIS_HOST", "redis")

@@ -1,18 +1,25 @@
 from datetime import datetime
+
 import json
 import logging
 import os
 
+
 from .schema import ServiceStatus
+from .helper import get_host_address
+
 
 logger = logging.getLogger(__name__)
 
 
 service_file_path = os.getenv("SERVICES_CACHE_FILE", "/tmp/services.json")
+
 service_name = "service-registry"
+
 service_data = ServiceStatus(
     name=service_name,
-    address="service-registry",
+    hostname="service-registry",
+    address=get_host_address(service_name),
     port=3000,
     last_check=datetime.timestamp(datetime.now()),
     status="healthy",
@@ -20,12 +27,14 @@ service_data = ServiceStatus(
     health_endpoint="/health",
 )
 
+
 this_service = {service_name: service_data}
 
 
 def load_services():
     if os.path.exists(service_file_path):
         logger.info(f"Read cached data from {service_file_path}")
+
         with open(service_file_path, "r") as f:
             saved_services = json.loads(f.read())
 

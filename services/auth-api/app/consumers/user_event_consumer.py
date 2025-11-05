@@ -135,9 +135,7 @@ class UserEventConsumer:
 
                 existing_user["password_changed_at"] = datetime.utcnow().isoformat()
                 await self.user_read_repo.upsert_user(existing_user)
-                logger.info(
-                    f"✅ Password change recorded for user: {data.get('email')}"
-                )
+                logger.info(f"✅ Password change recorded for user: {data.get('email')}")
 
 
 # Global instance

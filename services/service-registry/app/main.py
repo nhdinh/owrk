@@ -1,3 +1,5 @@
+# pyright: reportAttributeAccessIssue=false
+
 import asyncio
 from contextlib import asynccontextmanager
 from datetime import datetime
@@ -12,6 +14,7 @@ from apscheduler.triggers.interval import IntervalTrigger
 
 from .schema import *
 from .data import load_services, save_services, reset_services
+from .helper import ping, get_host_address
 
 # Configure logging
 logging.basicConfig(
@@ -24,9 +27,15 @@ logger = logging.getLogger(__name__)
 scheduler = AsyncIOScheduler()
 
 
-async def ping_service(service_address: str, timeout: float) -> Optional[Response]:
+async def ping_service(service_name: str, timeout: float):
+    service_addr = get_host_address(app.g_services[service_name]["hostname"])
+    service_port = app.g_services[service_name]["port"]
+    health_endpoint = app.g_services[service_name]["health_endpoint"]
+
     async with httpx.AsyncClient() as client:
-        response = await client.get(service_address, timeout=timeout)
+        response = await client.get(
+            f"http://{service_addr}:{service_port}{health_endpoint}", timeout=timeout
+        )
         return response
 
 
@@ -35,12 +44,9 @@ async def ping_services(return_msg: bool = False) -> Optional[List[str]]:
 
     for name, service in app.g_services.items():
         start = time.time()
-        service_address = (
-            f"http://{service['address']}:{service['port']}{service['health_endpoint']}"
-        )
 
         try:
-            response = await ping_service(service_address, timeout=1.0)
+            response = await ping_service(name, timeout=1.0)
             response_time = (time.time() - start) * 1000
 
             app.g_services[name]["last_check"] = datetime.timestamp(datetime.now())
@@ -51,11 +57,11 @@ async def ping_services(return_msg: bool = False) -> Optional[List[str]]:
                 app.g_services[name]["status"] = "down"
 
             logger.info(
-                f"Pinging {service_address}, {app.g_services[name]['status']}, response={app.g_services[name]['response_time']}"
+                f"Pinging {name}, {app.g_services[name]['status']}, response={app.g_services[name]['response_time']}"
             )
 
             messages.append(
-                f"Pinging {service_address}, {app.g_services[name]['status']}, response={app.g_services[name]['response_time']}"
+                f"Pinging {name}, {app.g_services[name]['status']}, response={app.g_services[name]['response_time']}"
             )
         except Exception as e:
             app.g_services[name]["status"] = "down"
@@ -77,6 +83,7 @@ async def schedule_services_pinging():
         id="services_ping",
         replace_existing=True,
     )
+
     logger.info(
         f"Scheduled pinging services status every {poll_duration_in_minute} minutes"
     )
@@ -138,37 +145,28 @@ async def root():
 async def register_service(service_data: ServiceRegister):
     try:
         registered_time = datetime.timestamp(datetime.now())
+        host_addr = get_host_address(service_data.hostname)
+        logger.info(f"Registered service {service_data.name} - IP: {host_addr}")
 
         service = ServiceStatus(
             name=service_data.name,
             port=service_data.port,
-            address=service_data.address,
+            hostname=service_data.hostname,
+            address=host_addr,
             last_check=registered_time,
             response_time=0,
             status="healthy",
             health_endpoint=service_data.health_endpoint,
         )
 
-        # ping back the register service
-        start = time.time()
-        service_address = (
-            f"http://{service.address}:{service.port}{service.health_endpoint}"
-        )
-        logger.info(f"pingiiing {service_address}")
-        response = await ping_service(service_address, 1.0)
-        response_time = (time.time() - start) * 1000
-
-        if response.status_code == status.HTTP_200_OK:
-            service.response_time = response_time
-
         app.g_services[service_data.name] = dict(service)
 
         # save services
         save_services(app.g_services)
+
+        return app.g_services[service_data.name]
     except Exception as e:
         logger.error(f"{str(e)}")
-
-    return app.g_services[service_data.name]
 
 
 @app.get("/services", status_code=status.HTTP_200_OK)
@@ -176,9 +174,12 @@ async def get_services():
     return app.g_services
 
 
-@app.get("/services/<service_id:str>")
-async def get_service(service_id: Dict):
-    return app.g_services
+@app.get("/services/<service_id:str>", status_code=status.HTTP_200_OK)
+async def get_service(service_id: str):
+    if service_id in app.g_services.keys():
+        return app.g_services[service_id]
+
+    return None
 
 
 @app.get("/reset")
