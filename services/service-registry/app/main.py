@@ -81,7 +81,8 @@ async def ping_services(return_msg: bool = False) -> Optional[List[str]]:
                 app.g_services[name]["status"] = "down"
 
             # save log to redis
-            r.rpush("response_logs", json.dumps(app.g_services[name]))
+            id = datetime.now().timestamp()
+            r.hset(f"ping_logs:{id}", mapping=app.g_services[name])
 
             messages.append(
                 f"Pinging {name}, {app.g_services[name]['status']}, response={app.g_services[name]['response_time']}"
