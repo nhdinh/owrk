@@ -122,6 +122,7 @@ services:
       - ./nginx/ssl:/etc/nginx/ssl:ro
       - ./nginx/html:/usr/share/nginx/html:ro
       - ./scripts/register_service.sh:/rs_template:ro
+      - ./scripts/nginx_entrypoint_wrapper.sh:/nginx-entrypoint-wrapper.sh:ro
     depends_on:
       auth-api:
         condition: service_healthy
@@ -342,6 +343,7 @@ services:
       - "3100:80"
     volumes:
       - ./scripts/register_service.sh:/rs_template:ro
+      - ./scripts/nginx_entrypoint_wrapper.sh:/nginx-entrypoint-wrapper.sh:ro
     environment:
       HOST_NAME: auth-fe
       HOST_PORT: 80
@@ -371,6 +373,7 @@ services:
       - "3200:80"
     volumes:
       - ./scripts/register_service.sh:/rs_template:ro
+      - ./scripts/nginx_entrypoint_wrapper.sh:/nginx-entrypoint-wrapper.sh:ro
     environment:
       HOST_NAME: asset-fe
       HOST_PORT: 80
@@ -467,6 +470,7 @@ services:
       - "3300:80"
     volumes:
       - ./scripts/register_service.sh:/rs_template:ro
+      - ./scripts/nginx_entrypoint_wrapper.sh:/nginx-entrypoint-wrapper.sh:ro
     environment:
       HOST_NAME: dashboard-fe
       HOST_PORT: 80

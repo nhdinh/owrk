@@ -3,6 +3,7 @@
 import asyncio
 from contextlib import asynccontextmanager
 from datetime import datetime
+import json
 import logging
 import time
 from typing import List, Optional
@@ -11,11 +12,12 @@ from fastapi.middleware.cors import CORSMiddleware
 import httpx
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.interval import IntervalTrigger
+import redis
 
-from .config import HealthCheckMethods, settings
-from .schema import *
-from .data import load_services, save_services, reset_services
-from .helper import get_host_address, do_one_ping
+from app.core.config import HealthCheckMethods, settings
+from app.schema import *
+from app.data import load_services, save_services, reset_services
+from app.helper import get_host_address, do_one_ping
 
 # Configure logging
 logging.basicConfig(
@@ -26,6 +28,8 @@ logger = logging.getLogger(__name__)
 
 # Initialize scheduler
 scheduler = AsyncIOScheduler()
+
+r = redis.Redis(host="redis", port=6379, db=0)
 
 
 async def ping_service(service_name: str, timeout: float) -> Optional[float]:
@@ -61,7 +65,7 @@ async def check_health(service_name: str, timeout: float) -> Optional[float]:
 async def ping_services(return_msg: bool = False) -> Optional[List[str]]:
     messages = []
 
-    for name in app.g_services.keys():
+    for name, service in app.g_services.items():
         try:
             response_time: Optional[float] = None
 
@@ -71,13 +75,13 @@ async def ping_services(return_msg: bool = False) -> Optional[List[str]]:
                 response_time = await check_health(name, timeout=0.5)
 
             if response_time is not None:
+                response_time = round(response_time, 1)
                 app.g_services[name]["response_time"] = response_time
             else:
                 app.g_services[name]["status"] = "down"
 
-            logger.info(
-                f"Pinging {name}, {app.g_services[name]['status']}, response={app.g_services[name]['response_time']}"
-            )
+            # save log to redis
+            r.rpush("response_logs", json.dumps(app.g_services[name]))
 
             messages.append(
                 f"Pinging {name}, {app.g_services[name]['status']}, response={app.g_services[name]['response_time']}"
@@ -89,12 +93,13 @@ async def ping_services(return_msg: bool = False) -> Optional[List[str]]:
 
             messages.append(f"Pinging service {name} failed. Error: {str(e)}")
 
-    return messages
+    if return_msg:
+        return messages
 
 
 async def schedule_services_pinging():
     """Schedule service pinging"""
-    poll_duration_in_minute = 5
+    poll_duration_in_minute = 10
 
     scheduler.add_job(
         ping_services,

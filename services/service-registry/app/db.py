@@ -3,7 +3,7 @@ MongoDB connection for CQRS Read Model
 """
 
 from motor.motor_asyncio import AsyncIOMotorClient
-from .config import settings
+from core.config import settings
 
 # Global MongoDB client
 mongo_client: AsyncIOMotorClient = None

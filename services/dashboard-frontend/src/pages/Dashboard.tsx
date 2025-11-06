@@ -37,13 +37,13 @@ export default function Dashboard() {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case "healthy":
-        return <CheckCircle className="h-4 w-4 text-green-600" />;
+        return <CheckCircle className="h-4 w-4 text-green-300" />;
       case "degraded":
-        return <AlertCircle className="h-4 w-4 text-yellow-600" />;
+        return <AlertCircle className="h-4 w-4 text-yellow-300" />;
       case "down":
-        return <XCircle className="h-4 w-4 text-red-600" />;
+        return <XCircle className="h-4 w-4 text-red-300" />;
       default:
-        return <AlertCircle className="h-4 w-4 text-gray-600" />;
+        return <AlertCircle className="h-4 w-4 text-gray-300" />;
     }
   };
 
@@ -78,7 +78,7 @@ export default function Dashboard() {
           {/* System Health Status */}
           <div className="mb-8">
             <h2 className="text-xl font-semibold mb-4">System Health</h2>
-            <div className="grid gap-4 md:grid-cols-3">
+            <div className="grid gap-4 md:grid-cols-4">
               {health?.services.map((service) => (
                 <Card key={service.service}>
                   <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -89,7 +89,7 @@ export default function Dashboard() {
                   </CardHeader>
                   <CardContent>
                     <div
-                      className={`text-2xl font-bold ${getStatusColor(
+                      className={`text-xl font-bold ${getStatusColor(
                         service.status
                       )}`}
                     >

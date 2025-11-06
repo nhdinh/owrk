@@ -44,6 +44,10 @@ class Settings(BaseSettings):
 
     SERVICE_HEALTH_CHECK: HealthCheckMethods = HealthCheckMethods.HTTPX
 
+    REDIS_HOST: str = "localhost"
+    REDIS_PORT: int = 6379
+    REDIS_DB: int = 0
+
     class Config:
         env_file = ".env"
         case_sensitive = True
