@@ -490,6 +490,13 @@ export function AppLayout({ children }: AppLayoutProps) {
   - Shared dependencies: React 18, ReactDOM
   - Built with: Vite 5 + @originjs/vite-plugin-federation + js-yaml
   - Bundle size: 126 KB (AppSidebar with YAML parser)
+- **Service Registry** (6 endpoints - fully functional)
+  - Service registration and discovery
+  - Health check monitoring (PING/HTTPX methods)
+  - Automated service polling with APScheduler
+  - Redis-based logging for health check history
+  - Features: Service status tracking, Response time monitoring, Persistent cache
+  - Built with: FastAPI + Redis + APScheduler + httpx
 
 🚧 **In Progress**:
 
@@ -507,6 +514,7 @@ export function AppLayout({ children }: AppLayoutProps) {
 | Component     | Status       | Health  | Port | Access URL |
 | ------------- | ------------ | ------- | ---- | ---------- |
 | **API Gateway** | ✅ **Running** | **Active** | **8000** | **http://localhost:8000** |
+| **service-registry** | ✅ **Running** | **Healthy** | **3000** | **http://localhost:3000** |
 | MySQL 8.0     | ✅ Running   | Healthy | 3306 | - |
 | MongoDB 7     | ✅ Running   | Healthy | 27017 | - |
 | Redis 7       | ✅ Running   | Healthy | 6379 | - |
@@ -650,6 +658,8 @@ docker compose stop auth-api
 
 | Service             | URL                        | Credentials                      |
 | ------------------- | -------------------------- | -------------------------------- |
+| Service Registry    | http://localhost:3000      | (No auth required)               |
+| Service Registry Docs | http://localhost:3000/docs | -                              |
 | Shared Components   | http://localhost:3400      | (Module Federation host)         |
 | Dashboard API       | http://localhost:8003      | Requires auth token              |
 | Dashboard Frontend  | http://localhost:3300      | admin@example.com / admin123     |

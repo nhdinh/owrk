@@ -23,7 +23,7 @@ class QuotationStatus(str, enum.Enum):
     """Quotation status enumeration"""
 
     PENDING = "PENDING"
-    APPROVED = "APPROVED"
+    ACCEPTED = "ACCEPTED"
     REJECTED = "REJECTED"
 
 
@@ -66,6 +66,14 @@ class Quotation(Base):
     quotation_date = Column(DATE, nullable=False)
     valid_until = Column(DATE)
     total_amount = Column(DECIMAL(15, 2), nullable=False)
+    tax_amount = Column(DECIMAL(15, 2), default=0)
+    discount_amount = Column(DECIMAL(15, 2), default=0)
+    final_amount = Column(DECIMAL(15, 2), nullable=False)
+
+    # Terms
+    payment_terms = Column(Text)
+    delivery_terms = Column(Text)
+    warranty_terms = Column(Text)
 
     # Attachments
     quotation_file_url = Column(String(500))
@@ -81,10 +89,20 @@ class Quotation(Base):
         index=True,
     )
 
+    # Approval/Rejection
+    accepted_by = Column(Integer)
+    accepted_at = Column(TIMESTAMP)
+    rejected_by = Column(Integer)
+    rejected_at = Column(TIMESTAMP)
+    rejection_reason = Column(Text)
+
     # Metadata
     created_by = Column(Integer, nullable=False)
     created_at = Column(TIMESTAMP, server_default=func.now())
     updated_at = Column(TIMESTAMP, server_default=func.now(), onupdate=func.now())
+
+    # Relationships
+    items = relationship("QuotationItem", back_populates="quotation", cascade="all, delete-orphan")
 
     def __repr__(self):
         return f"<Quotation(id={self.id}, code='{self.quotation_code}', vendor_id={self.vendor_id})>"
@@ -138,6 +156,9 @@ class QuotationItem(Base):
     warranty_period = Column(String(100))
 
     created_at = Column(TIMESTAMP, server_default=func.now())
+
+    # Relationships
+    quotation = relationship("Quotation", back_populates="items")
 
     def __repr__(self):
         return f"<QuotationItem(id={self.id}, quotation_id={self.quotation_id}, product='{self.product_name}')>"

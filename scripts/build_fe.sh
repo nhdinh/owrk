@@ -5,6 +5,7 @@ services=(
     "auth-frontend:auth-fe"
     "asset-frontend:asset-fe"
     "dashboard-frontend:dashboard-fe"
+    "procurement-frontend:procurement-fe"
 )
 
 if [[ $# -gt 2 ]]; then

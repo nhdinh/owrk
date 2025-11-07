@@ -91,31 +91,41 @@ Hệ thống Quản lý Trang thiết bị Văn phòng là giải pháp số hó
         ┌──────────────────┼──────────────────┐
         │                  │                  │
    ┌────▼────┐      ┌─────▼─────┐      ┌────▼────┐
-   │  Auth   │      │   Asset   │      │Procure- │
-   │ Service │      │  Service  │      │  ment   │
-   │ :8001   │      │   :8002   │      │ :8003   │
+   │ Service │      │   Auth    │      │  Asset  │
+   │Registry │      │  Service  │      │ Service │
+   │ :3000   │◄─────│   :8001   │◄─────│ :8002   │
    └─────────┘      └───────────┘      └─────────┘
         │                  │                  │
-   ┌────▼────┐      ┌─────▼─────┐      ┌────▼────┐
-   │Mainten- │      │  Report   │      │ Notif.  │
-   │  ance   │      │  Service  │      │ Service │
-   │ :8004   │      │   :8005   │      │ :8006   │
-   └─────────┘      └───────────┘      └─────────┘
+        │            ┌─────▼─────┐      ┌────▼────┐
+        │            │ Procure-  │      │Mainten- │
+        │            │   ment    │      │  ance   │
+        └───────────►│  :8003   │◄─────│ :8004   │
+                     └───────────┘      └─────────┘
+                           │                  │
+                     ┌─────▼─────┐      ┌────▼────┐
+                     │  Report   │      │ Notif.  │
+                     │  Service  │      │ Service │
+                     │  :8005   │      │ :8006   │
+                     └───────────┘      └─────────┘
+                           │                  │
+        ┌──────────────────┼──────────────────┘
+        │                  │
+   ┌────▼────┐      ┌─────▼─────┐      ┌────────┐
+   │  MySQL  │      │   Redis   │      │RabbitMQ│
+   │ :3306   │      │   :6379   │      │ :5672  │
+   └─────────┘      └───────────┘      └────────┘
         │                  │                  │
-        └──────────────────┼──────────────────┘
-                           │
-        ┌──────────────────┼──────────────────┐
-        │                  │                  │
-   ┌────▼────┐      ┌─────▼─────┐      ┌────▼────┐
-   │PostgreSQL│      │   Redis   │      │RabbitMQ │
-   │  :5432  │      │   :6379   │      │ :5672   │
-   └─────────┘      └───────────┘      └─────────┘
+   ┌────▼────┐            │                  │
+   │ MongoDB │◄───────────┘                  │
+   │ :27017  │                               │
+   └─────────┘◄──────────────────────────────┘
 ```
 
-### 6 Microservices
+### 7 Microservices
 
 | Service | Port | Trách nhiệm |
 |---------|------|-------------|
+| **Service Registry** | 3000 | Service discovery, health monitoring, automated polling |
 | **Auth Service** | 8001 | Đăng nhập, MFA/OTP, Active Directory, User/Role management |
 | **Asset Service** | 8002 | Quản lý tài sản, cấp phát, khấu hao, QR code |
 | **Procurement Service** | 8003 | Đề xuất mua sắm, phê duyệt 3 cấp, báo giá, đơn hàng |

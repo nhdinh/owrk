@@ -42,6 +42,7 @@ class ServiceBase(BaseModel):
     name: str
 
     hostname: HostName
+    address: IPAddress
     port: int
 
     health_endpoint: str
@@ -52,7 +53,6 @@ class ServiceRegister(ServiceBase):
 
 
 class ServiceStatus(ServiceBase):
-    address: IPAddress
 
     last_check: float
 
