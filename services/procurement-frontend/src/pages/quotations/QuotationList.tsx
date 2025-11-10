@@ -99,7 +99,7 @@ export default function QuotationList() {
             </tr>
           </thead>
           <tbody className="divide-y">
-            {data?.items.map((quotation) => (
+            {data?.items?.map((quotation) => (
               <tr key={quotation.id} className="hover:bg-muted/50">
                 <td className="px-4 py-3">
                   <Link to={`/quotations/${quotation.id}`} className="text-primary hover:underline font-medium">
@@ -123,11 +123,10 @@ export default function QuotationList() {
                 </td>
                 <td className="px-4 py-3 text-right font-medium">${quotation.final_amount.toFixed(2)}</td>
                 <td className="px-4 py-3">
-                  <span className={`px-2 py-1 text-xs rounded-full ${
-                    quotation.status === QuotationStatus.ACCEPTED ? 'bg-green-100 text-green-700' :
+                  <span className={`px-2 py-1 text-xs rounded-full ${quotation.status === QuotationStatus.ACCEPTED ? 'bg-green-100 text-green-700' :
                     quotation.status === QuotationStatus.REJECTED ? 'bg-red-100 text-red-700' :
-                    'bg-yellow-100 text-yellow-700'
-                  }`}>
+                      'bg-yellow-100 text-yellow-700'
+                    }`}>
                     {quotation.status}
                   </span>
                 </td>
@@ -144,7 +143,7 @@ export default function QuotationList() {
           </tbody>
         </table>
 
-        {data?.items.length === 0 && (
+        {data?.items?.length === 0 && (
           <div className="py-12 text-center text-muted-foreground">
             No quotations found
           </div>

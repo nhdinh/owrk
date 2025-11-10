@@ -329,7 +329,7 @@ async def _handle_user_logged_in(self, data: Dict, metadata: Dict):
 # MySQL (Write Database)
 DATABASE_HOST=mysql
 DATABASE_PORT=3306
-DATABASE_USER=officework_dbu
+DATABASE_USER=officework
 DATABASE_NAME=auth_db
 
 # MongoDB (Read Database)

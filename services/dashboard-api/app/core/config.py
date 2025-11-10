@@ -20,7 +20,7 @@ class Settings(BaseSettings):
     # MySQL Database
     MYSQL_HOST: str = "mysql"
     MYSQL_PORT: int = 3306
-    MYSQL_USER: str = "officework_dbu"
+    MYSQL_USER: str = os.getenv("MYSQL_USER", "officework")
     MYSQL_DATABASE: str = "auth_db"
 
     # MongoDB

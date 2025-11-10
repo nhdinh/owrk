@@ -125,7 +125,7 @@ export default function PurchaseOrderList() {
             </tr>
           </thead>
           <tbody className="divide-y">
-            {data?.items.map((po) => (
+            {data?.items?.map((po) => (
               <tr key={po.id} className="hover:bg-muted/50">
                 <td className="px-4 py-3">
                   <Link to={`/purchase-orders/${po.id}`} className="text-primary hover:underline font-medium">
@@ -166,7 +166,7 @@ export default function PurchaseOrderList() {
           </tbody>
         </table>
 
-        {data?.items.length === 0 && (
+        {data?.items?.length === 0 && (
           <div className="py-12 text-center text-muted-foreground">
             No purchase orders found
           </div>

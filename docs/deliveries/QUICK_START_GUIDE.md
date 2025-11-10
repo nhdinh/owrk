@@ -439,7 +439,7 @@ docker compose down -v
 |-----------------|-------------------------|-------------|
 | System Admin    | admin@example.com       | admin123    |
 | RabbitMQ        | guest                   | guest       |
-| MySQL           | officework_dbu          | (see .secrets/) |
+| MySQL           | officework          | (see .secrets/) |
 | MongoDB         | admin                   | (see .secrets/) |
 
 ---

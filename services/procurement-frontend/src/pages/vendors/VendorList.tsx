@@ -91,7 +91,7 @@ export default function VendorList() {
             </tr>
           </thead>
           <tbody className="divide-y">
-            {data?.items.map((vendor) => (
+            {data?.items?.map((vendor) => (
               <tr key={vendor.id} className="hover:bg-muted/50">
                 <td className="px-4 py-3">
                   <Link to={`/vendors/${vendor.id}`} className="text-primary hover:underline font-medium">
@@ -103,11 +103,10 @@ export default function VendorList() {
                 <td className="px-4 py-3">{vendor.email || '-'}</td>
                 <td className="px-4 py-3">{vendor.phone || '-'}</td>
                 <td className="px-4 py-3">
-                  <span className={`px-2 py-1 text-xs rounded-full ${
-                    vendor.status === VendorStatus.ACTIVE ? 'bg-green-100 text-green-700' :
+                  <span className={`px-2 py-1 text-xs rounded-full ${vendor.status === VendorStatus.ACTIVE ? 'bg-green-100 text-green-700' :
                     vendor.status === VendorStatus.BLACKLISTED ? 'bg-red-100 text-red-700' :
-                    'bg-gray-100 text-gray-700'
-                  }`}>
+                      'bg-gray-100 text-gray-700'
+                    }`}>
                     {vendor.status}
                   </span>
                 </td>
@@ -132,7 +131,7 @@ export default function VendorList() {
           </tbody>
         </table>
 
-        {data?.items.length === 0 && (
+        {data?.items?.length === 0 && (
           <div className="py-12 text-center text-muted-foreground">
             No vendors found
           </div>

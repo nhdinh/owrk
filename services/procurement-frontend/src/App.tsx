@@ -20,6 +20,9 @@ const QuotationComparison = lazy(() => import('@/pages/quotations/QuotationCompa
 const PurchaseOrderList = lazy(() => import('@/pages/purchase-orders/PurchaseOrderList'));
 const PurchaseOrderDetail = lazy(() => import('@/pages/purchase-orders/PurchaseOrderDetail'));
 const PurchaseOrderForm = lazy(() => import('@/pages/purchase-orders/PurchaseOrderForm'));
+const FrameworkContractList = lazy(() => import('@/pages/framework-contracts/FrameworkContractList'));
+const FrameworkContractDetail = lazy(() => import('@/pages/framework-contracts/FrameworkContractDetail'));
+const FrameworkContractForm = lazy(() => import('@/pages/framework-contracts/FrameworkContractForm'));
 
 function App() {
   return (
@@ -58,6 +61,12 @@ function App() {
             <Route path="/purchase-orders/create" element={<PurchaseOrderForm />} />
             <Route path="/purchase-orders/:id" element={<PurchaseOrderDetail />} />
             <Route path="/purchase-orders/:id/edit" element={<PurchaseOrderForm />} />
+
+            {/* Framework Contracts */}
+            <Route path="/framework-contracts" element={<FrameworkContractList />} />
+            <Route path="/framework-contracts/create" element={<FrameworkContractForm />} />
+            <Route path="/framework-contracts/:id" element={<FrameworkContractDetail />} />
+            <Route path="/framework-contracts/:id/edit" element={<FrameworkContractForm />} />
           </Routes>
         </Suspense>
       </AppLayout>

@@ -20,7 +20,7 @@ class Settings:
     SERVICE_PORT: int = 8000
 
     # Database - MySQL (Write)
-    DATABASE_USER: str = os.getenv("DATABASE_USER", "admin")
+    DATABASE_USER: str = os.getenv("DATABASE_USER", "officework")
     DATABASE_PASSWORD: str = "secret123"  # Default
     DATABASE_HOST: str = os.getenv("DATABASE_HOST", "mysql")
     DATABASE_PORT: int = int(os.getenv("DATABASE_PORT", "3306"))
@@ -32,7 +32,9 @@ class Settings:
         with open(DATABASE_PASSWORD_FILE, "r") as f:
             DATABASE_PASSWORD = f.read().strip()
 
-    DATABASE_URL: str = f"mysql+pymysql://{DATABASE_USER}:{quote_plus(DATABASE_PASSWORD)}@{DATABASE_HOST}:{DATABASE_PORT}/{DATABASE_NAME}"
+    DATABASE_URL: str = (
+        f"mysql+pymysql://{DATABASE_USER}:{quote_plus(DATABASE_PASSWORD)}@{DATABASE_HOST}:{DATABASE_PORT}/{DATABASE_NAME}"
+    )
 
     # MongoDB (Read - for CQRS)
     MONGODB_HOST: str = os.getenv("MONGODB_HOST", "mongodb")
@@ -47,7 +49,9 @@ class Settings:
             MONGODB_PASSWORD = f.read().strip()
 
     MONGODB_DB_NAME: str = os.getenv("MONGODB_DB_NAME", "asset_read_db")
-    MONGODB_URL: str = f"mongodb://{MONGODB_USER}:{quote_plus(MONGODB_PASSWORD)}@{MONGODB_HOST}:{MONGODB_PORT}/"
+    MONGODB_URL: str = (
+        f"mongodb://{MONGODB_USER}:{quote_plus(MONGODB_PASSWORD)}@{MONGODB_HOST}:{MONGODB_PORT}/"
+    )
 
     # Redis
     REDIS_HOST: str = os.getenv("REDIS_HOST", "redis")

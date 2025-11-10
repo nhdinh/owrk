@@ -217,7 +217,7 @@ docker compose up -d --build asset-api asset-fe
 ### Connect to MySQL
 
 ```bash
-docker exec -it mysql mysql -u officework_dbu -p
+docker exec -it mysql mysql -u officework -p
 # Password from .secrets/mysql_user_passwd.txt
 
 USE asset_db;

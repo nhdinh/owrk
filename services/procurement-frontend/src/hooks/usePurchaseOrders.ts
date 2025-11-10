@@ -21,7 +21,7 @@ export const usePurchaseOrders = (filters?: PurchaseOrderFilter) => {
         });
       }
       const response = await api.get<PaginatedResponse<PurchaseOrder>>(
-        `/procurement/purchase-orders?${params.toString()}`
+        `/procurement/purchase-orders/?${params.toString()}`
       );
       return response.data;
     },

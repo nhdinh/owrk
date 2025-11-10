@@ -100,9 +100,9 @@ Content-Type: application/json
 - **Sửa**: Cập nhật `postgres/entry.sh` để export POSTGRES_PASSWORD từ secrets
 - **File**: [postgres/entry.sh](postgres/entry.sh)
 
-### 2. PostgreSQL Init Script
+### 2. MySQL Init Script
 - **Lỗi**: SQL syntax errors trong init.sql
-- **Sửa**: Sửa các lỗi syntax, bỏ dòng `\`, sửa `${DB_USER}`
+- **Sửa**: Sửa các lỗi syntax, bỏ dòng `\`, sửa `${DATABASE_USER}`
 - **File**: [postgres/init.sql](postgres/init.sql)
 
 ### 3. Password Complexity

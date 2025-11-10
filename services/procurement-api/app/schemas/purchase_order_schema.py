@@ -150,6 +150,12 @@ class PurchaseOrderListResponse(BaseModel):
     page_size: int
 
 
+class ConfirmOrderRequest(BaseModel):
+    """Schema for confirming a purchase order"""
+
+    notes: Optional[str] = Field(None, max_length=500)
+
+
 class ApproveOrderRequest(BaseModel):
     """Schema for approving a purchase order"""
 
@@ -161,6 +167,14 @@ class SendOrderRequest(BaseModel):
 
     send_email: bool = Field(default=True)
     additional_notes: Optional[str] = Field(None, max_length=1000)
+
+
+class ShipOrderRequest(BaseModel):
+    """Schema for marking order as shipped"""
+
+    tracking_number: Optional[str] = Field(None, max_length=200)
+    carrier: Optional[str] = Field(None, max_length=100)
+    notes: Optional[str] = Field(None, max_length=500)
 
 
 class ReceiveItemRequest(BaseModel):
@@ -176,6 +190,13 @@ class ReceiveOrderRequest(BaseModel):
     items: List[ReceiveItemRequest] = Field(..., min_length=1)
     actual_delivery_date: Optional[date] = None
     notes: Optional[str] = Field(None, max_length=1000)
+
+
+class CompleteOrderRequest(BaseModel):
+    """Schema for completing a purchase order"""
+
+    create_assets: bool = Field(default=True)
+    notes: Optional[str] = Field(None, max_length=500)
 
 
 class CancelOrderRequest(BaseModel):

@@ -126,7 +126,7 @@ docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
 
 - Character Set: `utf8mb4`
 - Collation: `utf8mb4_unicode_ci`
-- User: `officework_dbu`
+- User: `officework`
 - Permissions: Full privileges per schema
 
 **Verification Method**:
@@ -136,7 +136,7 @@ docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
 CREATE DATABASE IF NOT EXISTS auth_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 CREATE DATABASE IF NOT EXISTS asset_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 ...
-GRANT ALL PRIVILEGES ON auth_db.* TO 'officework_dbu'@'%';
+GRANT ALL PRIVILEGES ON auth_db.* TO 'officework'@'%';
 ```
 
 **Result**: ✅ **PASS** - All microservice databases created with proper configuration

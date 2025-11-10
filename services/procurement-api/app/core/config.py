@@ -17,11 +17,11 @@ class Settings:
     API_PREFIX: str = "/api/v1"
 
     # Database - MySQL (Write)
-    DB_USER: str = os.getenv("DB_USER", "admin")
-    DB_PASSWORD: str = "secret123"  # Default
-    DB_HOST: str = os.getenv("DB_HOST", "mysql")
-    DB_PORT: int = int(os.getenv("DB_PORT", "3306"))
-    DB_NAME: str = os.getenv("DB_NAME", "procurement_db")
+    DATABASE_USER: str = os.getenv("DATABASE_USER", "officework")
+    DATABASE_PASSWORD: str = "secret123"  # Default
+    DATABASE_HOST: str = os.getenv("DATABASE_HOST", "mysql")
+    DATABASE_PORT: int = int(os.getenv("DATABASE_PORT", "3306"))
+    DATABASE_NAME: str = os.getenv("DATABASE_NAME", "procurement_db")
 
     # Read password from file if provided
     DB_PASSWORD_FILE: Optional[str] = os.getenv("DB_PASSWORD_FILE")
@@ -29,7 +29,9 @@ class Settings:
         with open(DB_PASSWORD_FILE, "r") as f:
             DB_PASSWORD = f.read().strip()
 
-    DATABASE_URL: str = f"mysql+pymysql://{DB_USER}:{quote_plus(DB_PASSWORD)}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+    DATABASE_URL: str = (
+        f"mysql+pymysql://{DATABASE_USER}:{quote_plus(DB_PASSWORD)}@{DATABASE_HOST}:{DATABASE_PORT}/{DATABASE_NAME}"
+    )
 
     # MongoDB (Read - for CQRS)
     MONGODB_HOST: str = os.getenv("MONGODB_HOST", "mongodb")
@@ -44,7 +46,9 @@ class Settings:
             MONGODB_PASSWORD = f.read().strip()
 
     MONGODB_DATABASE: str = os.getenv("MONGODB_DATABASE", "procurement_read_db")
-    MONGODB_URL: str = f"mongodb://{MONGODB_USER}:{quote_plus(MONGODB_PASSWORD)}@{MONGODB_HOST}:{MONGODB_PORT}/"
+    MONGODB_URL: str = (
+        f"mongodb://{MONGODB_USER}:{quote_plus(MONGODB_PASSWORD)}@{MONGODB_HOST}:{MONGODB_PORT}/"
+    )
 
     # Redis
     REDIS_HOST: str = os.getenv("REDIS_HOST", "redis")

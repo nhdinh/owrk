@@ -96,38 +96,6 @@ MONGODB_URL: str = f"mongodb://admin:{quote_plus(MONGO_PASSWD)}@{MONGODB_HOST}:{
 echo "your-super-secret-jwt-key-change-in-production-1760698449" > .secrets/jwt_secret_key.txt
 ```
 
-### 5. ✅ PostgreSQL Init Script Syntax Error
-**File**: `postgres/init.sql` (Lines 1-9)
-
-**Problem**:
-- Used PL/pgSQL syntax (`BEGIN ... IF ... END`) in plain SQL context
-- This syntax only works inside functions, not in plain SQL scripts
-
-**Fix**:
-```sql
-# WRONG
-BEGIN
-    IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = '${DB_USER}') THEN
-        CREATE ROLE ${DB_USER} WITH LOGIN PASSWORD '${DB_PASSWD}';
-    END IF;
-END
-
-# CORRECT
--- User is automatically created by POSTGRES_USER
-ALTER USER ${DB_USER} WITH PASSWORD '${DB_PASSWD}';
-```
-
-### 6. ✅ Complex PostgreSQL Password
-**File**: `.secrets/postgres_passwd.txt`
-
-**Problem**:
-- Password `D@VlEN!MFg4U$Xzdj!5A` caused issues with special characters
-
-**Fix**:
-```bash
-echo -n "secret123" > .secrets/postgres_passwd.txt
-```
-
 ### 7. ✅ Database Tables Not Created
 **Problem**:
 - Alembic migrations weren't run after fixing database connection

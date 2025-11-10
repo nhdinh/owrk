@@ -15,7 +15,7 @@ export const useVendors = (filters?: VendorFilter) => {
         });
       }
       const response = await api.get<PaginatedResponse<Vendor>>(
-        `/procurement/vendors?${params.toString()}`
+        `/procurement/vendors/?${params.toString()}`
       );
       return response.data;
     },

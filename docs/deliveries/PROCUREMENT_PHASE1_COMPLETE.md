@@ -289,11 +289,11 @@ Integration tests, Docker Compose configuration, API documentation
 
 ```env
 # Database
-DB_HOST=localhost
-DB_PORT=3306
-DB_NAME=procurement_db
-DB_USER=officework_dbu
-DB_PASSWORD=<from .secrets/mysql_user_passwd.txt>
+DATABASE_HOST=localhost
+DATABASE_PORT=3306
+DATABASE_NAME=procurement_db
+DATABASE_USER=officework
+DATABASE_PASSWORD=<from .secrets/mysql_user_passwd.txt>
 
 # MongoDB (for read model)
 MONGODB_HOST=localhost

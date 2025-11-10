@@ -22,7 +22,7 @@ export const useQuotations = (filters?: QuotationFilter) => {
         });
       }
       const response = await api.get<PaginatedResponse<Quotation>>(
-        `/procurement/quotations?${params.toString()}`
+        `/procurement/quotations/?${params.toString()}`
       );
       return response.data;
     },

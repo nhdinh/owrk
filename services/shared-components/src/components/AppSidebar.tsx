@@ -59,7 +59,7 @@ interface NavigationConfig {
 }
 
 interface AppSidebarProps {
-  currentService?: 'dashboard' | 'auth' | 'assets';
+  currentService?: 'dashboard' | 'auth' | 'assets' | 'procurement' | 'maintenance' | 'users';
 }
 
 export function AppSidebar({
@@ -89,18 +89,23 @@ export function AppSidebar({
   const isCurrentPath = (href: string) => {
     if (typeof window === 'undefined') return false;
 
-    if (href.startsWith('/auth/')) {
+    // For service root paths (ending with /), check if current path starts with it
+    if (href.endsWith('/') && href.length > 1) {
       return window.location.pathname.startsWith(href);
-    } else {
-      return window.location.pathname === href;
     }
+
+    // For exact paths
+    return window.location.pathname === href;
   };
 
   const renderNavItem = (item: NavItem) => {
     const Icon = iconMap[item.icon] || Package;
     const hasSubmenu = item.submenu && item.submenu.length > 0;
     const isExpanded = expandedItems.has(item.service || item.name);
-    const isCurrent = item.service === currentService || isCurrentPath(item.href);
+
+    // Check if this item or any of its submenu items are current
+    const isSubmenuActive = hasSubmenu && item.submenu!.some(subItem => isCurrentPath(subItem.href));
+    const isCurrent = item.service === currentService || isCurrentPath(item.href) || isSubmenuActive;
 
     return (
       <div key={item.name} className="space-y-1">

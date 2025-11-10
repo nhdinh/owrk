@@ -208,7 +208,7 @@ docker compose logs users-fe
 ### Database Connection Issues
 Verify MySQL is running and accessible:
 ```bash
-docker exec -it mysql mysql -uofficework_dbu -p -e "USE auth_db; SHOW TABLES;"
+docker exec -it mysql mysql -uofficework -p -e "USE auth_db; SHOW TABLES;"
 ```
 
 ### Permission Denied Errors

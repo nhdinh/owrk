@@ -133,7 +133,7 @@ procurement-api:
   ports:
     - "8004:8004"
   environment:
-    DATABASE_URL: mysql+pymysql://officework_dbu:${MYSQL_USER_PASSWORD}@mysql:3306/procurement_db
+    DATABASE_URL: mysql+pymysql://officework:${MYSQL_USER_PASSWORD}@mysql:3306/procurement_db
     REDIS_URL: redis://redis:6379
     RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672/
   depends_on:

@@ -497,10 +497,23 @@ export function AppLayout({ children }: AppLayoutProps) {
   - Redis-based logging for health check history
   - Features: Service status tracking, Response time monitoring, Persistent cache
   - Built with: FastAPI + Redis + APScheduler + httpx
+- **Admin API** (26 endpoints - fully functional) ✨ **NEW**
+  - Module Settings Management: 9 endpoints ✅
+  - Trash/Recycle Bin: 17 endpoints ✅
+  - Features: Centralized configuration, Soft-delete system, Auto-cleanup scheduler, Audit trail
+  - Built with: FastAPI + SQLAlchemy + APScheduler + Alembic
+  - Database: admin_db schema with 6 tables (module_settings, system_modules, audit_logs, system_logs, trash_items, trash_config)
+- **Admin Frontend** (Setup complete - implementation in progress) ✨ **NEW**
+  - Project structure and configuration ✅
+  - API integration layer ✅
+  - TypeScript types ✅
+  - Implementation guide provided ✅
+  - Planned pages: Trash Management, Module Settings, System Modules, Audit Logs, Dashboard
+  - Built with: React 18 + Vite 5 + TypeScript + Tailwind + shadcn/ui + Module Federation
 
 🚧 **In Progress**:
 
-- (None - all current sprint tasks completed)
+- Admin Frontend UI implementation (Trash, Settings, Modules pages)
 
 ⏸️ **Pending**:
 
@@ -526,6 +539,8 @@ export function AppLayout({ children }: AppLayoutProps) {
 | asset-fe   | ✅ Running   | Active  | 3200 | http://localhost:8000/assets/ |
 | dashboard-api | ✅ Running   | Active  | 8003 | http://localhost:8003 |
 | dashboard-fe-v2 | ✅ Running | Active  | 3300 | http://localhost:8000/dashboard/ |
+| **admin-api** | ✅ **Running** | **Healthy** | **8005** | **http://localhost:8005** ✨ |
+| **admin-frontend** | ⏸️ **Pending** | **N/A** | **3500** | **http://localhost:8000/admin/** ✨ |
 | auth-fe (legacy) | ⏸️ Stopped | N/A | 3000 | (Replaced by v2) |
 | asset-fe (legacy) | ⏸️ Stopped | N/A | 3001 | (Replaced by v2) |
 
@@ -670,7 +685,7 @@ docker compose stop auth-api
 | Asset API Docs      | http://localhost:8002/docs | Requires auth token              |
 | Asset Frontend V2   | http://localhost:3200      | admin@example.com / admin123     |
 | RabbitMQ Management | http://localhost:15672     | guest / guest                    |
-| MySQL               | localhost:3306             | officework_dbu / (see .secrets/) |
+| MySQL               | localhost:3306             | officework / (see .secrets/) |
 | MongoDB             | localhost:27017            | admin / (see .secrets/)          |
 | Redis               | localhost:6379             | (no auth)                        |
 
@@ -923,7 +938,7 @@ curl -v -X POST http://localhost:8001/api/v1/auth/login \
 **Via Database**:
 
 ```bash
-docker exec -it mysql mysql -uofficework_dbu -p
+docker exec -it mysql mysql -uofficework -p
 
 USE auth_db;
 -- Hash for "NewPassword123"
@@ -986,7 +1001,7 @@ docker compose up -d
 
 ```bash
 # Test MySQL connection
-docker exec -it mysql mysql -uofficework_dbu -p$(cat .secrets/mysql_user_passwd.txt) -e "SHOW DATABASES;"
+docker exec -it mysql mysql -uofficework -p$(cat .secrets/mysql_user_passwd.txt) -e "SHOW DATABASES;"
 
 # Check environment variables
 docker compose exec auth-api env | grep DATABASE

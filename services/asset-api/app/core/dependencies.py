@@ -3,7 +3,7 @@ FastAPI Dependencies
 """
 
 from typing import Optional
-from fastapi import Depends, HTTPException, status, Header
+from fastapi import HTTPException, status, Header
 from app.core.security import decode_token
 
 

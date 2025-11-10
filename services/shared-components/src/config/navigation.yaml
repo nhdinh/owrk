@@ -56,10 +56,58 @@ navigation:
 
   - name: Procurement
     href: /procurement/
-    icon: HandCoins
+    icon: ShoppingCart
     service: procurement
-    description: Manage procurement process
+    description: Procurement and purchasing management
+    submenu:
+      - name: Dashboard
+        href: /procurement/dashboard
+        icon: LayoutDashboard
+        description: Procurement overview
+      - name: Purchase Requests
+        href: /procurement/purchase-requests
+        icon: FileText
+        description: Manage purchase requests
+      - name: Vendors
+        href: /procurement/vendors
+        icon: Building2
+        description: Vendor management
+      - name: Quotations
+        href: /procurement/quotations
+        icon: FileSpreadsheet
+        description: Price quotations
+      - name: Purchase Orders
+        href: /procurement/purchase-orders
+        icon: ShoppingBag
+        description: Purchase orders
+      - name: Framework Contracts
+        href: /procurement/framework-contracts
+        icon: FileSignature
+        description: Long-term contracts
 
-  - name: Trash
-    href: /dashboard/trash
-    icon: Trash
+  - name: Administration
+    href: /admin/
+    icon: Settings
+    service: admin
+    description: System administration and settings
+    submenu:
+      - name: Dashboard
+        href: /admin/dashboard
+        icon: LayoutDashboard
+        description: Admin overview
+      - name: Trash
+        href: /admin/trash
+        icon: Trash2
+        description: Recycle bin for all modules
+      - name: Module Settings
+        href: /admin/settings
+        icon: Sliders
+        description: Module configuration
+      - name: System Modules
+        href: /admin/modules
+        icon: Blocks
+        description: Installed modules
+      - name: Audit Logs
+        href: /admin/audit-logs
+        icon: FileText
+        description: System audit trail

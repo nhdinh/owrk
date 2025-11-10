@@ -181,6 +181,40 @@ def generate_order_code(db: Session, quotation_code: str) -> str:
     return f"{prefix}{seq_num:03d}"
 
 
+def generate_purchase_order_code(db: Session, vendor_code: str) -> str:
+    """
+    Generate unique purchase order code (alternative format)
+    Format: PO{vendor_code}{YYYYMMDD}{sequential}
+    Example: POVND202511020001202511020001
+
+    Args:
+        db: Database session
+        vendor_code: Vendor code
+
+    Returns:
+        str: Unique order code
+    """
+    from app.models.purchase_order import PurchaseOrder
+
+    today = datetime.now().strftime("%Y%m%d")
+    prefix = f"PO{vendor_code}{today}"
+
+    # Get the latest order code for this vendor and today
+    latest = (
+        db.query(PurchaseOrder)
+        .filter(PurchaseOrder.order_code.like(f"{prefix}%"))
+        .order_by(PurchaseOrder.order_code.desc())
+        .first()
+    )
+
+    if latest:
+        seq_num = int(latest.order_code[-4:]) + 1
+    else:
+        seq_num = 1
+
+    return f"{prefix}{seq_num:04d}"
+
+
 def generate_item_code(entity_type: str, entity_id: int, item_sequence: int) -> str:
     """
     Generate unique item code for request/quotation/order items
