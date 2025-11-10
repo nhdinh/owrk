@@ -55,7 +55,15 @@ export default function Assets() {
     isLoading,
     refetch,
   } = useQuery({
-    queryKey: ["assets", search, categoryFilter, statusFilter, typeFilter, page, pageSize],
+    queryKey: [
+      "assets",
+      search,
+      categoryFilter,
+      statusFilter,
+      typeFilter,
+      page,
+      pageSize,
+    ],
     queryFn: () =>
       assetAPI.list({
         page,
@@ -84,7 +92,9 @@ export default function Assets() {
     }
   };
 
-  const getStatusBadgeVariant = (status: AssetStatus): "default" | "secondary" | "destructive" | "outline" => {
+  const getStatusBadgeVariant = (
+    status: AssetStatus
+  ): "default" | "secondary" | "destructive" | "outline" => {
     switch (status) {
       case "new":
         return "default";
@@ -144,228 +154,250 @@ export default function Assets() {
           </div>
         </header>
 
-      {/* Main Content */}
-      <main className="container mx-auto px-4 py-8">
-        {/* Filters */}
-        <Card className="mb-6">
-          <CardContent className="pt-6">
-            <div className="grid gap-4 md:grid-cols-5">
-              <div className="md:col-span-2">
-                <div className="relative">
-                  <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Search by code, name, or serial number..."
-                    value={search}
-                    onChange={(e) => {
-                      setSearch(e.target.value);
-                      setPage(1);
-                    }}
-                    className="pl-10"
-                  />
+        {/* Main Content */}
+        <main className="container mx-auto px-4 py-8">
+          {/* Filters */}
+          <Card className="mb-6">
+            <CardContent className="pt-6">
+              <div className="grid gap-4 md:grid-cols-5">
+                <div className="md:col-span-2">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Search by code, name, or serial number..."
+                      value={search}
+                      onChange={(e) => {
+                        setSearch(e.target.value);
+                        setPage(1);
+                      }}
+                      className="pl-10"
+                    />
+                  </div>
                 </div>
-              </div>
-              <Select
-                value={categoryFilter || "all"}
-                onValueChange={(value) => {
-                  setCategoryFilter(value === "all" ? "" : value);
-                  setPage(1);
-                }}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="All Categories" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Categories</SelectItem>
-                  {categoriesData?.map((category) => (
-                    <SelectItem key={category.id} value={category.id.toString()}>
-                      {category.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select
-                value={typeFilter || "all"}
-                onValueChange={(value) => {
-                  setTypeFilter(value === "all" ? "" : value);
-                  setPage(1);
-                }}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="All Types" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Types</SelectItem>
-                  <SelectItem value="fixed_asset">Fixed Asset</SelectItem>
-                  <SelectItem value="tool_equipment">Tool/Equipment</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select
-                value={statusFilter || "all"}
-                onValueChange={(value) => {
-                  setStatusFilter(value === "all" ? "" : value);
-                  setPage(1);
-                }}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="All Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="new">New</SelectItem>
-                  <SelectItem value="in_use">In Use</SelectItem>
-                  <SelectItem value="under_maintenance">Under Maintenance</SelectItem>
-                  <SelectItem value="damaged">Damaged</SelectItem>
-                  <SelectItem value="disposed">Disposed</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Assets Table */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Assets ({assetsData?.total || 0})</CardTitle>
-            <CardDescription>
-              Showing {assetsData?.assets.length || 0} of {assetsData?.total || 0} assets
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <div className="text-center py-12">Loading assets...</div>
-            ) : assetsData?.assets.length === 0 ? (
-              <div className="text-center py-12 text-muted-foreground">
-                <Package className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>No assets found</p>
-              </div>
-            ) : (
-              <>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Code</TableHead>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Category</TableHead>
-                      <TableHead>Type</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Assigned To</TableHead>
-                      <TableHead>Purchase Price</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {assetsData?.assets.map((asset: Asset) => (
-                      <TableRow key={asset.id}>
-                        <TableCell className="font-medium">{asset.code}</TableCell>
-                        <TableCell>
-                          <div>
-                            <div className="font-medium">{asset.name}</div>
-                            {asset.model && (
-                              <div className="text-sm text-muted-foreground">
-                                {asset.manufacturer} {asset.model}
-                              </div>
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          {asset.category ? (
-                            <Badge variant="outline">{asset.category.name}</Badge>
-                          ) : (
-                            <span className="text-muted-foreground">N/A</span>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="secondary">
-                            {asset.asset_type === "fixed_asset" ? "Fixed Asset" : "Tool/Equipment"}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant={getStatusBadgeVariant(asset.status)}>
-                            {getStatusLabel(asset.status)}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          {asset.assigned_to ? (
-                            <div className="text-sm">
-                              <div>{asset.assigned_to.user_name}</div>
-                              <div className="text-muted-foreground">
-                                {asset.assigned_to.department_name}
-                              </div>
-                            </div>
-                          ) : (
-                            <span className="text-muted-foreground">Unassigned</span>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          {new Intl.NumberFormat("vi-VN", {
-                            style: "currency",
-                            currency: "VND",
-                          }).format(asset.purchase_price)}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex justify-end items-center space-x-2">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => navigate(`/assets/${asset.id}`)}
-                              title="View Details"
-                            >
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => navigate(`/assets/${asset.id}/edit`)}
-                              title="Edit Asset"
-                            >
-                              <Pencil className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleDelete(asset.id)}
-                              title="Delete Asset"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
+                <Select
+                  value={categoryFilter || "all"}
+                  onValueChange={(value) => {
+                    setCategoryFilter(value === "all" ? "" : value);
+                    setPage(1);
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="All Categories" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Categories</SelectItem>
+                    {categoriesData?.map((category) => (
+                      <SelectItem
+                        key={category.id}
+                        value={category.id.toString()}
+                      >
+                        {category.name}
+                      </SelectItem>
                     ))}
-                  </TableBody>
-                </Table>
+                  </SelectContent>
+                </Select>
+                <Select
+                  value={typeFilter || "all"}
+                  onValueChange={(value) => {
+                    setTypeFilter(value === "all" ? "" : value);
+                    setPage(1);
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="All Types" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Types</SelectItem>
+                    <SelectItem value="fixed_asset">Fixed Asset</SelectItem>
+                    <SelectItem value="tool_equipment">
+                      Tool/Equipment
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select
+                  value={statusFilter || "all"}
+                  onValueChange={(value) => {
+                    setStatusFilter(value === "all" ? "" : value);
+                    setPage(1);
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="All Status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Status</SelectItem>
+                    <SelectItem value="new">New</SelectItem>
+                    <SelectItem value="in_use">In Use</SelectItem>
+                    <SelectItem value="under_maintenance">
+                      Under Maintenance
+                    </SelectItem>
+                    <SelectItem value="damaged">Damaged</SelectItem>
+                    <SelectItem value="disposed">Disposed</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardContent>
+          </Card>
 
-                {/* Pagination */}
-                <div className="flex items-center justify-between mt-4">
-                  <div className="text-sm text-muted-foreground">
-                    Page {page} of {totalPages}
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setPage((p) => Math.max(1, p - 1))}
-                      disabled={page === 1}
-                    >
-                      <ChevronLeft className="h-4 w-4" />
-                      Previous
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                      disabled={page === totalPages}
-                    >
-                      Next
-                      <ChevronRight className="h-4 w-4" />
-                    </Button>
-                  </div>
+          {/* Assets Table */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Assets ({assetsData?.total || 0})</CardTitle>
+              <CardDescription>
+                Showing {assetsData?.assets.length || 0} of{" "}
+                {assetsData?.total || 0} assets
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {isLoading ? (
+                <div className="text-center py-12">Loading assets...</div>
+              ) : assetsData?.assets.length === 0 ? (
+                <div className="text-center py-12 text-muted-foreground">
+                  <Package className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p>No assets found</p>
                 </div>
-              </>
-            )}
-          </CardContent>
-        </Card>
-      </main>
+              ) : (
+                <>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Code</TableHead>
+                        <TableHead>Name</TableHead>
+                        <TableHead>Category</TableHead>
+                        <TableHead>Type</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Assigned To</TableHead>
+                        <TableHead>Purchase Price</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {assetsData?.assets.map((asset: Asset) => (
+                        <TableRow key={asset.id}>
+                          <TableCell className="font-medium">
+                            {asset.code}
+                          </TableCell>
+                          <TableCell>
+                            <div>
+                              <div className="font-medium">{asset.name}</div>
+                              {asset.model && (
+                                <div className="text-sm text-muted-foreground">
+                                  {asset.manufacturer} {asset.model}
+                                </div>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            {asset.category ? (
+                              <Badge variant="outline">
+                                {asset.category.name}
+                              </Badge>
+                            ) : (
+                              <span className="text-muted-foreground">N/A</span>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="secondary">
+                              {asset.asset_type === "fixed_asset"
+                                ? "Fixed Asset"
+                                : "Tool/Equipment"}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Badge
+                              variant={getStatusBadgeVariant(asset.status)}
+                            >
+                              {getStatusLabel(asset.status)}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            {asset.assigned_to ? (
+                              <div className="text-sm">
+                                <div>{asset.assigned_to.user_name}</div>
+                                <div className="text-muted-foreground">
+                                  {asset.assigned_to.department_name}
+                                </div>
+                              </div>
+                            ) : (
+                              <span className="text-muted-foreground">
+                                Unassigned
+                              </span>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            {new Intl.NumberFormat("vi-VN", {
+                              style: "currency",
+                              currency: "VND",
+                            }).format(asset.purchase_price)}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex justify-end items-center space-x-2">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => navigate(`/assets/${asset.id}`)}
+                                title="View Details"
+                              >
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() =>
+                                  navigate(`/assets/${asset.id}/edit`)
+                                }
+                                title="Edit Asset"
+                              >
+                                <Pencil className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handleDelete(asset.id)}
+                                title="Delete Asset"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+
+                  {/* Pagination */}
+                  <div className="flex items-center justify-between mt-4">
+                    <div className="text-sm text-muted-foreground">
+                      Page {page} of {totalPages}
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setPage((p) => Math.max(1, p - 1))}
+                        disabled={page === 1}
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                        Previous
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          setPage((p) => Math.min(totalPages, p + 1))
+                        }
+                        disabled={page === totalPages}
+                      >
+                        Next
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </>
+              )}
+            </CardContent>
+          </Card>
+        </main>
       </div>
     </AppLayout>
   );

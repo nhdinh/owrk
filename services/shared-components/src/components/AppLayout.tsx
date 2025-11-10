@@ -1,17 +1,18 @@
-import { AppSidebar } from './AppSidebar';
+import { AppSidebar, AppSidebarProps } from "./AppSidebar";
 
 interface AppLayoutProps {
   children: React.ReactNode;
 }
 
-export function AppLayout({ children }: AppLayoutProps) {
+export function AppLayout(
+  { currentService }: AppSidebarProps,
+  { children }: AppLayoutProps
+) {
   return (
     <div className="flex h-screen bg-background">
-      <AppSidebar currentService="assets" />
+      <AppSidebar currentService={currentService} />
 
-      <div className="flex-1 overflow-y-auto">
-        {children}
-      </div>
+      <div className="flex-1 overflow-y-auto">{children}</div>
     </div>
   );
 }

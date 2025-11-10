@@ -1,5 +1,6 @@
-shared-components:b3d6ea165b4cd42adbd8613ee70ddf8f
 auth-frontend:1797033db49dc9621acd24001a258bb2
-asset-frontend:73ad6f3e5fac9bc029c28576becec3de
-dashboard-frontend:68601e742c298e43681e3b6e210b5201
 procurement-frontend:1660928e9210194973fc4825fa9bf4fc
+shared-components:b3d6ea165b4cd42adbd8613ee70ddf8f
+asset-frontend:73ad6f3e5fac9bc029c28576becec3de
+admin-frontend:b0a45a092fa9e47bad2e87b02bc15567
+dashboard-frontend:68601e742c298e43681e3b6e210b5201

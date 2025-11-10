@@ -13,6 +13,7 @@ import {
   AlertCircle,
   CheckCircle,
   XCircle,
+  Gauge,
 } from "lucide-react";
 
 export default function Dashboard() {
@@ -50,13 +51,13 @@ export default function Dashboard() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "healthy":
-        return "text-green-400";
+        return "text-green-600";
       case "degraded":
-        return "text-yellow-400";
+        return "text-yellow-600";
       case "down":
-        return "text-red-400";
+        return "text-red-600";
       default:
-        return "text-gray-400";
+        return "text-gray-600";
     }
   };
 
@@ -67,7 +68,10 @@ export default function Dashboard() {
       <div className="flex-1 flex flex-col overflow-hidden">
         <header className="border-b bg-card">
           <div className="px-4 py-4 lg:px-8">
-            <h1 className="text-2xl font-bold">System Dashboard</h1>
+            <h1 className="text-2xl font-bold flex items-center gap-2">
+              <Gauge className="h-6 w-6" />
+              System Dashboard
+            </h1>
             <p className="text-sm text-muted-foreground">
               Centralized monitoring and statistics
             </p>

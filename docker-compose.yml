@@ -545,7 +545,20 @@ services:
       interval: 1m
       timeout: 5s
       retries: 3
-      start_period: 10s
+
+  # Admin Frontend
+  admin-fe:
+    build:
+      context: ./services/admin-frontend
+      dockerfile: Dockerfile
+    container_name: admin-fe
+    ports:
+      - "3502:80"
+    depends_on:
+      - admin-api
+    networks:
+      - backend
+    restart: unless-stopped
 
   # Shared Components - Module Federation Host
   shared-components:
@@ -573,7 +586,7 @@ services:
     container_name: procurement-fe
     # No environment variables needed - uses relative path /api/v1 which nginx proxies to procurement-api
     ports:
-      - "3500:80"
+      - "3501:80"
     volumes:
       - ./scripts/register_service.sh:/rs_template:ro
       - ./scripts/nginx_entrypoint_wrapper.sh:/nginx-entrypoint-wrapper.sh:ro
@@ -728,6 +741,7 @@ networks:
 # ======================
 # VOLUMES
 # ======================
+
 
 volumes:
   asset-uploads:

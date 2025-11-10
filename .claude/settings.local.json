@@ -17,7 +17,17 @@
       "Bash(./scripts/build_fe.sh:*)",
       "Bash(npm install:*)",
       "Bash(export TEMP_TOKEN=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZW1haWwiOiJhZG1pbkBleGFtcGxlLmNvbSIsImV4cCI6MTc2MjU2MTA3NiwiaWF0IjoxNzYyNTYwNzc2LCJ0eXBlIjoidGVtcCJ9.vV6HXL3pR90ImCVoKvOtFAEbLenr0nwJl7nn8XZ6mR4\")",
-      "Bash(export ACCESS_TOKEN=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZW1haWwiOiJhZG1pbkBleGFtcGxlLmNvbSIsImV4cCI6MTc2MjU2MTA3NiwiaWF0IjoxNzYyNTYwNzc2LCJ0eXBlIjoidGVtcCJ9.vV6HXL3pR90ImCVoKvOtFAEbLenr0nwJl7nn8XZ6mR4\")"
+      "Bash(export ACCESS_TOKEN=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZW1haWwiOiJhZG1pbkBleGFtcGxlLmNvbSIsImV4cCI6MTc2MjU2MTA3NiwiaWF0IjoxNzYyNTYwNzc2LCJ0eXBlIjoidGVtcCJ9.vV6HXL3pR90ImCVoKvOtFAEbLenr0nwJl7nn8XZ6mR4\")",
+      "Bash(mkdir:*)",
+      "Bash(npm run build:*)",
+      "Bash(docker-compose.yml.tmp)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(for file in style-CMik_FeG.css index-Dy1jPs_y.js index-DaHiN3iT.js)",
+      "Bash(do)",
+      "Bash(echo:*)",
+      "Bash(done)",
+      "Bash(git checkout:*)"
     ],
     "deny": [],
     "ask": [],
@@ -28,5 +38,9 @@
         "command": "bash .claude/scripts/validate-bash.sh"
       }
     ]
-  }
+  },
+  "enabledMcpjsonServers": [
+    "MCP_DOCKER"
+  ],
+  "enableAllProjectMcpServers": true
 }

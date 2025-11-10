@@ -58,9 +58,10 @@ interface NavigationConfig {
   navigation: NavItem[];
 }
 
-interface AppSidebarProps {
+export interface AppSidebarProps {
   currentService?: 'dashboard' | 'auth' | 'assets' | 'procurement' | 'maintenance' | 'users';
 }
+
 
 export function AppSidebar({
   currentService = 'dashboard',
@@ -90,12 +91,13 @@ export function AppSidebar({
     if (typeof window === 'undefined') return false;
 
     // For service root paths (ending with /), check if current path starts with it
-    if (href.endsWith('/') && href.length > 1) {
+    if (window.location.pathname == href) {
+      return true;
+    } else if (href.endsWith('/') && href.length > 1) {
       return window.location.pathname.startsWith(href);
     }
-
-    // For exact paths
-    return window.location.pathname === href;
+    
+    return false;
   };
 
   const renderNavItem = (item: NavItem) => {
