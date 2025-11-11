@@ -1,17 +1,35 @@
-import { useParams, useNavigate } from 'react-router-dom';
-import { useQuery, useMutation } from '@tanstack/react-query';
-import { userAPI } from '@/lib/user-api';
-import { roleAPI } from '@/lib/role-api';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
-import { ArrowLeft, Save, X } from 'lucide-react';
-import { toast } from 'sonner';
-import { useState, useEffect } from 'react';
-import { AppLayout } from '@/components/AppLayout';
+import { useParams, useNavigate } from "react-router-dom";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { userAPI } from "@/lib/user-api";
+import { roleAPI } from "@/lib/role-api";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  // @ts-expect-error - Module Federation remote import
+} from "shared_components/ui/card";
+// @ts-expect-error - Module Federation remote import
+import { Button } from "shared_components/ui/button";
+// @ts-expect-error - Module Federation remote import
+import { Input } from "shared_components/ui/input";
+// @ts-expect-error - Module Federation remote import
+import { Label } from "shared_components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ArrowLeft, Save, X } from "lucide-react";
+import { toast } from "sonner";
+import { useState, useEffect } from "react";
+
+// @ts-ignore - Module Federation remote import
+import { AppLayout } from "shared_components/AppLayout";
 
 export default function UserEdit() {
   const { id } = useParams<{ id: string }>();
@@ -19,25 +37,25 @@ export default function UserEdit() {
 
   // Fetch user data
   const { data: user, isLoading: userLoading } = useQuery({
-    queryKey: ['user', id],
+    queryKey: ["user", id],
     queryFn: () => userAPI.get(parseInt(id!)),
     enabled: !!id,
   });
 
   // Fetch roles for dropdown
   const { data: rolesData } = useQuery({
-    queryKey: ['roles'],
+    queryKey: ["roles"],
     queryFn: () => roleAPI.list(),
   });
 
   // Form state
   const [formData, setFormData] = useState({
-    email: '',
-    full_name: '',
-    username: '',
-    phone_number: '',
-    position: '',
-    address: '',
+    email: "",
+    full_name: "",
+    username: "",
+    phone_number: "",
+    position: "",
+    address: "",
     role_id: undefined as number | undefined,
     is_active: true,
   });
@@ -46,12 +64,12 @@ export default function UserEdit() {
   useEffect(() => {
     if (user) {
       setFormData({
-        email: user.email || '',
-        full_name: user.full_name || '',
-        username: user.username || '',
-        phone_number: user.phone_number || '',
-        position: user.position || '',
-        address: user.address || '',
+        email: user.email || "",
+        full_name: user.full_name || "",
+        username: user.username || "",
+        phone_number: user.phone_number || "",
+        position: user.position || "",
+        address: user.address || "",
         role_id: user.role_id,
         is_active: user.is_active,
       });
@@ -62,11 +80,11 @@ export default function UserEdit() {
   const updateMutation = useMutation({
     mutationFn: (data: typeof formData) => userAPI.update(parseInt(id!), data),
     onSuccess: () => {
-      toast.success('User updated successfully');
+      toast.success("User updated successfully");
       navigate(`/users/${id}`);
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.detail || 'Failed to update user');
+      toast.error(error.response?.data?.detail || "Failed to update user");
     },
   });
 
@@ -75,14 +93,14 @@ export default function UserEdit() {
 
     // Basic validation
     if (!formData.email || !formData.full_name) {
-      toast.error('Email and full name are required');
+      toast.error("Email and full name are required");
       return;
     }
 
     // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) {
-      toast.error('Invalid email format');
+      toast.error("Invalid email format");
       return;
     }
 
@@ -107,7 +125,7 @@ export default function UserEdit() {
         <Card className="w-full max-w-md">
           <CardContent className="pt-6 text-center">
             <p className="text-muted-foreground mb-4">User not found</p>
-            <Button onClick={() => navigate('/users')}>Back to Users</Button>
+            <Button onClick={() => navigate("/users")}>Back to Users</Button>
           </CardContent>
         </Card>
       </div>
@@ -122,7 +140,11 @@ export default function UserEdit() {
           <div className="container mx-auto px-4 py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <Button variant="ghost" size="icon" onClick={() => navigate(`/users/${id}`)}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => navigate(`/users/${id}`)}
+                >
                   <ArrowLeft className="h-5 w-5" />
                 </Button>
                 <div>
@@ -152,7 +174,7 @@ export default function UserEdit() {
                     id="email"
                     type="email"
                     value={formData.email}
-                    onChange={(e) => handleChange('email', e.target.value)}
+                    onChange={(e: any) => handleChange("email", e.target.value)}
                     placeholder="user@example.com"
                     required
                   />
@@ -165,7 +187,9 @@ export default function UserEdit() {
                     id="full_name"
                     type="text"
                     value={formData.full_name}
-                    onChange={(e) => handleChange('full_name', e.target.value)}
+                    onChange={(e: any) =>
+                      handleChange("full_name", e.target.value)
+                    }
                     placeholder="John Doe"
                     required
                   />
@@ -178,7 +202,9 @@ export default function UserEdit() {
                     id="username"
                     type="text"
                     value={formData.username}
-                    onChange={(e) => handleChange('username', e.target.value)}
+                    onChange={(e: any) =>
+                      handleChange("username", e.target.value)
+                    }
                     placeholder="johndoe"
                   />
                 </div>
@@ -190,7 +216,9 @@ export default function UserEdit() {
                     id="phone_number"
                     type="tel"
                     value={formData.phone_number}
-                    onChange={(e) => handleChange('phone_number', e.target.value)}
+                    onChange={(e: any) =>
+                      handleChange("phone_number", e.target.value)
+                    }
                     placeholder="+1234567890"
                   />
                 </div>
@@ -202,7 +230,9 @@ export default function UserEdit() {
                     id="position"
                     type="text"
                     value={formData.position}
-                    onChange={(e) => handleChange('position', e.target.value)}
+                    onChange={(e: any) =>
+                      handleChange("position", e.target.value)
+                    }
                     placeholder="Software Engineer"
                   />
                 </div>
@@ -214,7 +244,9 @@ export default function UserEdit() {
                     id="address"
                     type="text"
                     value={formData.address}
-                    onChange={(e) => handleChange('address', e.target.value)}
+                    onChange={(e: any) =>
+                      handleChange("address", e.target.value)
+                    }
                     placeholder="123 Main St, City, Country"
                   />
                 </div>
@@ -223,8 +255,13 @@ export default function UserEdit() {
                 <div className="space-y-2">
                   <Label htmlFor="role">Role</Label>
                   <Select
-                    value={formData.role_id?.toString() || 'none'}
-                    onValueChange={(value) => handleChange('role_id', value === 'none' ? undefined : parseInt(value))}
+                    value={formData.role_id?.toString() || "none"}
+                    onValueChange={(value) =>
+                      handleChange(
+                        "role_id",
+                        value === "none" ? undefined : parseInt(value)
+                      )
+                    }
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select a role" />
@@ -245,7 +282,9 @@ export default function UserEdit() {
                   <Checkbox
                     id="is_active"
                     checked={formData.is_active}
-                    onCheckedChange={(checked) => handleChange('is_active', checked)}
+                    onCheckedChange={(checked) =>
+                      handleChange("is_active", checked)
+                    }
                   />
                   <Label htmlFor="is_active" className="cursor-pointer">
                     Active User
@@ -265,7 +304,7 @@ export default function UserEdit() {
                   </Button>
                   <Button type="submit" disabled={updateMutation.isPending}>
                     <Save className="h-4 w-4 mr-2" />
-                    {updateMutation.isPending ? 'Saving...' : 'Save Changes'}
+                    {updateMutation.isPending ? "Saving..." : "Save Changes"}
                   </Button>
                 </div>
               </CardContent>

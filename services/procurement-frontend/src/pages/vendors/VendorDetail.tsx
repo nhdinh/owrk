@@ -48,7 +48,7 @@ export default function VendorDetail() {
       <div className="bg-card rounded-lg border p-6">
         <div className="flex justify-between items-start mb-6">
           <div>
-            <h1 className="text-3xl font-bold">{vendor.name}</h1>
+            <h1 className="text-2xl font-bold">{vendor.name}</h1>
             <p className="text-muted-foreground mt-1">{vendor.vendor_code}</p>
           </div>
           <div className="flex gap-2">

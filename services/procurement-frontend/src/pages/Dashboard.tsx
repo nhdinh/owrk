@@ -22,7 +22,7 @@ export default function Dashboard() {
   return (
     <div className="p-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-foreground">Procurement Dashboard</h1>
+        <h1 className="text-2xl font-bold text-foreground">Procurement Dashboard</h1>
         <p className="text-muted-foreground mt-2">
           Manage purchase requests, vendors, quotations, and purchase orders
         </p>

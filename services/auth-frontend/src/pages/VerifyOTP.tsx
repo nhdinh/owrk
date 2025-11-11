@@ -2,9 +2,12 @@ import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 // @ts-ignore - Module Federation remote import
 import { useAuth } from 'shared_components/AuthContext';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+// @ts-expect-error - Module Federation remote import
+import { Button } from 'shared_components/ui/button';
+// @ts-expect-error - Module Federation remote import
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from 'shared_components/ui/card';
+// @ts-expect-error - Module Federation remote import
+import { Alert, AlertDescription } from 'shared_components/ui/alert';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { Shield, AlertCircle, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';

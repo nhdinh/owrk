@@ -55,7 +55,7 @@ export default function PurchaseOrderList() {
     <div className="p-8">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-3xl font-bold">Purchase Orders</h1>
+          <h1 className="text-2xl font-bold">Purchase Orders</h1>
           <p className="text-muted-foreground mt-1">Manage purchase orders to vendors</p>
         </div>
         <Link

@@ -1,25 +1,38 @@
-import { useNavigate } from 'react-router-dom';
-import { useMutation } from '@tanstack/react-query';
-import { roleAPI } from '@/lib/role-api';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Checkbox } from '@/components/ui/checkbox';
-import { ArrowLeft, Save, X } from 'lucide-react';
-import { toast } from 'sonner';
-import { useState } from 'react';
-import { AppLayout } from '@/components/AppLayout';
+import { useNavigate } from "react-router-dom";
+import { useMutation } from "@tanstack/react-query";
+import { roleAPI } from "@/lib/role-api";
+
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+// @ts-expect-error - Module Federation remote import
+} from "shared_components/ui/card";
+// @ts-expect-error - Module Federation remote import
+import { Button } from "shared_components/ui/button";
+// @ts-expect-error - Module Federation remote import
+import { Input } from "shared_components/ui/input";
+// @ts-expect-error - Module Federation remote import
+import { Label } from "shared_components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ArrowLeft, Save, X } from "lucide-react";
+import { toast } from "sonner";
+import { useState } from "react";
+
+// @ts-ignore - Module Federation remote import
+import { AppLayout } from "shared_components/AppLayout";
 
 export default function RoleCreate() {
   const navigate = useNavigate();
 
   // Form state
   const [formData, setFormData] = useState({
-    name: '',
-    display_name: '',
-    description: '',
+    name: "",
+    display_name: "",
+    description: "",
     is_active: true,
   });
 
@@ -27,11 +40,11 @@ export default function RoleCreate() {
   const createMutation = useMutation({
     mutationFn: (data: typeof formData) => roleAPI.create(data),
     onSuccess: (newRole) => {
-      toast.success('Role created successfully');
+      toast.success("Role created successfully");
       navigate(`/roles/${newRole.id}`);
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.detail || 'Failed to create role');
+      toast.error(error.response?.data?.detail || "Failed to create role");
     },
   });
 
@@ -40,14 +53,16 @@ export default function RoleCreate() {
 
     // Basic validation
     if (!formData.name || !formData.display_name) {
-      toast.error('Name and display name are required');
+      toast.error("Name and display name are required");
       return;
     }
 
     // Name validation (alphanumeric, lowercase, underscores only)
     const nameRegex = /^[a-z0-9_]+$/;
     if (!nameRegex.test(formData.name)) {
-      toast.error('Name must contain only lowercase letters, numbers, and underscores');
+      toast.error(
+        "Name must contain only lowercase letters, numbers, and underscores"
+      );
       return;
     }
 
@@ -66,12 +81,18 @@ export default function RoleCreate() {
           <div className="container mx-auto px-4 py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <Button variant="ghost" size="icon" onClick={() => navigate('/roles')}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => navigate("/roles")}
+                >
                   <ArrowLeft className="h-5 w-5" />
                 </Button>
                 <div>
                   <h1 className="text-2xl font-bold">Create New Role</h1>
-                  <p className="text-sm text-muted-foreground">Add a new role to the system</p>
+                  <p className="text-sm text-muted-foreground">
+                    Add a new role to the system
+                  </p>
                 </div>
               </div>
             </div>
@@ -96,14 +117,17 @@ export default function RoleCreate() {
                     id="name"
                     type="text"
                     value={formData.name}
-                    onChange={(e) => handleChange('name', e.target.value.toLowerCase())}
+                    onChange={(e: any) =>
+                      handleChange("name", e.target.value.toLowerCase())
+                    }
                     placeholder="admin"
                     pattern="[a-z0-9_]+"
                     title="Only lowercase letters, numbers, and underscores allowed"
                     required
                   />
                   <p className="text-sm text-muted-foreground">
-                    Used internally. Only lowercase letters, numbers, and underscores.
+                    Used internally. Only lowercase letters, numbers, and
+                    underscores.
                   </p>
                 </div>
 
@@ -114,7 +138,9 @@ export default function RoleCreate() {
                     id="display_name"
                     type="text"
                     value={formData.display_name}
-                    onChange={(e) => handleChange('display_name', e.target.value)}
+                    onChange={(e: any) =>
+                      handleChange("display_name", e.target.value)
+                    }
                     placeholder="Administrator"
                     required
                   />
@@ -129,7 +155,9 @@ export default function RoleCreate() {
                   <Textarea
                     id="description"
                     value={formData.description}
-                    onChange={(e) => handleChange('description', e.target.value)}
+                    onChange={(e: any) =>
+                      handleChange("description", e.target.value)
+                    }
                     placeholder="Describe the role's purpose and permissions..."
                     rows={4}
                   />
@@ -140,7 +168,9 @@ export default function RoleCreate() {
                   <Checkbox
                     id="is_active"
                     checked={formData.is_active}
-                    onCheckedChange={(checked) => handleChange('is_active', checked)}
+                    onCheckedChange={(checked) =>
+                      handleChange("is_active", checked)
+                    }
                   />
                   <Label htmlFor="is_active" className="cursor-pointer">
                     Active Role
@@ -150,8 +180,8 @@ export default function RoleCreate() {
                 {/* Permissions Note */}
                 <div className="bg-muted p-4 rounded-lg">
                   <p className="text-sm text-muted-foreground">
-                    <strong>Note:</strong> After creating this role, you can assign permissions to it
-                    from the role detail page.
+                    <strong>Note:</strong> After creating this role, you can
+                    assign permissions to it from the role detail page.
                   </p>
                 </div>
 
@@ -160,7 +190,7 @@ export default function RoleCreate() {
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={() => navigate('/roles')}
+                    onClick={() => navigate("/roles")}
                     disabled={createMutation.isPending}
                   >
                     <X className="h-4 w-4 mr-2" />
@@ -168,13 +198,14 @@ export default function RoleCreate() {
                   </Button>
                   <Button type="submit" disabled={createMutation.isPending}>
                     <Save className="h-4 w-4 mr-2" />
-                    {createMutation.isPending ? 'Creating...' : 'Create Role'}
+                    {createMutation.isPending ? "Creating..." : "Create Role"}
                   </Button>
                 </div>
               </CardContent>
             </Card>
           </form>
         </div>
-      </div></AppLayout>
+      </div>
+    </AppLayout>
   );
 }

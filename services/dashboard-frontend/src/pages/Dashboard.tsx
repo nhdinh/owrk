@@ -3,7 +3,7 @@ import { dashboardAPI } from "@/lib/dashboard-api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 // @ts-ignore - Module Federation remote import
-import { AppSidebar } from "shared_components/AppSidebar";
+import { AppLayout } from "shared_components/AppLayout";
 import {
   Users,
   Package,
@@ -62,10 +62,9 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="flex h-screen bg-background">
-      <AppSidebar currentService="dashboard" />
-
+    <AppLayout currentService="dashboard">
       <div className="flex-1 flex flex-col overflow-hidden">
+        {/* Header */}
         <header className="border-b bg-card">
           <div className="px-4 py-4 lg:px-8">
             <h1 className="text-2xl font-bold flex items-center gap-2">
@@ -304,6 +303,6 @@ export default function Dashboard() {
           </div>
         </main>
       </div>
-    </div>
+    </AppLayout>
   );
 }

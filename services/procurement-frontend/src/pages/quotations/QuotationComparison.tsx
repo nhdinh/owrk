@@ -39,7 +39,7 @@ export default function QuotationComparison() {
       </div>
 
       <div className="mb-6">
-        <h1 className="text-3xl font-bold">Quotation Comparison</h1>
+        <h1 className="text-2xl font-bold">Quotation Comparison</h1>
         <p className="text-muted-foreground mt-1">
           {purchase_request.request_code} - {purchase_request.title}
         </p>

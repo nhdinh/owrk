@@ -17,6 +17,9 @@ RUN npm run build
 # Production stage
 FROM nginx:alpine
 
+RUN apk update && apk add --no-cache dos2unix \
+    && rm -rf /var/cache/apk/*
+
 # Copy built assets from builder
 COPY --from=builder /app/dist /usr/share/nginx/html
 
@@ -24,5 +27,8 @@ COPY --from=builder /app/dist /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 80
+
+# Set the custom entrypoint
+ENTRYPOINT [ "/nginx-entrypoint-wrapper.sh" ]
 
 CMD ["nginx", "-g", "daemon off;"]

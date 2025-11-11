@@ -1,10 +1,13 @@
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
+// @ts-expect-error - Module Federation remote import
+import { Toaster } from "shared_components/ui/toaster";
+// @ts-expect-error - Module Federation remote import
+import { Toaster as Sonner } from "shared_components/ui/sonner";
+// @ts-expect-error - Module Federation remote import
+import { TooltipProvider } from "shared_components/ui/tooltip";
+// @ts-expect-error - Module Federation remote import
+import { AuthProvider, useAuth } from "shared_components/AuthContext";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-// @ts-ignore - Module Federation remote import
-import { AuthProvider, useAuth } from "shared_components/AuthContext";
 
 // Pages
 import Login from "./pages/Login";

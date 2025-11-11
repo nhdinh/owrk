@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { adminAPI } from '../lib/api';
 import { ModuleSetting, ModuleSettingCreate } from '../types/settings';
 import { formatDate, getModuleBadgeColor } from '../lib/utils';
-import { AppLayout } from '@/components/AppLayout';
 
 
 export default function SettingsPage() {
@@ -114,13 +113,12 @@ export default function SettingsPage() {
   const uniqueModules = Array.from(new Set(settings.map((s) => s.module_name)));
 
   return (
-    <AppLayout>
-      <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Header */}
           <div className="mb-8 flex justify-between items-center">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Module Settings</h1>
+              <h1 className="text-2xl font-bold text-gray-900">Module Settings</h1>
               <p className="mt-2 text-gray-600">Configure settings for all modules</p>
             </div>
             <button
@@ -453,6 +451,5 @@ export default function SettingsPage() {
           )}
         </div>
       </div>
-    </AppLayout>
   );
 }

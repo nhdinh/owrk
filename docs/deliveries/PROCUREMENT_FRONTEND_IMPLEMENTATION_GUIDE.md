@@ -11,6 +11,7 @@
 This guide provides complete implementation details for the Procurement Frontend module, following the same architecture as auth-frontend and asset-frontend.
 
 ### Key Features
+
 - 🛒 Purchase Request Management (Create, List, Detail, Approve/Reject)
 - 🏢 Vendor Management (CRUD operations)
 - 💰 Quotation Management (Create, Compare, Select)
@@ -117,23 +118,25 @@ services/procurement-frontend/
 ### Step 1: Create Basic Application Structure
 
 **File**: `src/main.tsx`
-```typescript
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import { BrowserRouter } from 'react-router-dom'
-import App from './App.tsx'
-import './index.css'
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
+```typescript
+import React from "react";
+import ReactDOM from "react-dom/client";
+import { BrowserRouter } from "react-router-dom";
+import App from "./App.tsx";
+import "./index.css";
+
+ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <BrowserRouter basename="/procurement">
       <App />
     </BrowserRouter>
-  </React.StrictMode>,
-)
+  </React.StrictMode>
+);
 ```
 
 **File**: `src/index.css`
+
 ```css
 @tailwind base;
 @tailwind components;
@@ -197,30 +200,31 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
 ```
 
 **File**: `src/App.tsx`
+
 ```typescript
-import { Routes, Route } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { Toaster } from 'sonner';
-import { AuthProvider } from './lib/auth-context';
+import { Routes, Route } from "react-router-dom";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Toaster } from "sonner";
+import { AuthProvider } from "./lib/auth-context";
 
 // @ts-ignore - Module Federation
-import { AppSidebar } from 'shared_components/AppSidebar';
-import { useAuth } from './lib/auth-context';
+import { AppSidebar } from "shared_components/AppSidebar";
+import { useAuth } from "./lib/auth-context";
 
 // Pages
-import Dashboard from './pages/Dashboard';
-import PurchaseRequestList from './pages/purchase-requests/PurchaseRequestList';
-import PurchaseRequestDetail from './pages/purchase-requests/PurchaseRequestDetail';
-import PurchaseRequestCreate from './pages/purchase-requests/PurchaseRequestCreate';
-import VendorList from './pages/vendors/VendorList';
-import VendorDetail from './pages/vendors/VendorDetail';
-import VendorCreate from './pages/vendors/VendorCreate';
-import QuotationList from './pages/quotations/QuotationList';
-import QuotationDetail from './pages/quotations/QuotationDetail';
-import QuotationCreate from './pages/quotations/QuotationCreate';
-import PurchaseOrderList from './pages/purchase-orders/PurchaseOrderList';
-import PurchaseOrderDetail from './pages/purchase-orders/PurchaseOrderDetail';
-import NotFound from './pages/NotFound';
+import Dashboard from "./pages/Dashboard";
+import PurchaseRequestList from "./pages/purchase-requests/PurchaseRequestList";
+import PurchaseRequestDetail from "./pages/purchase-requests/PurchaseRequestDetail";
+import PurchaseRequestCreate from "./pages/purchase-requests/PurchaseRequestCreate";
+import VendorList from "./pages/vendors/VendorList";
+import VendorDetail from "./pages/vendors/VendorDetail";
+import VendorCreate from "./pages/vendors/VendorCreate";
+import QuotationList from "./pages/quotations/QuotationList";
+import QuotationDetail from "./pages/quotations/QuotationDetail";
+import QuotationCreate from "./pages/quotations/QuotationCreate";
+import PurchaseOrderList from "./pages/purchase-orders/PurchaseOrderList";
+import PurchaseOrderDetail from "./pages/purchase-orders/PurchaseOrderDetail";
+import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -242,9 +246,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
         isLoading={isLoading}
         onLogout={logout}
       />
-      <div className="flex-1 overflow-y-auto">
-        {children}
-      </div>
+      <div className="flex-1 overflow-y-auto">{children}</div>
     </div>
   );
 }
@@ -258,9 +260,18 @@ function App() {
             <Route path="/" element={<Dashboard />} />
 
             {/* Purchase Requests */}
-            <Route path="/purchase-requests" element={<PurchaseRequestList />} />
-            <Route path="/purchase-requests/create" element={<PurchaseRequestCreate />} />
-            <Route path="/purchase-requests/:id" element={<PurchaseRequestDetail />} />
+            <Route
+              path="/purchase-requests"
+              element={<PurchaseRequestList />}
+            />
+            <Route
+              path="/purchase-requests/create"
+              element={<PurchaseRequestCreate />}
+            />
+            <Route
+              path="/purchase-requests/:id"
+              element={<PurchaseRequestDetail />}
+            />
 
             {/* Vendors */}
             <Route path="/vendors" element={<VendorList />} />
@@ -274,7 +285,10 @@ function App() {
 
             {/* Purchase Orders */}
             <Route path="/purchase-orders" element={<PurchaseOrderList />} />
-            <Route path="/purchase-orders/:id" element={<PurchaseOrderDetail />} />
+            <Route
+              path="/purchase-orders/:id"
+              element={<PurchaseOrderDetail />}
+            />
 
             <Route path="*" element={<NotFound />} />
           </Routes>
@@ -293,22 +307,24 @@ export default App;
 ### Step 2: API Client & Authentication
 
 **File**: `src/lib/api.ts`
-```typescript
-import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
+```typescript
+import axios from "axios";
+
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api/v1";
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
 });
 
 // Request interceptor to add auth token
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('access_token');
+    const token = localStorage.getItem("access_token");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -322,8 +338,8 @@ api.interceptors.response.use(
   (response) => response,
   async (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('access_token');
-      window.location.href = '/auth/login';
+      localStorage.removeItem("access_token");
+      window.location.href = "/auth/login";
     }
     return Promise.reject(error);
   }
@@ -333,9 +349,16 @@ export default api;
 ```
 
 **File**: `src/lib/auth-context.tsx`
+
 ```typescript
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import api from './api';
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
+import api from "./api";
 
 interface User {
   id: number;
@@ -361,18 +384,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const fetchUser = async () => {
-      const token = localStorage.getItem('access_token');
+      const token = localStorage.getItem("access_token");
       if (!token) {
         setIsLoading(false);
         return;
       }
 
       try {
-        const response = await api.get('/auth/me');
+        const response = await api.get("/auth/me");
         setUser(response.data);
       } catch (error) {
-        console.error('Failed to fetch user:', error);
-        localStorage.removeItem('access_token');
+        console.error("Failed to fetch user:", error);
+        localStorage.removeItem("access_token");
       } finally {
         setIsLoading(false);
       }
@@ -382,9 +405,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const logout = () => {
-    localStorage.removeItem('access_token');
+    localStorage.removeItem("access_token");
     setUser(null);
-    window.location.href = '/auth/login';
+    window.location.href = "/auth/login";
   };
 
   return (
@@ -397,7 +420,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 }
@@ -408,17 +431,18 @@ export function useAuth() {
 ### Step 3: TypeScript Types
 
 **File**: `src/types/purchase-request.ts`
+
 ```typescript
-export type Priority = 'low' | 'medium' | 'high' | 'urgent';
-export type ProcurementType = 'framework_contract' | 'quotation_comparison';
+export type Priority = "low" | "medium" | "high" | "urgent";
+export type ProcurementType = "framework_contract" | "quotation_comparison";
 export type ApprovalStatus =
-  | 'draft'
-  | 'pending'
-  | 'approved_level1'
-  | 'approved_level2'
-  | 'approved'
-  | 'rejected'
-  | 'cancelled';
+  | "draft"
+  | "pending"
+  | "approved_level1"
+  | "approved_level2"
+  | "approved"
+  | "rejected"
+  | "cancelled";
 
 export interface PurchaseRequestItem {
   id?: number;
@@ -453,13 +477,14 @@ export interface CreatePurchaseRequest {
   estimated_budget: number;
   justification: string;
   expected_delivery_date: string;
-  items: Omit<PurchaseRequestItem, 'id'>[];
+  items: Omit<PurchaseRequestItem, "id">[];
 }
 ```
 
 **File**: `src/types/vendor.ts`
+
 ```typescript
-export type VendorStatus = 'active' | 'inactive' | 'blacklisted';
+export type VendorStatus = "active" | "inactive" | "blacklisted";
 
 export interface Vendor {
   id: number;
@@ -492,22 +517,26 @@ export interface CreateVendor {
 }
 ```
 
-*Continue with quotation.ts and purchase-order.ts following the same pattern...*
+_Continue with quotation.ts and purchase-order.ts following the same pattern..._
 
 ---
 
 ### Step 4: React Query Hooks
 
 **File**: `src/hooks/usePurchaseRequests.ts`
+
 ```typescript
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import api from '@/lib/api';
-import { PurchaseRequest, CreatePurchaseRequest } from '@/types/purchase-request';
-import { toast } from 'sonner';
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import api from "@/lib/api";
+import {
+  PurchaseRequest,
+  CreatePurchaseRequest,
+} from "@/types/purchase-request";
+import { toast } from "sonner";
 
 export function usePurchaseRequests(filters?: Record<string, string>) {
   return useQuery({
-    queryKey: ['purchase-requests', filters],
+    queryKey: ["purchase-requests", filters],
     queryFn: async () => {
       const params = new URLSearchParams(filters);
       const response = await api.get(`/purchase-requests?${params}`);
@@ -518,7 +547,7 @@ export function usePurchaseRequests(filters?: Record<string, string>) {
 
 export function usePurchaseRequest(id: string) {
   return useQuery({
-    queryKey: ['purchase-request', id],
+    queryKey: ["purchase-request", id],
     queryFn: async () => {
       const response = await api.get(`/purchase-requests/${id}`);
       return response.data;
@@ -532,15 +561,17 @@ export function useCreatePurchaseRequest() {
 
   return useMutation({
     mutationFn: async (data: CreatePurchaseRequest) => {
-      const response = await api.post('/purchase-requests', data);
+      const response = await api.post("/purchase-requests", data);
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['purchase-requests'] });
-      toast.success('Purchase request created successfully');
+      queryClient.invalidateQueries({ queryKey: ["purchase-requests"] });
+      toast.success("Purchase request created successfully");
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.detail || 'Failed to create purchase request');
+      toast.error(
+        error.response?.data?.detail || "Failed to create purchase request"
+      );
     },
   });
 }
@@ -554,11 +585,13 @@ export function useSubmitPurchaseRequest() {
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['purchase-requests'] });
-      toast.success('Purchase request submitted for approval');
+      queryClient.invalidateQueries({ queryKey: ["purchase-requests"] });
+      toast.success("Purchase request submitted for approval");
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.detail || 'Failed to submit purchase request');
+      toast.error(
+        error.response?.data?.detail || "Failed to submit purchase request"
+      );
     },
   });
 }
@@ -568,70 +601,83 @@ export function useApprovePurchaseRequest(level: 1 | 2 | 3) {
 
   return useMutation({
     mutationFn: async ({ id, comments }: { id: number; comments?: string }) => {
-      const response = await api.post(`/purchase-requests/${id}/approve/level${level}`, { comments });
+      const response = await api.post(
+        `/purchase-requests/${id}/approve/level${level}`,
+        { comments }
+      );
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['purchase-requests'] });
+      queryClient.invalidateQueries({ queryKey: ["purchase-requests"] });
       toast.success(`Purchase request approved (Level ${level})`);
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.detail || 'Failed to approve purchase request');
+      toast.error(
+        error.response?.data?.detail || "Failed to approve purchase request"
+      );
     },
   });
 }
 ```
 
-*Continue with useVendors.ts, useQuotations.ts, usePurchaseOrders.ts following the same pattern...*
+_Continue with useVendors.ts, useQuotations.ts, usePurchaseOrders.ts following the same pattern..._
 
 ---
 
 ### Step 5: Sample Page Component
 
 **File**: `src/pages/purchase-requests/PurchaseRequestList.tsx`
+
 ```typescript
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Plus, Filter, Search } from 'lucide-react';
-import { usePurchaseRequests } from '@/hooks/usePurchaseRequests';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import { Plus, Filter, Search } from "lucide-react";
+import { usePurchaseRequests } from "@/hooks/usePurchaseRequests";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+} from "@/components/ui/select";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
 export default function PurchaseRequestList() {
   const [filters, setFilters] = useState<Record<string, string>>({
-    page: '1',
-    limit: '20',
+    page: "1",
+    limit: "20",
   });
 
   const { data, isLoading } = usePurchaseRequests(filters);
 
   const getStatusBadge = (status: string) => {
-    const variants: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
-      draft: 'secondary',
-      pending: 'outline',
-      approved_level1: 'outline',
-      approved_level2: 'outline',
-      approved: 'default',
-      rejected: 'destructive',
-      cancelled: 'secondary',
+    const variants: Record<
+      string,
+      "default" | "secondary" | "destructive" | "outline"
+    > = {
+      draft: "secondary",
+      pending: "outline",
+      approved_level1: "outline",
+      approved_level2: "outline",
+      approved: "default",
+      rejected: "destructive",
+      cancelled: "secondary",
     };
-    return <Badge variant={variants[status] || 'default'}>{status.replace('_', ' ').toUpperCase()}</Badge>;
+    return (
+      <Badge variant={variants[status] || "default"}>
+        {status.replace("_", " ").toUpperCase()}
+      </Badge>
+    );
   };
 
   return (
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold">Purchase Requests</h1>
+          <h1 className="text-2xl font-bold">Purchase Requests</h1>
           <p className="text-muted-foreground">Manage procurement requests</p>
         </div>
         <Link to="/procurement/purchase-requests/create">
@@ -652,14 +698,18 @@ export default function PurchaseRequestList() {
               <Search className="h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Search by request code..."
-                value={filters.search || ''}
-                onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+                value={filters.search || ""}
+                onChange={(e) =>
+                  setFilters({ ...filters, search: e.target.value })
+                }
               />
             </div>
 
             <Select
-              value={filters.status || 'all'}
-              onValueChange={(value) => setFilters({ ...filters, status: value === 'all' ? '' : value })}
+              value={filters.status || "all"}
+              onValueChange={(value) =>
+                setFilters({ ...filters, status: value === "all" ? "" : value })
+              }
             >
               <SelectTrigger>
                 <SelectValue placeholder="Filter by status" />
@@ -674,8 +724,13 @@ export default function PurchaseRequestList() {
             </Select>
 
             <Select
-              value={filters.priority || 'all'}
-              onValueChange={(value) => setFilters({ ...filters, priority: value === 'all' ? '' : value })}
+              value={filters.priority || "all"}
+              onValueChange={(value) =>
+                setFilters({
+                  ...filters,
+                  priority: value === "all" ? "" : value,
+                })
+              }
             >
               <SelectTrigger>
                 <SelectValue placeholder="Filter by priority" />
@@ -697,21 +752,35 @@ export default function PurchaseRequestList() {
           <div className="text-center py-10">Loading...</div>
         ) : data?.data?.length > 0 ? (
           data.data.map((request: any) => (
-            <Link key={request.id} to={`/procurement/purchase-requests/${request.id}`}>
+            <Link
+              key={request.id}
+              to={`/procurement/purchase-requests/${request.id}`}
+            >
               <Card className="hover:shadow-md transition-shadow cursor-pointer">
                 <CardContent className="pt-6">
                   <div className="flex justify-between items-start">
                     <div className="space-y-2">
                       <div className="flex items-center space-x-3">
-                        <h3 className="text-lg font-semibold">{request.request_code}</h3>
+                        <h3 className="text-lg font-semibold">
+                          {request.request_code}
+                        </h3>
                         {getStatusBadge(request.status)}
                         <Badge variant="outline">{request.priority}</Badge>
                       </div>
-                      <p className="text-sm text-muted-foreground">{request.justification}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {request.justification}
+                      </p>
                       <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-                        <span>Budget: ${request.estimated_budget.toLocaleString()}</span>
+                        <span>
+                          Budget: ${request.estimated_budget.toLocaleString()}
+                        </span>
                         <span>Items: {request.items?.length || 0}</span>
-                        <span>Expected: {new Date(request.expected_delivery_date).toLocaleDateString()}</span>
+                        <span>
+                          Expected:{" "}
+                          {new Date(
+                            request.expected_delivery_date
+                          ).toLocaleDateString()}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -722,7 +791,9 @@ export default function PurchaseRequestList() {
         ) : (
           <Card>
             <CardContent className="py-10 text-center">
-              <p className="text-muted-foreground">No purchase requests found</p>
+              <p className="text-muted-foreground">
+                No purchase requests found
+              </p>
             </CardContent>
           </Card>
         )}
@@ -737,6 +808,7 @@ export default function PurchaseRequestList() {
 ### Step 6: Docker & Nginx Configuration
 
 **File**: `Dockerfile`
+
 ```dockerfile
 # Build stage
 FROM node:20-alpine AS procurement-fe-builder
@@ -779,6 +851,7 @@ CMD ["nginx", "-g", "daemon off;"]
 ```
 
 **File**: `nginx.conf`
+
 ```nginx
 server {
     listen 80;
@@ -829,7 +902,15 @@ procurement-frontend:
     - backend
   restart: unless-stopped
   healthcheck:
-    test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/"]
+    test:
+      [
+        "CMD",
+        "wget",
+        "--no-verbose",
+        "--tries=1",
+        "--spider",
+        "http://localhost/",
+      ]
     interval: 30s
     timeout: 3s
     start_period: 5s
@@ -858,6 +939,7 @@ location /procurement/ {
 ## 📊 Implementation Status
 
 ### ✅ Completed
+
 - Project structure
 - Configuration files (package.json, vite.config.ts, tsconfig, tailwind)
 - Implementation guide documentation
@@ -865,29 +947,35 @@ location /procurement/ {
 ### 🚧 Next Steps
 
 1. **Create shadcn/ui components** (Est. 1 hour)
+
    - Run `npx shadcn@latest init`
    - Add components: button, card, input, select, badge, dialog, table, toast
 
 2. **Implement core files** (Est. 2-3 hours)
+
    - main.tsx, App.tsx, index.css
    - API client & auth context
    - TypeScript types
 
 3. **Create Purchase Request pages** (Est. 3-4 hours)
+
    - List, Detail, Create, Edit pages
    - Form components
    - Approval workflow UI
 
 4. **Create Vendor pages** (Est. 2-3 hours)
+
    - List, Detail, Create, Edit pages
    - Vendor selection components
 
 5. **Create Quotation pages** (Est. 3-4 hours)
+
    - List, Detail, Create pages
    - Quotation comparison view
    - Selection workflow
 
 6. **Create Purchase Order pages** (Est. 2-3 hours)
+
    - List, Detail, Create pages
    - Order tracking components
 
@@ -903,6 +991,7 @@ location /procurement/ {
 ## 🎯 Key Features to Implement
 
 ### Purchase Requests
+
 - ✅ List with filters (status, priority, date range)
 - ✅ Create with dynamic item list
 - ✅ Detail view with approval history
@@ -911,6 +1000,7 @@ location /procurement/ {
 - ✅ Cancel request
 
 ### Vendors
+
 - ✅ List with search
 - ✅ Create/Edit vendor
 - ✅ View vendor details
@@ -918,6 +1008,7 @@ location /procurement/ {
 - ✅ Status management (active/inactive/blacklisted)
 
 ### Quotations
+
 - ✅ List by purchase request
 - ✅ Create quotation
 - ✅ Compare quotations side-by-side
@@ -925,6 +1016,7 @@ location /procurement/ {
 - ✅ Upload quotation files
 
 ### Purchase Orders
+
 - ✅ Create from accepted quotation
 - ✅ Track order status
 - ✅ Update delivery information
@@ -935,11 +1027,13 @@ location /procurement/ {
 ## 🔗 Integration Points
 
 1. **Auth Service** (http://localhost:8000/api/v1/auth/)
+
    - Login/logout
    - User profile
    - Token management
 
 2. **Procurement API** (http://localhost:8000/api/v1/)
+
    - /purchase-requests
    - /vendors
    - /quotations

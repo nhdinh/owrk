@@ -9,7 +9,7 @@ function App() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="text-center">
-        <h1 className="text-3xl font-bold mb-4">Shared Components Host</h1>
+        <h1 className="text-2xl font-bold mb-4">Shared Components Host</h1>
         <p className="text-muted-foreground">
           This service exposes shared components via Module Federation.
         </p>

@@ -1,4 +1,4 @@
-#!/usr/bin/sh
+#!/bin/sh
 
 cat /rs_template > /register_service.sh
 sed -i "s#__HOST_NAME__#"${HOST_NAME}"#g" /register_service.sh

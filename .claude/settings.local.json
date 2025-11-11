@@ -27,7 +27,8 @@
       "Bash(do)",
       "Bash(echo:*)",
       "Bash(done)",
-      "Bash(git checkout:*)"
+      "Bash(git checkout:*)",
+      "Bash(docker cp:*)"
     ],
     "deny": [],
     "ask": [],
@@ -39,8 +40,8 @@
       }
     ]
   },
+  "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
     "MCP_DOCKER"
-  ],
-  "enableAllProjectMcpServers": true
+  ]
 }

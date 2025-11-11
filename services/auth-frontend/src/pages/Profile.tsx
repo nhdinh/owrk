@@ -3,19 +3,30 @@ import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-// @ts-ignore - Module Federation remote import
+// @ts-expect-error - Module Federation remote import
 import { useAuth } from 'shared_components/AuthContext';
 import { authAPI } from '@/lib/auth-api';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Separator } from '@/components/ui/separator';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AppLayout } from '@/components/AppLayout';
+// @ts-expect-error - Module Federation remote import
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from 'shared_components/ui/card';
+// @ts-expect-error - Module Federation remote import
+import { Button } from 'shared_components/ui/button';
+// @ts-expect-error - Module Federation remote import
+import { Input } from 'shared_components/ui/input';
+// @ts-expect-error - Module Federation remote import
+import { Label } from 'shared_components/ui/label';
+// @ts-expect-error - Module Federation remote import
+import { Badge } from 'shared_components/ui/badge';
+// @ts-expect-error - Module Federation remote import
+import { Avatar, AvatarFallback } from 'shared_components/ui/avatar';
+// @ts-expect-error - Module Federation remote import
+import { Separator } from 'shared_components/ui/separator';
+// @ts-expect-error - Module Federation remote import
+import { Tabs, TabsContent, TabsList, TabsTrigger } from 'shared_components/ui/tabs';
+// @ts-expect-error - Module Federation remote import
+import { Alert, AlertDescription } from 'shared_components/ui/alert';
+
+// @ts-ignore - Module Federation remote import
+import {AppLayout} from "shared_components/AppLayout"
 import {
   ArrowLeft,
   Mail,
@@ -333,7 +344,7 @@ export default function Profile() {
                                   placeholder="000000"
                                   maxLength={6}
                                   value={otpCode}
-                                  onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))}
+                                  onChange={(e:any) => setOtpCode(e.target.value.replace(/\D/g, ''))}
                                 />
                               </div>
                               <div className="flex gap-2">

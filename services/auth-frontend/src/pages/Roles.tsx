@@ -1,8 +1,10 @@
-import { useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { roleAPI } from '@/lib/role-api';
-import type { Role } from '@/types/auth';
-import { AppLayout } from '@/components/AppLayout';
+import { useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { roleAPI } from "@/lib/role-api";
+import type { Role } from "@/types/auth";
+
+// @ts-ignore - Module Federation remote import
+import { AppLayout } from "shared_components/AppLayout";
 import {
   Table,
   TableBody,
@@ -10,18 +12,23 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
+} from "@/components/ui/table";
+
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Shield, Plus, Eye, Trash2, Key } from 'lucide-react';
-import { toast } from 'sonner';
+  // @ts-expect-error - Module Federation remote import
+} from "shared_components/ui/card";
+
+// @ts-expect-error - Module Federation remote import
+import { Button } from "shared_components/ui/button";
+// @ts-expect-error - Module Federation remote import
+import { Badge } from "shared_components/ui/badge";
+import { ArrowLeft, Shield, Plus, Eye, Trash2, Key } from "lucide-react";
+import { toast } from "sonner";
 import {
   Dialog,
   DialogContent,
@@ -29,54 +36,60 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { useState } from 'react';
+} from "@/components/ui/dialog";
+// @ts-expect-error - Module Federation remote import
+import { Input } from "shared_components/ui/input";
+// @ts-expect-error - Module Federation remote import
+import { Label } from "shared_components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { useState } from "react";
 
 export default function Roles() {
   const navigate = useNavigate();
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [formData, setFormData] = useState({
-    name: '',
-    display_name: '',
-    description: '',
+    name: "",
+    display_name: "",
+    description: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { data: rolesData, isLoading, refetch } = useQuery({
-    queryKey: ['roles'],
+  const {
+    data: rolesData,
+    isLoading,
+    refetch,
+  } = useQuery({
+    queryKey: ["roles"],
     queryFn: () => roleAPI.list(),
   });
 
   const handleDelete = async (roleId: number) => {
-    if (!confirm('Are you sure you want to delete this role?')) return;
+    if (!confirm("Are you sure you want to delete this role?")) return;
 
     try {
       await roleAPI.delete(roleId);
-      toast.success('Role deleted successfully');
+      toast.success("Role deleted successfully");
       refetch();
     } catch (error: any) {
-      toast.error(error.response?.data?.detail || 'Failed to delete role');
+      toast.error(error.response?.data?.detail || "Failed to delete role");
     }
   };
 
   const handleCreateRole = async () => {
     if (!formData.name.trim() || !formData.display_name.trim()) {
-      toast.error('Name and Display Name are required');
+      toast.error("Name and Display Name are required");
       return;
     }
 
     setIsSubmitting(true);
     try {
       await roleAPI.create(formData);
-      toast.success('Role created successfully');
+      toast.success("Role created successfully");
       setCreateDialogOpen(false);
-      setFormData({ name: '', display_name: '', description: '' });
+      setFormData({ name: "", display_name: "", description: "" });
       refetch();
     } catch (error: any) {
-      toast.error(error.response?.data?.detail || 'Failed to create role');
+      toast.error(error.response?.data?.detail || "Failed to create role");
     } finally {
       setIsSubmitting(false);
     }
@@ -90,7 +103,11 @@ export default function Roles() {
           <div className="container mx-auto px-4 py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => navigate("/")}
+                >
                   <ArrowLeft className="h-5 w-5" />
                 </Button>
                 <div>
@@ -117,7 +134,9 @@ export default function Roles() {
           <Card>
             <CardHeader>
               <CardTitle>Roles ({rolesData?.total || 0})</CardTitle>
-              <CardDescription>View and manage all system roles and permissions</CardDescription>
+              <CardDescription>
+                View and manage all system roles and permissions
+              </CardDescription>
             </CardHeader>
             <CardContent>
               {isLoading ? (
@@ -152,7 +171,7 @@ export default function Roles() {
                         </TableCell>
                         <TableCell>{role.display_name}</TableCell>
                         <TableCell className="max-w-xs truncate">
-                          {role.description || 'No description'}
+                          {role.description || "No description"}
                         </TableCell>
                         <TableCell>
                           <Badge variant="outline" className="gap-1">
@@ -161,8 +180,10 @@ export default function Roles() {
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          <Badge variant={role.is_active ? 'default' : 'secondary'}>
-                            {role.is_active ? 'Active' : 'Inactive'}
+                          <Badge
+                            variant={role.is_active ? "default" : "secondary"}
+                          >
+                            {role.is_active ? "Active" : "Inactive"}
                           </Badge>
                         </TableCell>
                         <TableCell className="text-right">
@@ -204,21 +225,24 @@ export default function Roles() {
                 <div className="p-4 border rounded-lg">
                   <h4 className="font-semibold mb-2">What are Roles?</h4>
                   <p className="text-sm text-muted-foreground">
-                    Roles define a set of permissions that can be assigned to users. Each user can have one role.
+                    Roles define a set of permissions that can be assigned to
+                    users. Each user can have one role.
                   </p>
                 </div>
 
                 <div className="p-4 border rounded-lg">
                   <h4 className="font-semibold mb-2">Permissions</h4>
                   <p className="text-sm text-muted-foreground">
-                    Permissions control what actions users can perform in the system. They are grouped by resource and action.
+                    Permissions control what actions users can perform in the
+                    system. They are grouped by resource and action.
                   </p>
                 </div>
 
                 <div className="p-4 border rounded-lg">
                   <h4 className="font-semibold mb-2">Best Practices</h4>
                   <p className="text-sm text-muted-foreground">
-                    Create roles based on job functions and assign minimal necessary permissions.
+                    Create roles based on job functions and assign minimal
+                    necessary permissions.
                   </p>
                 </div>
               </div>
@@ -243,7 +267,9 @@ export default function Roles() {
                   id="name"
                   placeholder="e.g., manager, viewer, editor"
                   value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  onChange={(e: any) =>
+                    setFormData({ ...formData, name: e.target.value })
+                  }
                 />
                 <p className="text-xs text-muted-foreground">
                   Lowercase identifier for the role (no spaces)
@@ -256,7 +282,9 @@ export default function Roles() {
                   id="display_name"
                   placeholder="e.g., Manager, Viewer, Editor"
                   value={formData.display_name}
-                  onChange={(e) => setFormData({ ...formData, display_name: e.target.value })}
+                  onChange={(e: any) =>
+                    setFormData({ ...formData, display_name: e.target.value })
+                  }
                 />
                 <p className="text-xs text-muted-foreground">
                   Human-readable name shown in the UI
@@ -269,7 +297,9 @@ export default function Roles() {
                   id="description"
                   placeholder="Describe what this role is for..."
                   value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  onChange={(e: any) =>
+                    setFormData({ ...formData, description: e.target.value })
+                  }
                   rows={3}
                 />
               </div>
@@ -284,7 +314,7 @@ export default function Roles() {
                 Cancel
               </Button>
               <Button onClick={handleCreateRole} disabled={isSubmitting}>
-                {isSubmitting ? 'Creating...' : 'Create Role'}
+                {isSubmitting ? "Creating..." : "Create Role"}
               </Button>
             </DialogFooter>
           </DialogContent>

@@ -1,11 +1,16 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { roleAPI } from '@/lib/role-api';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+// @ts-expect-error - Module Federation remote import
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from 'shared_components/ui/card';
+// @ts-expect-error - Module Federation remote import
+import { Button } from 'shared_components/ui/button';
+// @ts-expect-error - Module Federation remote import
+import { Badge } from 'shared_components/ui/badge';
+// @ts-expect-error - Module Federation remote import
+import { Separator } from 'shared_components/ui/separator';
+// @ts-expect-error - Module Federation remote import
+import { Tabs, TabsContent, TabsList, TabsTrigger } from 'shared_components/ui/tabs';
 import { ArrowLeft, Shield, Edit, Trash2, Key, Plus, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';

@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { assetAPI } from "@/lib/asset-api";
 import type { Asset, AssetStatus, AssetType } from "@/types/asset";
-import { AppLayout } from "@/components/AppLayout";
+// @ts-ignore - Module Federation remote import
+import { AppLayout } from "shared_components/AppLayout";
 import {
   Table,
   TableBody,

@@ -7,12 +7,18 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Separator } from "@/components/ui/separator";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+  // @ts-expect-error - Module Federation remote import
+} from "shared_components/ui/card";
+// @ts-expect-error - Module Federation remote import
+import { Button } from "shared_components/ui/button";
+// @ts-expect-error - Module Federation remote import
+import { Badge } from "shared_components/ui/badge";
+// @ts-expect-error - Module Federation remote import
+import { Avatar, AvatarFallback } from "shared_components/ui/avatar";
+// @ts-expect-error - Module Federation remote import
+import { Separator } from "shared_components/ui/separator";
+// @ts-expect-error - Module Federation remote import
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "shared_components/ui/tabs";
 import {
   ArrowLeft,
   Mail,
@@ -30,7 +36,10 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 // @ts-ignore - Module Federation remote import
 import { useAuth } from "shared_components/AuthContext";
-import { AppLayout } from '@/components/AppLayout';
+
+
+// @ts-ignore - Module Federation remote import
+import {AppLayout} from "shared_components/AppLayout"
 
 export default function UserDetail() {
   const { id } = useParams<{ id: string }>();

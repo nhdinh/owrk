@@ -3,11 +3,16 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { authAPI } from '@/lib/auth-api';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+// @ts-expect-error - Module Federation remote import
+import { Button } from 'shared_components/ui/button';
+// @ts-expect-error - Module Federation remote import
+import { Input } from 'shared_components/ui/input';
+// @ts-expect-error - Module Federation remote import
+import { Label } from 'shared_components/ui/label';
+// @ts-expect-error - Module Federation remote import
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from 'shared_components/ui/card';
+// @ts-expect-error - Module Federation remote import
+import { Alert, AlertDescription } from 'shared_components/ui/alert';
 import { Mail, AlertCircle, CheckCircle, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 

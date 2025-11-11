@@ -91,7 +91,7 @@ export default function FrameworkContractDetail() {
       <div className="bg-card rounded-lg border border-border p-6">
         <div className="flex justify-between items-start mb-6">
           <div>
-            <h1 className="text-3xl font-bold">{contract.contract_code}</h1>
+            <h1 className="text-2xl font-bold">{contract.contract_code}</h1>
             <p className="text-muted-foreground mt-1">{contract.contract_name}</p>
           </div>
           <div className="flex gap-2">

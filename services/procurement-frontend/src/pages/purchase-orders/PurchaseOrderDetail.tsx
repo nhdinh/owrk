@@ -129,7 +129,7 @@ export default function PurchaseOrderDetail() {
       <div className="bg-card rounded-lg border p-6">
         <div className="flex justify-between items-start mb-6">
           <div>
-            <h1 className="text-3xl font-bold">{po.po_code}</h1>
+            <h1 className="text-2xl font-bold">{po.po_code}</h1>
             <p className="text-muted-foreground mt-1">{po.vendor?.name || 'Unknown Vendor'}</p>
           </div>
           <div className="flex gap-2">

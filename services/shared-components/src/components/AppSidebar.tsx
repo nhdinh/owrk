@@ -59,15 +59,26 @@ interface NavigationConfig {
 }
 
 export interface AppSidebarProps {
-  currentService?: 'dashboard' | 'auth' | 'assets' | 'procurement' | 'maintenance' | 'users';
+  currentService?: 'dashboard' | 'auth' | 'assets' | 'procurement' | 'maintenance' | 'users' | 'admin';
+  user?: any;
+  isLoading?: boolean;
+  onLogout?: () => void;
 }
 
 
 export function AppSidebar({
   currentService = 'dashboard',
+  user: propUser,
+  isLoading: propIsLoading,
+  onLogout: propOnLogout,
 }: AppSidebarProps) {
-  // Use AuthContext for user state
-  const { user, isLoading, logout } = useAuth();
+  // Use AuthContext for user state (fallback if not provided via props)
+  const authContext = useAuth();
+
+  // Use props if provided, otherwise fallback to AuthContext
+  const user = propUser !== undefined ? propUser : authContext.user;
+  const isLoading = propIsLoading !== undefined ? propIsLoading : authContext.isLoading;
+  const logout = propOnLogout || authContext.logout;
   const [isOpen, setIsOpen] = useState(false);
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set([currentService]));
 
@@ -239,7 +250,7 @@ export function AppSidebar({
                     <span className="text-white font-semibold text-sm">
                       {user.full_name
                         .split(' ')
-                        .map((n) => n[0])
+                        .map((n: string) => n[0])
                         .join('')
                         .toUpperCase()
                         .slice(0, 2)}
