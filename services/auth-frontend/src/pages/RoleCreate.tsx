@@ -16,8 +16,10 @@ import { Button } from "shared_components/ui/button";
 import { Input } from "shared_components/ui/input";
 // @ts-expect-error - Module Federation remote import
 import { Label } from "shared_components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
+// @ts-expect-error - Module Federation remote import
+import { Textarea } from "shared_components/ui/textarea";
+// @ts-expect-error - Module Federation remote import
+import { Checkbox } from "shared_components/ui/checkbox";
 import { ArrowLeft, Save, X } from "lucide-react";
 import { toast } from "sonner";
 import { useState } from "react";

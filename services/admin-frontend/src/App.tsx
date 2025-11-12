@@ -2,9 +2,9 @@ import { Suspense } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 // @ts-ignore - Module Federation remote import
-import { Toaster as Sonner } from "shared_components/ui/Toaster";
+import { Toaster as Sonner } from "shared_components/ui/sonner";
 // @ts-ignore - Module Federation remote import
-import { TooltipProvider } from "shared_components/ui/TooltipProvider";
+import { TooltipProvider } from "shared_components/ui/tooltip";
 // @ts-ignore - Module Federation remote import
 import { AuthProvider, useAuth } from "shared_components/AuthContext";
 // @ts-ignore - Module Federation remote import

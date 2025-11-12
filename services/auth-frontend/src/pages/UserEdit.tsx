@@ -16,14 +16,16 @@ import { Button } from "shared_components/ui/button";
 import { Input } from "shared_components/ui/input";
 // @ts-expect-error - Module Federation remote import
 import { Label } from "shared_components/ui/label";
+// @ts-ignore - Module Federation remote import
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
+} from "shared_components/ui/select";
+// @ts-expect-error - Module Federation remote import
+import { Checkbox } from "shared_components/ui/checkbox";
 import { ArrowLeft, Save, X } from "lucide-react";
 import { toast } from "sonner";
 import { useState, useEffect } from "react";

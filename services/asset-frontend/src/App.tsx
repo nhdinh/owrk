@@ -1,6 +1,9 @@
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
+// @ts-ignore - Module Federation remote import
+import { Toaster } from "shared_components/ui/toaster";
+// @ts-ignore - Module Federation remote import
+import { Toaster as Sonner } from "shared_components/ui/sonner";
+// @ts-ignore - Module Federation remote import
+import { TooltipProvider } from "shared_components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 // @ts-ignore - Module Federation remote import

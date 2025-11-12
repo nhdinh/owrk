@@ -7,6 +7,7 @@ import type { User } from "@/types/auth";
 
 // @ts-ignore - Module Federation remote import
 import { AppLayout } from "shared_components/AppLayout";
+// @ts-ignore - Module Federation remote import
 import {
   Table,
   TableBody,
@@ -14,7 +15,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from "shared_components/ui/table";
 import {
   Card,
   CardContent,
@@ -23,13 +24,15 @@ import {
   CardTitle,
   // @ts-expect-error - Module Federation remote import
 } from "shared_components/ui/card";
+// @ts-ignore - Module Federation remote import
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "shared_components/ui/select";
+// @ts-ignore - Module Federation remote import
 import {
   Dialog,
   DialogContent,
@@ -37,7 +40,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
+} from "shared_components/ui/dialog";
 // @ts-expect-error - Module Federation remote import
 import { Input } from "shared_components/ui/input";
 // @ts-expect-error - Module Federation remote import

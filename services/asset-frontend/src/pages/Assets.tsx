@@ -5,6 +5,7 @@ import { assetAPI } from "@/lib/asset-api";
 import type { Asset, AssetStatus, AssetType } from "@/types/asset";
 // @ts-ignore - Module Federation remote import
 import { AppLayout } from "shared_components/AppLayout";
+// @ts-ignore - Module Federation remote import
 import {
   Table,
   TableBody,
@@ -12,24 +13,29 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from "shared_components/ui/table";
+// @ts-ignore - Module Federation remote import
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from "shared_components/ui/card";
+// @ts-ignore - Module Federation remote import
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+} from "shared_components/ui/select";
+// @ts-ignore - Module Federation remote import
+import { Input } from "shared_components/ui/input";
+// @ts-ignore - Module Federation remote import
+import { Button } from "shared_components/ui/button";
+// @ts-ignore - Module Federation remote import
+import { Badge } from "shared_components/ui/badge";
 import {
   Package,
   Plus,

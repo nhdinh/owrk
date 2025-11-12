@@ -5,6 +5,7 @@ import type { Role } from "@/types/auth";
 
 // @ts-ignore - Module Federation remote import
 import { AppLayout } from "shared_components/AppLayout";
+// @ts-ignore - Module Federation remote import
 import {
   Table,
   TableBody,
@@ -12,7 +13,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from "shared_components/ui/table";
 
 import {
   Card,
@@ -29,6 +30,7 @@ import { Button } from "shared_components/ui/button";
 import { Badge } from "shared_components/ui/badge";
 import { ArrowLeft, Shield, Plus, Eye, Trash2, Key } from "lucide-react";
 import { toast } from "sonner";
+// @ts-ignore - Module Federation remote import
 import {
   Dialog,
   DialogContent,
@@ -36,12 +38,13 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
+} from "shared_components/ui/dialog";
 // @ts-expect-error - Module Federation remote import
 import { Input } from "shared_components/ui/input";
 // @ts-expect-error - Module Federation remote import
 import { Label } from "shared_components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+// @ts-expect-error - Module Federation remote import
+import { Textarea } from "shared_components/ui/textarea";
 import { useState } from "react";
 
 export default function Roles() {

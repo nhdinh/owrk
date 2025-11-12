@@ -8,7 +8,8 @@ import { Button } from 'shared_components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from 'shared_components/ui/card';
 // @ts-expect-error - Module Federation remote import
 import { Alert, AlertDescription } from 'shared_components/ui/alert';
-import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
+// @ts-expect-error - Module Federation remote import
+import { InputOTP, InputOTPGroup, InputOTPSlot } from 'shared_components/ui/input-otp';
 import { Shield, AlertCircle, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 
