@@ -25,15 +25,16 @@ async def lifespan(app: FastAPI):
     logger.info("Starting Admin Service...")
 
     # Create database tables
-    try:
-        Base.metadata.create_all(bind=engine)
-        logger.info("Database tables created successfully")
-    except Exception as e:
-        logger.error(f"Error creating database tables: {e}")
+    # try:
+    #     Base.metadata.create_all(bind=engine)
+    #     logger.info("Database tables created successfully")
+    # except Exception as e:
+    #     logger.error(f"Error creating database tables: {e}")
 
     # Start trash cleanup scheduler
     try:
         from app.tasks.trash_cleanup import start_scheduler, stop_scheduler
+
         start_scheduler()
         logger.info("Trash cleanup scheduler started")
     except Exception as e:
@@ -93,5 +94,11 @@ async def root():
 # Import and include API routers
 from app.api.v1.endpoints import module_settings, trash
 
-app.include_router(module_settings.router, prefix=f"{settings.API_PREFIX}/admin/module-settings", tags=["Module Settings"])
-app.include_router(trash.router, prefix=f"{settings.API_PREFIX}/admin/trash", tags=["Trash Management"])
+app.include_router(
+    module_settings.router,
+    prefix=f"{settings.API_PREFIX}/admin/module-settings",
+    tags=["Module Settings"],
+)
+app.include_router(
+    trash.router, prefix=f"{settings.API_PREFIX}/admin/trash", tags=["Trash Management"]
+)

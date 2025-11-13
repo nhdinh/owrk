@@ -165,11 +165,11 @@ async def lifespan(app: FastAPI):
     # register service node
 
     # Create database tables
-    try:
-        Base.metadata.create_all(bind=engine)
-        logger.info("✅ Database tables created")
-    except Exception as e:
-        logger.error(f"❌ Failed to create database tables: {e}")
+    # try:
+    #     Base.metadata.create_all(bind=engine)
+    #     logger.info("✅ Database tables created")
+    # except Exception as e:
+    #     logger.error(f"❌ Failed to create database tables: {e}")
 
     # Connect to MongoDB
     try:

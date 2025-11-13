@@ -2,10 +2,11 @@
 User Model
 """
 
-from sqlalchemy import Column, String, Boolean, Integer, ForeignKey, DateTime, Text
+from sqlalchemy import Column, String, Boolean, Integer, ForeignKey, DateTime, Text, event
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.models.base import Base
+from app.core.utils import generate_slug, ensure_unique_slug
 
 
 class User(Base):
@@ -55,8 +56,8 @@ class User(Base):
     address = Column(Text, nullable=True)
     position = Column(String(100), nullable=True)
 
-    # Foreign Keys
-    role_id = Column(Integer, ForeignKey("auth_db.roles.id"), nullable=True)
+    # Foreign Keys (now use UUID)
+    role_id = Column(String(32), ForeignKey("auth_db.roles.id"), nullable=True)
 
     # Versioning (for history tracking)
     version = Column(Integer, default=1, nullable=False)  # Incremented on each update
@@ -93,3 +94,13 @@ class User(Base):
     def can_login(self):
         """Check if user can login"""
         return self.is_active and not self.is_locked
+
+
+# Event listener to auto-generate slug from email before insert
+@event.listens_for(User, "before_insert")
+def generate_user_slug(mapper, connection, target):
+    """Auto-generate slug from email if not provided"""
+    if not target.slug:
+        # Use username if available, otherwise use email prefix
+        base_text = target.username if target.username else target.email.split('@')[0]
+        target.slug = generate_slug(base_text)

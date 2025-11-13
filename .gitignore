@@ -87,6 +87,7 @@ nginx/ssl/*.crt
 # Backup files
 *.bak
 *.backup
+backups/
 
 # This project
 .mysql_db

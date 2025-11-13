@@ -31,11 +31,11 @@ async def lifespan(app: FastAPI):
     logger.info("Starting Procurement Service...")
 
     # Create database tables
-    try:
-        Base.metadata.create_all(bind=engine)
-        logger.info("Database tables created successfully")
-    except Exception as e:
-        logger.error(f"Error creating database tables: {e}")
+    # try:
+    #     Base.metadata.create_all(bind=engine)
+    #     logger.info("Database tables created successfully")
+    # except Exception as e:
+    #     logger.error(f"Error creating database tables: {e}")
 
     # Initialize event publisher
     try:

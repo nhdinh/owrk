@@ -2,10 +2,11 @@
 Maintenance Model
 """
 
-from sqlalchemy import Column, String, Integer, Numeric, Date, Text, ForeignKey
+from sqlalchemy import Column, String, Numeric, Date, Text, ForeignKey, event
 import enum
 
 from app.models.base import BaseModel
+from app.core.utils import generate_slug
 
 
 class MaintenanceType(str, enum.Enum):
@@ -34,7 +35,7 @@ class MaintenanceRecord(BaseModel):
 
     # Basic Information
     asset_id = Column(
-        Integer, ForeignKey("asset_db.assets.id"), nullable=False, index=True
+        String(32), ForeignKey("asset_db.assets.id"), nullable=False, index=True
     )
     maintenance_type = Column(String(50), nullable=False)
     maintenance_date = Column(Date, nullable=False, index=True)
@@ -46,6 +47,10 @@ class MaintenanceRecord(BaseModel):
     description = Column(Text, nullable=True)
     notes = Column(Text, nullable=True)
 
+    # Audit fields
+    performed_by = Column(String(32), nullable=True)  # User UUID who performed maintenance
+    created_by = Column(String(32), nullable=False)  # User UUID who created record
+
     # Status
     status = Column(
         String(50), default=MaintenanceStatus.PENDING.value, nullable=False, index=True
@@ -53,3 +58,13 @@ class MaintenanceRecord(BaseModel):
 
     def __repr__(self):
         return f"<MaintenanceRecord(id={self.id}, asset_id={self.asset_id}, type={self.maintenance_type}, status={self.status})>"
+
+
+# Event listener to auto-generate slug from asset_id and maintenance_date
+@event.listens_for(MaintenanceRecord, "before_insert")
+def generate_maintenance_slug(mapper, connection, target):
+    """Auto-generate slug from asset_id, type, and date if not provided"""
+    if not target.slug:
+        asset_short = target.asset_id[:8] if target.asset_id else "unknown"
+        date_str = target.maintenance_date.strftime("%Y%m%d") if target.maintenance_date else "nodate"
+        target.slug = generate_slug(f"maint-{asset_short}-{target.maintenance_type}-{date_str}")

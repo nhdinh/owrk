@@ -2,19 +2,32 @@
 Base Model class for all SQLAlchemy models
 """
 
-from sqlalchemy import Column, Integer, DateTime
+from sqlalchemy import Column, String, DateTime, Index
 from sqlalchemy.sql import func
+from sqlalchemy.ext.declarative import declared_attr
 from app.core.database import Base as SQLAlchemyBase
+from app.core.utils import generate_uuid
 
 
 class Base(SQLAlchemyBase):
     """
-    Base model class with common fields
+    Base model class with common fields using UUID as primary key
     """
 
     __abstract__ = True
 
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    # UUID as primary key (stored as CHAR(32) without dashes for efficiency)
+    id = Column(
+        String(32),
+        primary_key=True,
+        index=True,
+        default=generate_uuid,
+        nullable=False
+    )
+
+    # Slug for URL-friendly identifiers (must be unique per table)
+    slug = Column(String(100), unique=True, index=True, nullable=False)
+
     created_at = Column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
@@ -24,3 +37,10 @@ class Base(SQLAlchemyBase):
         onupdate=func.now(),
         nullable=False,
     )
+
+    @declared_attr
+    def __table_args__(cls):
+        """Add composite index on slug for faster lookups"""
+        return (
+            Index(f'ix_{cls.__tablename__}_slug', 'slug'),
+        )

@@ -2,17 +2,18 @@
 Role Model
 """
 
-from sqlalchemy import Column, String, Text, Boolean, Table, ForeignKey, Integer, JSON
+from sqlalchemy import Column, String, Text, Boolean, Table, ForeignKey, Integer, JSON, event
 from sqlalchemy.orm import relationship
 from app.models.base import Base
+from app.core.utils import generate_slug
 
 
 # Association table for many-to-many relationship between roles and permissions
 role_permissions = Table(
     "role_permissions",
     Base.metadata,
-    Column("role_id", ForeignKey("auth_db.roles.id"), primary_key=True),
-    Column("permission_id", ForeignKey("auth_db.permissions.id"), primary_key=True),
+    Column("role_id", String(32), ForeignKey("auth_db.roles.id"), primary_key=True),
+    Column("permission_id", String(32), ForeignKey("auth_db.permissions.id"), primary_key=True),
     schema="auth_db",
 )
 
@@ -80,3 +81,19 @@ class Permission(Base):
 
     def __repr__(self):
         return f"<Permission(id={self.id}, name='{self.name}')>"
+
+
+# Event listeners for auto-generating slugs
+@event.listens_for(Role, "before_insert")
+def generate_role_slug(mapper, connection, target):
+    """Auto-generate slug from name if not provided"""
+    if not target.slug:
+        target.slug = generate_slug(target.name)
+
+
+@event.listens_for(Permission, "before_insert")
+def generate_permission_slug(mapper, connection, target):
+    """Auto-generate slug from name if not provided"""
+    if not target.slug:
+        # Use format: resource-action (e.g., "asset-create", "user-read")
+        target.slug = generate_slug(f"{target.resource}-{target.action}")
