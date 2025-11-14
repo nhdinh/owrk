@@ -15,7 +15,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.models.base import Base
-from app.core.utils import generate_slug, ensure_unique_slug
+from app.core.utils import generate_slug
 
 
 class User(Base):

@@ -65,8 +65,6 @@ class AuthService:
             if not user:
                 raise ValueError("Invalid email or password")
 
-            user.hashed_password = hash_password("admin123")
-
             # Check if account is locked
             if user.locked_until and user.locked_until > datetime.utcnow():
                 raise ValueError(f"Account is locked until {user.locked_until}")

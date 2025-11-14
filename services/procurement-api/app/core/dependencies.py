@@ -31,7 +31,7 @@ def get_db() -> Generator:
 
 def get_current_user_id(
     credentials: HTTPAuthorizationCredentials = Depends(security),
-) -> int:
+) -> str:
     """
     Extract and validate user ID from JWT token
 
@@ -39,7 +39,7 @@ def get_current_user_id(
         credentials: HTTP Bearer token credentials
 
     Returns:
-        int: User ID from token
+        str: User ID from token (UUID string)
 
     Raises:
         HTTPException: If token is invalid or expired
@@ -58,8 +58,8 @@ def get_current_user_id(
         user_id: str = payload.get("sub")
         if user_id is None:
             raise credentials_exception
-        return int(user_id)
-    except (JWTError, ValueError):
+        return user_id  # Return UUID string directly, no int() conversion
+    except JWTError:
         raise credentials_exception
 
 
@@ -96,11 +96,11 @@ def get_current_user(
             raise credentials_exception
 
         return {
-            "id": int(user_id),
+            "id": user_id,  # Return UUID string directly, no int() conversion
             "email": email,
             "type": payload.get("type"),
         }
-    except (JWTError, ValueError):
+    except JWTError:
         raise credentials_exception
 
 
