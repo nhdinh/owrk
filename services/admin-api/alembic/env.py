@@ -31,6 +31,11 @@ def run_migrations_offline() -> None:
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
+        version_table_schema=target_metadata.schema,
+        include_schemas=False,
+        include_object=lambda obj, name, type_, reflected, compare_to: (
+            type_ != "table" or getattr(obj, "schema", None) == "admin_db"
+        ),
     )
 
     with context.begin_transaction():
@@ -43,7 +48,15 @@ def run_migrations_online() -> None:
     connectable = create_engine(settings.DATABASE_URL, poolclass=pool.NullPool)
 
     with connectable.connect() as connection:
-        context.configure(connection=connection, target_metadata=target_metadata)
+        context.configure(
+            connection=connection,
+            target_metadata=target_metadata,
+            version_table_schema=target_metadata.schema,
+            include_schemas=False,
+            include_object=lambda obj, name, type_, reflected, compare_to: (
+                type_ != "table" or getattr(obj, "schema", None) == "admin_db"
+            ),
+        )
 
         with context.begin_transaction():
             context.run_migrations()

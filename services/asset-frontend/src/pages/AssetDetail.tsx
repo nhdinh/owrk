@@ -1,16 +1,20 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useParams } from "react-router-dom";
 import { assetAPI } from "@/lib/asset-api";
-// @ts-ignore - Module Federation remote import
+// @ts-expect-error - Module Federation remote import
 import { AppLayout } from "shared_components/AppLayout";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+// @ts-expect-error - Module Federation remote import
+import { Button } from "shared_components/ui/button";
+// @ts-expect-error - Module Federation remote import
+import { Card, CardContent, CardHeader, CardTitle } from "shared_components/ui/card";
+// @ts-expect-error - Module Federation remote import
+import { Badge } from "shared_components/ui/badge";
+// @ts-expect-error - Module Federation remote import
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "shared_components/ui/tabs";
 import { ArrowLeft, Edit, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { AssetStatus, AssetType } from "@/types/asset";
-// @ts-ignore - Module Federation remote import
+// @ts-expect-error - Module Federation remote import
 import { useAuth } from "shared_components/AuthContext";
 
 export default function AssetDetail() {

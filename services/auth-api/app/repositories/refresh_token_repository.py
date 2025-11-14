@@ -159,6 +159,7 @@ class PasswordResetTokenRepository(BaseRepository[PasswordResetToken]):
         reset_token = self.get_by_token(token)
         if reset_token:
             reset_token.is_used = True
+            reset_token.used_at = datetime.utcnow()
             self.db.flush()
             return True
         return False

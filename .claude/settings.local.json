@@ -28,7 +28,12 @@
       "Bash(echo:*)",
       "Bash(done)",
       "Bash(git checkout:*)",
-      "Bash(docker cp:*)"
+      "Bash(docker cp:*)",
+      "Bash(docker inspect:*)",
+      "Bash(find:*)",
+      "Bash(TEMP_TOKEN=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIzNjMyZDA1NC1jMTI4LTExZjAtODNlMi01NjIwNzcwY2Q2NTUiLCJlbWFpbCI6ImFkbWluQGV4YW1wbGUuY29tIiwiZXhwIjoxNzYzMTA3MTM5LCJpYXQiOjE3NjMxMDY4MzksInR5cGUiOiJ0ZW1wIn0.IC0c8hloYh5Fo9e6L1RQM3XC1IRZczB8ZVgpK0B_bWU\")",
+      "Bash(__NEW_LINE__ docker compose exec -T auth-api python -c \"\nfrom app.core.security import decode_token\ntoken = ''$TEMP_TOKEN''\npayload = decode_token(token)\nif payload:\n    print(''User ID from token:'', payload.get(''sub''))\n    print(''User ID length:'', len(payload.get(''sub'', '''')))\nelse:\n    print(''Failed to decode token'')\n\")",
+      "Bash(export TOKEN:*)"
     ],
     "deny": [],
     "ask": [],

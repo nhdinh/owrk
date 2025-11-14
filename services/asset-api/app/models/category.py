@@ -17,7 +17,7 @@ class AssetCategory(BaseModel):
     name = Column(String(255), nullable=False)
     code = Column(String(50), unique=True, nullable=False, index=True)
     parent_id = Column(
-        String(32), ForeignKey("asset_db.asset_categories.id"), nullable=True
+        String(36), ForeignKey("asset_db.asset_categories.id"), nullable=True
     )
     description = Column(Text, nullable=True)
     is_active = Column(Boolean, default=True, nullable=False)

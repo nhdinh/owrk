@@ -13,6 +13,7 @@ from app.models.category import AssetCategory
 from app.models.assignment import AssetAssignment
 from app.models.attachment import AssetAttachment
 from app.models.depreciation import AssetDepreciationRecord
+from app.models.maintenance import MaintenanceRecord
 
 # this is the Alembic Config object
 config = context.config
@@ -37,6 +38,11 @@ def run_migrations_offline() -> None:
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
+        version_table_schema=target_metadata.schema,
+        include_schemas=False,
+        include_object=lambda obj, name, type_, reflected, compare_to: (
+            type_ != "table" or getattr(obj, "schema", None) == "asset_db"
+        ),
     )
 
     with context.begin_transaction():
@@ -49,7 +55,15 @@ def run_migrations_online() -> None:
     from app.core.database import engine
 
     with engine.connect() as connection:
-        context.configure(connection=connection, target_metadata=target_metadata)
+        context.configure(
+            connection=connection,
+            target_metadata=target_metadata,
+            version_table_schema=target_metadata.schema,
+            include_schemas=False,
+            include_object=lambda obj, name, type_, reflected, compare_to: (
+                type_ != "table" or getattr(obj, "schema", None) == "asset_db"
+            ),
+        )
 
         with context.begin_transaction():
             context.run_migrations()

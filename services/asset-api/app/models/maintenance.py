@@ -35,7 +35,7 @@ class MaintenanceRecord(BaseModel):
 
     # Basic Information
     asset_id = Column(
-        String(32), ForeignKey("asset_db.assets.id"), nullable=False, index=True
+        String(36), ForeignKey("asset_db.assets.id"), nullable=False, index=True
     )
     maintenance_type = Column(String(50), nullable=False)
     maintenance_date = Column(Date, nullable=False, index=True)
@@ -48,8 +48,8 @@ class MaintenanceRecord(BaseModel):
     notes = Column(Text, nullable=True)
 
     # Audit fields
-    performed_by = Column(String(32), nullable=True)  # User UUID who performed maintenance
-    created_by = Column(String(32), nullable=False)  # User UUID who created record
+    performed_by = Column(String(36), nullable=True)  # User UUID who performed maintenance
+    created_by = Column(String(36), nullable=False)  # User UUID who created record
 
     # Status
     status = Column(

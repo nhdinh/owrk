@@ -2,6 +2,7 @@
 Refresh Token Model
 """
 
+from uuid import uuid4
 from sqlalchemy import Column, String, Integer, ForeignKey, DateTime, Boolean, event
 from sqlalchemy.orm import relationship
 from app.models.base import Base
@@ -18,7 +19,7 @@ class RefreshToken(Base):
 
     # Token Information
     token = Column(String(255), unique=True, index=True, nullable=False)
-    user_id = Column(String(32), ForeignKey("auth_db.users.id"), nullable=False)
+    user_id = Column(String(36), ForeignKey("auth_db.users.id"), nullable=False)
 
     # Token Metadata
     expires_at = Column(DateTime(timezone=True), nullable=False)
@@ -49,7 +50,7 @@ class PasswordResetToken(Base):
 
     # Token Information
     token = Column(String(255), unique=True, index=True, nullable=False)
-    user_id = Column(String(32), ForeignKey("auth_db.users.id"), nullable=False)
+    user_id = Column(String(36), ForeignKey("auth_db.users.id"), nullable=False)
 
     # Token Metadata
     expires_at = Column(DateTime(timezone=True), nullable=False)
@@ -78,7 +79,7 @@ class MFABackupCode(Base):
 
     # Code Information
     code_hash = Column(String(255), nullable=False)
-    user_id = Column(String(32), ForeignKey("auth_db.users.id"), nullable=False)
+    user_id = Column(String(36), ForeignKey("auth_db.users.id"), nullable=False)
 
     # Status
     is_used = Column(Boolean, default=False, nullable=False)
@@ -93,21 +94,23 @@ class MFABackupCode(Base):
 # Event listeners for auto-generating slugs
 @event.listens_for(RefreshToken, "before_insert")
 def generate_refresh_token_slug(mapper, connection, target):
-    """Auto-generate slug from token prefix if not provided"""
+    """Auto-generate slug from UUID if not provided"""
     if not target.slug:
-        # Use first 12 chars of token as slug (unique enough)
-        target.slug = generate_slug(target.token[:12])
+        # Use the UUID as slug (guaranteed unique)
+        target.slug = generate_slug(uuid4().hex, 12)
 
 
 @event.listens_for(PasswordResetToken, "before_insert")
 def generate_password_reset_token_slug(mapper, connection, target):
-    """Auto-generate slug from token prefix if not provided"""
+    """Auto-generate slug from UUID if not provided"""
     if not target.slug:
-        target.slug = generate_slug(target.token[:12])
+        # Use the UUID as slug (guaranteed unique)
+        target.slug = generate_slug(uuid4().hex, 12)
 
 
 @event.listens_for(MFABackupCode, "before_insert")
 def generate_mfa_backup_code_slug(mapper, connection, target):
-    """Auto-generate slug from code hash prefix if not provided"""
+    """Auto-generate slug from UUID if not provided"""
     if not target.slug:
-        target.slug = generate_slug(target.code_hash[:12])
+        # Use the UUID as slug (guaranteed unique)
+        target.slug = generate_slug(uuid4().hex, 12)

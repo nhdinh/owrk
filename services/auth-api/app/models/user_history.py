@@ -31,7 +31,7 @@ class UserHistory(Base):
 
     # Foreign key to original user
     user_id = Column(
-        Integer, ForeignKey("auth_db.users.id"), nullable=False, index=True
+        String(36), ForeignKey("auth_db.users.id"), nullable=False, index=True
     )
 
     # Version metadata
@@ -39,7 +39,7 @@ class UserHistory(Base):
     changed_at = Column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
-    changed_by = Column(Integer, nullable=True)  # User ID who made the change
+    changed_by = Column(String(36), nullable=True)  # User ID who made the change
     change_reason = Column(String(500), nullable=True)  # Optional reason for change
     change_type = Column(
         String(50), nullable=False
@@ -81,7 +81,7 @@ class UserHistory(Base):
     position = Column(String(100), nullable=True)
 
     # Role
-    role_id = Column(Integer, nullable=True)
+    role_id = Column(String(36), nullable=True)
 
     # Original timestamps (from user table)
     original_created_at = Column(DateTime(timezone=True), nullable=False)

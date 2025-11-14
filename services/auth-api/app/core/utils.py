@@ -13,9 +13,9 @@ def generate_uuid() -> str:
     Generate a UUID4 string
 
     Returns:
-        str: UUID string without dashes (32 characters)
+        str: UUID string with dashes (36 characters)
     """
-    return uuid.uuid4().hex
+    return str(uuid.uuid4())
 
 
 def generate_slug(text: str, max_length: int = 100) -> str:
@@ -42,20 +42,20 @@ def generate_slug(text: str, max_length: int = 100) -> str:
     text = text.lower()
 
     # Replace spaces and underscores with dashes
-    text = re.sub(r'[\s_]+', '-', text)
+    text = re.sub(r"[\s_]+", "-", text)
 
     # Remove all non-alphanumeric characters except dashes
-    text = re.sub(r'[^a-z0-9-]', '', text)
+    text = re.sub(r"[^a-z0-9-]", "", text)
 
     # Remove multiple consecutive dashes
-    text = re.sub(r'-+', '-', text)
+    text = re.sub(r"-+", "-", text)
 
     # Remove leading/trailing dashes
-    text = text.strip('-')
+    text = text.strip("-")
 
     # Truncate to max_length
     if len(text) > max_length:
-        text = text[:max_length].rstrip('-')
+        text = text[:max_length].rstrip("-")
 
     return text
 
@@ -99,7 +99,7 @@ def is_valid_uuid(value: str) -> bool:
         return False
 
     # Remove dashes if present
-    clean_value = value.replace('-', '')
+    clean_value = value.replace("-", "")
 
     # Check if it's a valid hex string of length 32
     if len(clean_value) != 32:
@@ -123,7 +123,7 @@ def format_uuid(value: str, with_dashes: bool = False) -> str:
     Returns:
         str: Formatted UUID
     """
-    clean_value = value.replace('-', '')
+    clean_value = value.replace("-", "")
 
     if not with_dashes:
         return clean_value

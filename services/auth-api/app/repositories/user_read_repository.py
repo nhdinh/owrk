@@ -244,8 +244,10 @@ class UserReadRepository:
         # Add metadata
         safe_data["synced_at"] = datetime.utcnow()
 
-        await self.collection.update_one(
-            {"id": user_id}, {"$set": safe_data}, upsert=True
+        # Use replace_one instead of update_one to avoid duplicate key errors
+        # This replaces the entire document, which is what we want for CQRS sync
+        await self.collection.replace_one(
+            {"id": user_id}, safe_data, upsert=True
         )
         return True
 

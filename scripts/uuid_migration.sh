@@ -175,7 +175,7 @@ echo "=========================================="
 echo "🌱 Creating seed data..."
 
 # Create seed data SQL
-docker compose exec mysql mysql -uofficework -p$(cat /run/secrets/mysql_user_passwd) auth_db <<'EOF'
+docker compose exec -T mysql mysql -uofficework -p$(cat .secrets/mysql_user_passwd.txt) auth_db <<'EOF'
 -- Insert admin role
 INSERT INTO roles (id, slug, name, display_name, description, is_active, is_system_role, version, created_at, updated_at)
 VALUES (
@@ -225,7 +225,7 @@ echo "Step 9: Verifying Migration"
 echo "=========================================="
 
 echo "🔍 Checking database tables..."
-docker compose exec mysql mysql -uofficework -p$(cat /run/secrets/mysql_user_passwd) -e "
+docker compose exec mysql mysql -uofficework -p$(cat .secrets/mysql_user_passwd.txt) -e "
 SELECT
     'auth_db' as database_name,
     TABLE_NAME,
@@ -257,7 +257,7 @@ WHERE TABLE_SCHEMA = 'procurement_db';
 
 echo ""
 echo "🔍 Checking admin user..."
-docker compose exec mysql mysql -uofficework -p$(cat /run/secrets/mysql_user_passwd) auth_db -e "
+docker compose exec mysql mysql -uofficework -p$(cat .secrets/mysql_user_passwd.txt) auth_db -e "
 SELECT id, slug, email, full_name, is_active FROM users;
 "
 

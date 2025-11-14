@@ -30,14 +30,14 @@ class AuditLog(BaseModel):
     __tablename__ = "audit_logs"
     __table_args__ = {"schema": "admin_db"}
 
-    user_id = Column(String(32), nullable=True, index=True)  # User UUID
+    user_id = Column(String(36), nullable=True, index=True)  # User UUID
     user_email = Column(String(255), nullable=True)
 
     # Action details
     action = Column(String(50), nullable=False, index=True)  # CREATE, UPDATE, DELETE, LOGIN, etc.
     module_name = Column(String(50), nullable=False, index=True)
     resource_type = Column(String(100), nullable=False, index=True)
-    resource_id = Column(String(32), nullable=True)  # UUID of affected resource
+    resource_id = Column(String(36), nullable=True)  # UUID of affected resource
 
     description = Column(Text, nullable=False)
 

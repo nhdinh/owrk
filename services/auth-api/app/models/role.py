@@ -12,8 +12,8 @@ from app.core.utils import generate_slug
 role_permissions = Table(
     "role_permissions",
     Base.metadata,
-    Column("role_id", String(32), ForeignKey("auth_db.roles.id"), primary_key=True),
-    Column("permission_id", String(32), ForeignKey("auth_db.permissions.id"), primary_key=True),
+    Column("role_id", String(36), ForeignKey("auth_db.roles.id"), primary_key=True),
+    Column("permission_id", String(36), ForeignKey("auth_db.permissions.id"), primary_key=True),
     schema="auth_db",
 )
 

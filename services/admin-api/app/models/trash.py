@@ -48,14 +48,14 @@ class TrashItem(BaseModel):
     # Resource identification
     module_name = Column(String(50), nullable=False, index=True)
     resource_type = Column(String(100), nullable=False, index=True)
-    resource_id = Column(String(32), nullable=False, index=True)  # UUID of deleted resource
+    resource_id = Column(String(36), nullable=False, index=True)  # UUID of deleted resource
     resource_name = Column(String(500), nullable=False)  # Display name
 
     # Resource data snapshot
     resource_data = Column(JSON, nullable=False)  # Full object snapshot
 
     # Deletion metadata
-    deleted_by = Column(String(32), nullable=False, index=True)  # User UUID
+    deleted_by = Column(String(36), nullable=False, index=True)  # User UUID
     deleted_by_email = Column(String(255), nullable=True)
     deleted_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False, index=True)
     deleted_reason = Column(Text, nullable=True)
@@ -70,9 +70,9 @@ class TrashItem(BaseModel):
 
     # Restoration tracking
     restored_at = Column(DateTime(timezone=True), nullable=True)
-    restored_by = Column(String(32), nullable=True)  # User UUID
+    restored_by = Column(String(36), nullable=True)  # User UUID
     restored_by_email = Column(String(255), nullable=True)
-    permanently_deleted_by = Column(String(32), nullable=True)  # User UUID who permanently deleted
+    permanently_deleted_by = Column(String(36), nullable=True)  # User UUID who permanently deleted
 
     def __repr__(self):
         return f"<TrashItem(module={self.module_name}, type={self.resource_type}, id={self.resource_id})>"

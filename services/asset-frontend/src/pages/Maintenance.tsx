@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { assetAPI } from "@/lib/asset-api";
 import type { MaintenanceCreateRequest, Asset } from "@/types/asset";
-// @ts-ignore - Module Federation remote import
+// @ts-expect-error - Module Federation remote import
 import { AppLayout } from "shared_components/AppLayout";
 import {
   Table,
@@ -11,14 +11,16 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+// @ts-expect-error - Module Federation remote import
+} from "shared_components/ui/table";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+// @ts-expect-error - Module Federation remote import
+} from "shared_components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -26,19 +28,26 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Textarea } from "@/components/ui/textarea";
+// @ts-expect-error - Module Federation remote import
+} from "shared_components/ui/dialog";
+// @ts-expect-error - Module Federation remote import
+import { Input } from "shared_components/ui/input";
+// @ts-expect-error - Module Federation remote import
+import { Label } from "shared_components/ui/label";
+// @ts-expect-error - Module Federation remote import
+import { Button } from "shared_components/ui/button";
+// @ts-expect-error - Module Federation remote import
+import { Badge } from "shared_components/ui/badge";
+// @ts-expect-error - Module Federation remote import
+import { Textarea } from "shared_components/ui/textarea";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+// @ts-expect-error - Module Federation remote import
+} from "shared_components/ui/select";
 import {
   Wrench,
   Plus,

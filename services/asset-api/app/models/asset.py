@@ -57,7 +57,7 @@ class Asset(BaseModel):
     asset_code = Column(String(50), unique=True, nullable=False, index=True)
     name = Column(String(255), nullable=False)
     category_id = Column(
-        String(32), ForeignKey("asset_db.asset_categories.id"), nullable=False, index=True
+        String(36), ForeignKey("asset_db.asset_categories.id"), nullable=False, index=True
     )
     asset_type = Column(SQLEnum(AssetType), nullable=False, index=True)
     description = Column(Text, nullable=True)
@@ -68,7 +68,7 @@ class Asset(BaseModel):
     # Financial Information
     purchase_price = Column(Numeric(15, 2), nullable=False)
     purchase_date = Column(Date, nullable=False, index=True)
-    purchase_order_id = Column(String(32), nullable=True)  # Link to procurement service (UUID)
+    purchase_order_id = Column(String(36), nullable=True)  # Link to procurement service (UUID)
 
     # Depreciation (for Fixed Assets)
     depreciation_rate = Column(Numeric(5, 2), nullable=True)  # %/year
@@ -89,16 +89,16 @@ class Asset(BaseModel):
 
     # Location
     location = Column(String(255), nullable=True)
-    department_id = Column(String(32), nullable=True, index=True)  # UUID reference
+    department_id = Column(String(36), nullable=True, index=True)  # UUID reference
     current_user_id = Column(
-        String(32), nullable=True, index=True
+        String(36), nullable=True, index=True
     )  # Currently assigned user (UUID)
 
     # QR Code
     qr_code = Column(Text, nullable=True)
 
     # Audit
-    created_by = Column(String(32), nullable=False)  # User UUID
+    created_by = Column(String(36), nullable=False)  # User UUID
     deleted_at = Column(DateTime, nullable=True)
 
     # Relationships

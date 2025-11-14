@@ -31,7 +31,7 @@ class RoleHistory(Base):
 
     # Foreign key to original role
     role_id = Column(
-        Integer, ForeignKey("auth_db.roles.id"), nullable=False, index=True
+        String(36), ForeignKey("auth_db.roles.id"), nullable=False, index=True
     )
 
     # Version metadata
@@ -39,7 +39,7 @@ class RoleHistory(Base):
     changed_at = Column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
-    changed_by = Column(Integer, nullable=True)  # User ID who made the change
+    changed_by = Column(String(36), nullable=True)  # User ID who made the change
     change_reason = Column(String(500), nullable=True)  # Optional reason for change
     change_type = Column(String(50), nullable=False)  # 'created', 'updated', 'deleted'
 

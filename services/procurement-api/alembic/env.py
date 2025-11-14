@@ -68,7 +68,10 @@ def run_migrations_offline() -> None:
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
         version_table_schema="procurement_db",
-        include_schemas=True,
+        include_schemas=False,
+        include_object=lambda obj, name, type_, reflected, compare_to: (
+            type_ != "table" or getattr(obj, "schema", None) == "procurement_db"
+        ),
     )
 
     with context.begin_transaction():
@@ -96,7 +99,10 @@ def run_migrations_online() -> None:
             connection=connection,
             target_metadata=target_metadata,
             version_table_schema="procurement_db",
-            include_schemas=True,
+            include_schemas=False,
+            include_object=lambda obj, name, type_, reflected, compare_to: (
+                type_ != "table" or getattr(obj, "schema", None) == "procurement_db"
+            ),
         )
 
         with context.begin_transaction():

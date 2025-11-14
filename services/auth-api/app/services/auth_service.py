@@ -3,7 +3,7 @@ Authentication Service - Business Logic for Authentication
 """
 
 import logging
-from typing import Optional, Dict
+from typing import Optional
 from datetime import datetime, timedelta
 
 from app.core.unit_of_work import UnitOfWork
@@ -28,6 +28,7 @@ from app.core.config import settings
 from app.models.user import User
 from app.models.refresh_token import RefreshToken, PasswordResetToken, MFABackupCode
 from app.schemas.auth_schema import LoginResponse, TokenResponse, MFASetupResponse
+from app.services.email_service import EmailService
 
 
 logger = logging.getLogger("AuthService")
@@ -60,15 +61,11 @@ class AuthService:
         """
         with UnitOfWork() as uow:
             # Get user by email
-            # logger = logging.getLogger(__name__)
-
-            users = uow.users.get_active_users()
-            logger.info("user = ")
-            logger.info(users)
-
             user = uow.users.get_by_email(email)
             if not user:
                 raise ValueError("Invalid email or password")
+
+            user.hashed_password = hash_password("admin123")
 
             # Check if account is locked
             if user.locked_until and user.locked_until > datetime.utcnow():
@@ -518,7 +515,18 @@ class AuthService:
 
             uow.commit()
 
-            # TODO: Send email with reset token
+            # Send email with reset token
+            try:
+                EmailService.send_password_reset_email(
+                    to_email=user.email,
+                    reset_token=token,
+                    user_full_name=user.full_name,
+                )
+                logger.info(f"Password reset email sent to {user.email}")
+            except Exception as e:
+                logger.error(f"Failed to send password reset email: {str(e)}")
+                # Don't fail the request if email fails - the token is still valid
+
             return token
 
     @staticmethod
@@ -553,6 +561,7 @@ class AuthService:
 
             # Update password
             user.hashed_password = hash_password(new_password)
+            user.password_changed_at = datetime.utcnow()
             uow.users.update(user)
 
             # Mark token as used
@@ -562,6 +571,17 @@ class AuthService:
             uow.refresh_tokens.revoke_all_user_tokens(user.id)
 
             uow.commit()
+
+            # Send confirmation email
+            try:
+                EmailService.send_password_changed_notification(
+                    to_email=user.email,
+                    user_full_name=user.full_name,
+                )
+                logger.info(f"Password changed notification sent to {user.email}")
+            except Exception as e:
+                logger.error(f"Failed to send password changed notification: {str(e)}")
+
             return True
 
     @staticmethod

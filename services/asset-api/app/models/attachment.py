@@ -26,7 +26,7 @@ class AssetAttachment(BaseModel):
     __table_args__ = {"schema": "asset_db"}
 
     asset_id = Column(
-        String(32),
+        String(36),
         ForeignKey("asset_db.assets.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
@@ -35,7 +35,7 @@ class AssetAttachment(BaseModel):
     file_type = Column(SQLEnum(FileType), nullable=False, index=True)
     file_url = Column(String(500), nullable=False)
     file_size = Column(BigInteger, nullable=True)
-    uploaded_by = Column(String(32), nullable=False)  # User UUID
+    uploaded_by = Column(String(36), nullable=False)  # User UUID
 
     # Relationships
     asset = relationship("Asset", back_populates="attachments")

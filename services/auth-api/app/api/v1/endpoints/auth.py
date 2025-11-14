@@ -223,26 +223,33 @@ async def disable_mfa(
 async def forgot_password(request: PasswordResetRequest):
     """
     Request password reset
-    Sends email with reset token
+    Sends email with reset token to user's email address
+
+    Note: Always returns success message regardless of whether email exists
+    to prevent email enumeration attacks
     """
     try:
         token = await AuthService.request_password_reset(request.email)
-        # TODO: Send email with token
-        # For now, return token in response (INSECURE - for development only)
-        return {"message": "Password reset instructions sent", "token": token}
+        # Email sent by AuthService - don't return token in production
+        logger.info(f"Password reset requested for {request.email}")
+        return {
+            "message": "If email exists, reset instructions have been sent to your email address"
+        }
     except ValueError as e:
-        # Don't reveal if email exists
+        # Don't reveal if email exists - return same message
         logger.warning(
             f"Password reset requested for non-existent email: {request.email}"
         )
-        return {"message": "If email exists, reset instructions have been sent"}
+        return {
+            "message": "If email exists, reset instructions have been sent to your email address"
+        }
     except Exception as e:
         logger.error(f"Password reset request error for {request.email}: {str(e)}")
         logger.error(traceback.format_exc())
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Password reset request failed",
-        )
+        # Still return success to prevent information disclosure
+        return {
+            "message": "If email exists, reset instructions have been sent to your email address"
+        }
 
 
 @router.post("/reset-password")

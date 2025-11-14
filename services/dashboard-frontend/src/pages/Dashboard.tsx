@@ -1,8 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { dashboardAPI } from "@/lib/dashboard-api";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-// @ts-ignore - Module Federation remote import
+// @ts-expect-error - Module Federation remote import
+import { Card, CardContent, CardHeader, CardTitle } from "shared_components/ui/card";
+// @ts-expect-error - Module Federation remote import
+import { Skeleton } from "shared_components/ui/skeleton";
+// @ts-expect-error - Module Federation remote import
 import { AppLayout } from "shared_components/AppLayout";
 import {
   Users,

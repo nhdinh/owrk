@@ -2,7 +2,16 @@
 User Model
 """
 
-from sqlalchemy import Column, String, Boolean, Integer, ForeignKey, DateTime, Text, event
+from sqlalchemy import (
+    Column,
+    String,
+    Boolean,
+    Integer,
+    ForeignKey,
+    DateTime,
+    Text,
+    event,
+)
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.models.base import Base
@@ -57,7 +66,7 @@ class User(Base):
     position = Column(String(100), nullable=True)
 
     # Foreign Keys (now use UUID)
-    role_id = Column(String(32), ForeignKey("auth_db.roles.id"), nullable=True)
+    role_id = Column(String(36), ForeignKey("auth_db.roles.id"), nullable=True)
 
     # Versioning (for history tracking)
     version = Column(Integer, default=1, nullable=False)  # Incremented on each update
@@ -102,5 +111,5 @@ def generate_user_slug(mapper, connection, target):
     """Auto-generate slug from email if not provided"""
     if not target.slug:
         # Use username if available, otherwise use email prefix
-        base_text = target.username if target.username else target.email.split('@')[0]
+        base_text = target.username if target.username else target.email.split("@")[0]
         target.slug = generate_slug(base_text)

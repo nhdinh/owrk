@@ -32,23 +32,23 @@ class AssetAssignment(BaseModel):
     __table_args__ = {"schema": "asset_db"}
 
     asset_id = Column(
-        String(32),
+        String(36),
         ForeignKey("asset_db.assets.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
     )
-    user_id = Column(String(32), nullable=False, index=True)  # User UUID from auth service
-    department_id = Column(String(32), nullable=False)  # Department UUID
+    user_id = Column(String(36), nullable=False, index=True)  # User UUID from auth service
+    department_id = Column(String(36), nullable=False)  # Department UUID
 
     # Assignment Information
     assigned_date = Column(Date, nullable=False, index=True)
-    assigned_by = Column(String(32), nullable=False)  # User UUID who assigned
+    assigned_by = Column(String(36), nullable=False)  # User UUID who assigned
     notes = Column(Text, nullable=True)
     handover_document_url = Column(String(500), nullable=True)
 
     # Return Information
     returned_date = Column(Date, nullable=True)
-    returned_by = Column(String(32), nullable=True)  # User UUID who processed return
+    returned_by = Column(String(36), nullable=True)  # User UUID who processed return
     return_condition = Column(SQLEnum(ReturnCondition), nullable=True)
     return_notes = Column(Text, nullable=True)
 

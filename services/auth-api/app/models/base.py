@@ -18,11 +18,7 @@ class Base(SQLAlchemyBase):
 
     # UUID as primary key (stored as CHAR(32) without dashes for efficiency)
     id = Column(
-        String(32),
-        primary_key=True,
-        index=True,
-        default=generate_uuid,
-        nullable=False
+        String(36), primary_key=True, index=True, default=generate_uuid, nullable=False
     )
 
     # Slug for URL-friendly identifiers (must be unique per table)
@@ -41,6 +37,4 @@ class Base(SQLAlchemyBase):
     @declared_attr
     def __table_args__(cls):
         """Add composite index on slug for faster lookups"""
-        return (
-            Index(f'ix_{cls.__tablename__}_slug', 'slug'),
-        )
+        return (Index(f"ix_{cls.__tablename__}_slug", "slug"),)

@@ -5,16 +5,18 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { assetAPI } from "@/lib/asset-api";
-// @ts-ignore - Module Federation remote import
+// @ts-expect-error - Module Federation remote import
 import { AppLayout } from "shared_components/AppLayout";
-import { Button } from "@/components/ui/button";
+// @ts-expect-error - Module Federation remote import
+import { Button } from "shared_components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+// @ts-expect-error - Module Federation remote import
+} from "shared_components/ui/card";
 import {
   Form,
   FormControl,
@@ -22,16 +24,20 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+// @ts-expect-error - Module Federation remote import
+} from "shared_components/ui/form";
+// @ts-expect-error - Module Federation remote import
+import { Input } from "shared_components/ui/input";
+// @ts-expect-error - Module Federation remote import
+import { Textarea } from "shared_components/ui/textarea";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+// @ts-expect-error - Module Federation remote import
+} from "shared_components/ui/select";
 import { Save } from "lucide-react";
 import { toast } from "sonner";
 import {

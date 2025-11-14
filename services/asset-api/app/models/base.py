@@ -18,7 +18,7 @@ class BaseModel(Base):
 
     # UUID as primary key (stored as CHAR(32) without dashes for efficiency)
     id = Column(
-        String(32),
+        String(36),
         primary_key=True,
         index=True,
         default=generate_uuid,

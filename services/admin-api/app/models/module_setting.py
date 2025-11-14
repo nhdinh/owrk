@@ -79,7 +79,7 @@ class ModuleSetting(BaseModel):
     validation_rules = Column(Text, nullable=True)  # JSON string with validation rules
 
     # Audit field (UUID reference)
-    updated_by = Column(String(32), nullable=True)  # User UUID
+    updated_by = Column(String(36), nullable=True)  # User UUID
 
     def __repr__(self):
         return f"<ModuleSetting(module='{self.module_name}', key='{self.setting_key}')>"

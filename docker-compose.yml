@@ -34,7 +34,7 @@ services:
       - ./.mysql_db:/var/lib/mysql
     networks:
       - backend
-    command: --default-authentication-plugin=caching_sha2_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    command: mysqld # --default-authentication-plugin=caching_sha2_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     healthcheck:
       test:
         [
@@ -215,7 +215,7 @@ services:
       AD_BIND_PASSWORD: ad_password
       AD_SEARCH_BASE: OU=Users,DC=company,DC=local
     volumes:
-      - ./services/auth-api/:/app/:ro
+      - ./services/auth-api/:/app/
     depends_on:
       mysql:
         condition: service_healthy
@@ -264,7 +264,7 @@ services:
       DEPRECIATION_DAY_OF_MONTH: 1
       AUTH_SERVICE_URL: http://auth-api:8000
     volumes:
-      - ./services/asset-api/:/app/:ro
+      - ./services/asset-api/:/app/
       - asset-uploads:/uploads
     depends_on:
       mysql:
@@ -323,7 +323,7 @@ services:
       HEALTHCHECK: /health
       ALLOWED_ORIGINS: "http://localhost:3000,http://localhost:8000"
     volumes:
-      - ./services/procurement-api/:/app/:ro
+      - ./services/procurement-api/:/app/
     depends_on:
       mysql:
         condition: service_healthy
@@ -375,7 +375,7 @@ services:
       SERVICE_REGISTRY_URL: http://service-registry:3000
       AUTH_SERVICE_URL: http://auth-api:8000
     volumes:
-      - ./services/admin-api/:/app/:ro
+      - ./services/admin-api/:/app/
     depends_on:
       mysql:
         condition: service_healthy

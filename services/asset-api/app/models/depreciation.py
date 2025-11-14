@@ -19,7 +19,7 @@ class AssetDepreciationRecord(BaseModel):
     )
 
     asset_id = Column(
-        String(32),
+        String(36),
         ForeignKey("asset_db.assets.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
@@ -35,7 +35,7 @@ class AssetDepreciationRecord(BaseModel):
     accumulated_depreciation = Column(Numeric(15, 2), nullable=False)
 
     # Audit field
-    calculated_by = Column(String(32), nullable=True)  # User UUID who ran calculation
+    calculated_by = Column(String(36), nullable=True)  # User UUID who ran calculation
 
     # Relationships
     asset = relationship("Asset", back_populates="depreciation_records")
