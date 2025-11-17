@@ -172,25 +172,125 @@ echo "=========================================="
 echo "Step 8: Seeding Initial Data"
 echo "=========================================="
 
-echo "🌱 Creating seed data..."
+echo "🌱 Creating default roles..."
 
-# Create seed data SQL
+# Create roles first
 docker compose exec -T mysql mysql -uofficework -p$(cat .secrets/mysql_user_passwd.txt) auth_db <<'EOF'
--- Insert admin role
+-- Insert default roles
 INSERT INTO roles (id, slug, name, display_name, description, is_active, is_system_role, version, created_at, updated_at)
-VALUES (
-    UUID(),
-    'admin',
-    'admin',
-    'Administrator',
-    'Full system access',
-    TRUE,
-    TRUE,
-    1,
-    NOW(),
-    NOW()
-);
+VALUES
+  (UUID(), 'admin', 'admin', 'Administrator', 'Full system access with all permissions', TRUE, TRUE, 1, NOW(), NOW()),
+  (UUID(), 'manager', 'manager', 'Manager', 'Department manager with approval rights', TRUE, TRUE, 1, NOW(), NOW()),
+  (UUID(), 'user', 'user', 'Standard User', 'Regular user with basic permissions', TRUE, TRUE, 1, NOW(), NOW()),
+  (UUID(), 'viewer', 'viewer', 'Viewer', 'Read-only access to system', TRUE, TRUE, 1, NOW(), NOW());
+EOF
 
+echo "✅ Default roles created (admin, manager, user, viewer)"
+
+echo "🌱 Creating permissions..."
+
+# Create permissions
+docker compose exec -T mysql mysql -uofficework -p$(cat .secrets/mysql_user_passwd.txt) auth_db <<'EOF'
+-- Insert permissions
+INSERT INTO permissions (id, slug, name, resource, action, description, created_at, updated_at)
+VALUES
+  -- User permissions
+  (UUID(), 'user-read', 'user:read', 'user', 'read', 'View users', NOW(), NOW()),
+  (UUID(), 'user-create', 'user:create', 'user', 'create', 'Create users', NOW(), NOW()),
+  (UUID(), 'user-update', 'user:update', 'user', 'update', 'Update users', NOW(), NOW()),
+  (UUID(), 'user-delete', 'user:delete', 'user', 'delete', 'Delete users', NOW(), NOW()),
+
+  -- Role permissions
+  (UUID(), 'role-read', 'role:read', 'role', 'read', 'View roles', NOW(), NOW()),
+  (UUID(), 'role-create', 'role:create', 'role', 'create', 'Create roles', NOW(), NOW()),
+  (UUID(), 'role-update', 'role:update', 'role', 'update', 'Update roles', NOW(), NOW()),
+  (UUID(), 'role-delete', 'role:delete', 'role', 'delete', 'Delete roles', NOW(), NOW()),
+
+  -- Asset permissions
+  (UUID(), 'asset-read', 'asset:read', 'asset', 'read', 'View assets', NOW(), NOW()),
+  (UUID(), 'asset-create', 'asset:create', 'asset', 'create', 'Create assets', NOW(), NOW()),
+  (UUID(), 'asset-update', 'asset:update', 'asset', 'update', 'Update assets', NOW(), NOW()),
+  (UUID(), 'asset-delete', 'asset:delete', 'asset', 'delete', 'Delete assets', NOW(), NOW()),
+
+  -- Assignment permissions
+  (UUID(), 'assignment-read', 'assignment:read', 'assignment', 'read', 'View assignments', NOW(), NOW()),
+  (UUID(), 'assignment-create', 'assignment:create', 'assignment', 'create', 'Create assignments', NOW(), NOW()),
+  (UUID(), 'assignment-update', 'assignment:update', 'assignment', 'update', 'Update assignments', NOW(), NOW()),
+  (UUID(), 'assignment-delete', 'assignment:delete', 'assignment', 'delete', 'Delete assignments', NOW(), NOW()),
+
+  -- Category permissions
+  (UUID(), 'category-read', 'category:read', 'category', 'read', 'View categories', NOW(), NOW()),
+  (UUID(), 'category-create', 'category:create', 'category', 'create', 'Create categories', NOW(), NOW()),
+  (UUID(), 'category-update', 'category:update', 'category', 'update', 'Update categories', NOW(), NOW()),
+  (UUID(), 'category-delete', 'category:delete', 'category', 'delete', 'Delete categories', NOW(), NOW()),
+
+  -- Department permissions
+  (UUID(), 'department-read', 'department:read', 'department', 'read', 'View departments', NOW(), NOW()),
+  (UUID(), 'department-create', 'department:create', 'department', 'create', 'Create departments', NOW(), NOW()),
+  (UUID(), 'department-update', 'department:update', 'department', 'update', 'Update departments', NOW(), NOW()),
+  (UUID(), 'department-delete', 'department:delete', 'department', 'delete', 'Delete departments', NOW(), NOW()),
+
+  -- Procurement permissions
+  (UUID(), 'vendor-read', 'vendor:read', 'vendor', 'read', 'View vendors', NOW(), NOW()),
+  (UUID(), 'vendor-create', 'vendor:create', 'vendor', 'create', 'Create vendors', NOW(), NOW()),
+  (UUID(), 'vendor-update', 'vendor:update', 'vendor', 'update', 'Update vendors', NOW(), NOW()),
+  (UUID(), 'vendor-delete', 'vendor:delete', 'vendor', 'delete', 'Delete vendors', NOW(), NOW()),
+  (UUID(), 'purchase-request-read', 'purchase_request:read', 'purchase_request', 'read', 'View purchase requests', NOW(), NOW()),
+  (UUID(), 'purchase-request-create', 'purchase_request:create', 'purchase_request', 'create', 'Create purchase requests', NOW(), NOW()),
+  (UUID(), 'purchase-request-update', 'purchase_request:update', 'purchase_request', 'update', 'Update purchase requests', NOW(), NOW()),
+  (UUID(), 'purchase-request-delete', 'purchase_request:delete', 'purchase_request', 'delete', 'Delete purchase requests', NOW(), NOW()),
+  (UUID(), 'purchase-request-approve', 'purchase_request:approve', 'purchase_request', 'approve', 'Approve purchase requests', NOW(), NOW()),
+  (UUID(), 'purchase-order-read', 'purchase_order:read', 'purchase_order', 'read', 'View purchase orders', NOW(), NOW()),
+  (UUID(), 'purchase-order-create', 'purchase_order:create', 'purchase_order', 'create', 'Create purchase orders', NOW(), NOW()),
+  (UUID(), 'purchase-order-update', 'purchase_order:update', 'purchase_order', 'update', 'Update purchase orders', NOW(), NOW()),
+  (UUID(), 'purchase-order-delete', 'purchase_order:delete', 'purchase_order', 'delete', 'Delete purchase orders', NOW(), NOW());
+EOF
+
+echo "✅ Permissions created (36 permissions across all modules)"
+
+echo "🌱 Assigning permissions to roles..."
+
+# Assign permissions to roles
+docker compose exec -T mysql mysql -uofficework -p$(cat .secrets/mysql_user_passwd.txt) auth_db <<'EOF'
+-- Assign all permissions to admin role
+INSERT INTO role_permissions (role_id, permission_id)
+SELECT
+  (SELECT id FROM roles WHERE slug = 'admin') as role_id,
+  id as permission_id
+FROM permissions;
+
+-- Assign read permissions and some write permissions to manager role
+INSERT INTO role_permissions (role_id, permission_id)
+SELECT
+  (SELECT id FROM roles WHERE slug = 'manager') as role_id,
+  id as permission_id
+FROM permissions
+WHERE action IN ('read', 'create', 'update', 'approve');
+
+-- Assign read and limited write permissions to user role
+INSERT INTO role_permissions (role_id, permission_id)
+SELECT
+  (SELECT id FROM roles WHERE slug = 'user') as role_id,
+  id as permission_id
+FROM permissions
+WHERE action IN ('read', 'create')
+  AND resource NOT IN ('user', 'role');
+
+-- Assign only read permissions to viewer role
+INSERT INTO role_permissions (role_id, permission_id)
+SELECT
+  (SELECT id FROM roles WHERE slug = 'viewer') as role_id,
+  id as permission_id
+FROM permissions
+WHERE action = 'read';
+EOF
+
+echo "✅ Role permissions assigned"
+
+echo "🌱 Creating default admin user..."
+
+# Create admin user
+docker compose exec -T mysql mysql -uofficework -p$(cat .secrets/mysql_user_passwd.txt) auth_db <<'EOF'
 -- Get the admin role ID
 SET @admin_role_id = (SELECT id FROM roles WHERE slug = 'admin');
 
@@ -202,7 +302,7 @@ VALUES (
     'admin@example.com',
     'admin',
     'System Administrator',
-    '\$2b\$12\$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY0uktBLLjG0Upi',  -- password: admin123
+    '\$2b\$12\$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY0uktBLLjG0Upi',
     'local',
     TRUE,
     TRUE,
@@ -217,7 +317,33 @@ VALUES (
 );
 EOF
 
-echo "✅ Seed data created"
+echo "✅ Admin user created (admin@example.com / admin123)"
+
+echo "🌱 Displaying seeded data summary..."
+
+# Display summary
+docker compose exec -T mysql mysql -uofficework -p$(cat .secrets/mysql_user_passwd.txt) auth_db <<'EOF'
+-- Roles Created
+SELECT slug, name, display_name, is_system_role FROM roles ORDER BY slug;
+
+-- Total Permissions
+SELECT COUNT(*) as total_permissions FROM permissions;
+
+-- Permissions by Role
+SELECT
+  r.slug as role,
+  r.display_name as role_name,
+  COUNT(rp.permission_id) as permission_count
+FROM roles r
+LEFT JOIN role_permissions rp ON r.id = rp.role_id
+GROUP BY r.id, r.slug, r.display_name
+ORDER BY r.slug;
+
+-- Admin User
+SELECT slug, email, full_name, is_active, is_superuser FROM users WHERE slug = 'admin';
+EOF
+
+echo "✅ All seed data created successfully"
 
 echo ""
 echo "=========================================="
@@ -270,8 +396,12 @@ echo "📋 Summary:"
 echo "  - Database backups saved to: $BACKUP_DIR"
 echo "  - All databases recreated with UUID primary keys"
 echo "  - All tables have slug fields for URL-friendly identifiers"
-echo "  - Admin user created: admin@example.com / admin123"
-echo "  - Admin role created with full permissions"
+echo ""
+echo "  🔐 Seeded Data:"
+echo "  - 4 System Roles: admin, manager, user, viewer"
+echo "  - 36 Permissions across all modules (user, role, asset, procurement, etc.)"
+echo "  - Admin user: admin@example.com / admin123 (full permissions)"
+echo "  - Role-based access control configured"
 echo ""
 echo "💾 Backup Information:"
 echo "  - Location: $BACKUP_DIR"
