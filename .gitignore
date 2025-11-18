@@ -99,3 +99,4 @@ backups/
 .serena
 .init.sql
 .config
+.influxdb_*

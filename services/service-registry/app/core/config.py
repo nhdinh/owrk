@@ -44,9 +44,16 @@ class Settings(BaseSettings):
 
     SERVICE_HEALTH_CHECK: HealthCheckMethods = HealthCheckMethods.HTTPX
 
-    REDIS_HOST: str = "localhost"
-    REDIS_PORT: int = 6379
-    REDIS_DB: int = 0
+    # Redis - Real-time storage
+    REDIS_HOST: str = os.getenv("REDIS_HOST", "localhost")
+    REDIS_PORT: int = int(os.getenv("REDIS_PORT", "6379"))
+    REDIS_DB: int = int(os.getenv("REDIS_DB", "0"))
+
+    # InfluxDB - Time-series metrics
+    INFLUXDB_URL: str = os.getenv("INFLUXDB_URL", "http://localhost:8086")
+    INFLUXDB_TOKEN: str = os.getenv("INFLUXDB_TOKEN", "my-super-secret-auth-token")
+    INFLUXDB_ORG: str = os.getenv("INFLUXDB_ORG", "officework")
+    INFLUXDB_BUCKET: str = os.getenv("INFLUXDB_BUCKET", "service_metrics")
 
     class Config:
         env_file = ".env"

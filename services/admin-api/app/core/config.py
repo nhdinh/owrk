@@ -14,6 +14,13 @@ class Settings:
     APP_NAME: str = "Admin Management Service"
     DEBUG: bool = os.getenv("DEBUG", "False").lower() == "true"
     API_PREFIX: str = "/api/v1"
+    SERVICE_NAME: str = "admin-api"
+    SERVICE_HOSTNAME: str = "admin-api"
+    SERVICE_PORT: int = 8000
+    SERVICE_HEALTH_ENDPOINT: str = "/health"
+
+    # Service Registry
+    SERVICE_REGISTRY_URL: str = os.getenv("SERVICE_REGISTRY_URL", "http://service-registry:3000")
 
     # Database - MySQL
     DATABASE_USER: str = os.getenv("DATABASE_USER", "officework")

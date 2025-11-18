@@ -91,6 +91,32 @@ services:
       retries: 5
     command: redis-server --appendonly yes
 
+  # InfluxDB - Time-Series Database (for service metrics & monitoring)
+  influxdb:
+    image: influxdb:2.7-alpine
+    container_name: influxdb
+    ports:
+      - "8086:8086"
+    environment:
+      DOCKER_INFLUXDB_INIT_MODE: setup
+      DOCKER_INFLUXDB_INIT_USERNAME: admin
+      DOCKER_INFLUXDB_INIT_PASSWORD: adminpassword123
+      DOCKER_INFLUXDB_INIT_ORG: officework
+      DOCKER_INFLUXDB_INIT_BUCKET: service_metrics
+      DOCKER_INFLUXDB_INIT_RETENTION: 90d
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: my-super-secret-auth-token
+    volumes:
+      - ./.influxdb_data:/var/lib/influxdb2
+      - ./.influxdb_config:/etc/influxdb2
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD", "influx", "ping"]
+      interval: 1m
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
   # RabbitMQ - Message Queue (for CQRS & Event-Driven)
   rabbitmq:
     image: rabbitmq:3-management-alpine
@@ -176,12 +202,28 @@ services:
     environment:
       SERVICES_CACHE_FILE: /services.json
       MONGO_PASSWD_FILE: /run/secrets/mongo_passwd
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      INFLUXDB_URL: http://influxdb:8086
+      INFLUXDB_TOKEN: my-super-secret-auth-token
+      INFLUXDB_ORG: officework
+      INFLUXDB_BUCKET: service_metrics
+    depends_on:
+      redis:
+        condition: service_healthy
+      influxdb:
+        condition: service_healthy
     networks:
       - backend
     restart: unless-stopped
     volumes:
-      - ./services/service-registry/:/app/:ro
       - ./.config/services.json:/services.json
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
   # Auth Service
   auth-api:
@@ -581,6 +623,8 @@ services:
     container_name: shared-components
     ports:
       - "3400:80"
+    volumes:
+      - ./services/shared-components/src/config/navigation.yaml:/usr/share/nginx/html/navigation.yaml:ro
     networks:
       - backend
     restart: unless-stopped
@@ -621,36 +665,6 @@ services:
       timeout: 5s
       retries: 3
       start_period: 10s
-
-  # Procurement Service
-  # procurement-service:
-  #   build:
-  #     context: ./services/procurement
-  #     dockerfile: Dockerfile
-  #   container_name: procurement-service
-  #   environment:
-  #     - DATABASE_URL=postgresql://admin:secret123@postgres:5432/offwrk_management
-  #     - MONGODB_URL=mongodb://admin:secret123@mongodb:27017/
-  #     - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
-  #     - REDIS_URL=redis://redis:6379
-  #     - AUTH_SERVICE_URL=http://auth-service:8000
-  #     - offwrk_SERVICE_URL=http://asset-service:8000
-  #     - ENVIRONMENT=development
-  #   depends_on:
-  #     postgres:
-  #       condition: service_healthy
-  #     mongodb:
-  #       condition: service_healthy
-  #     rabbitmq:
-  #       condition: service_healthy
-  #   networks:
-  #     - backend
-  #   restart: unless-stopped
-  #   healthcheck:
-  #     test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-  #     interval: 1m
-  #     timeout: 10s
-  #     retries: 3
 
   # Maintenance Service
   # maintenance-service:

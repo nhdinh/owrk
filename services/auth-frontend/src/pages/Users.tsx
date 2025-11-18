@@ -109,7 +109,7 @@ export default function Users() {
         skip: (page - 1) * pageSize,
         limit: pageSize,
         search: search || undefined,
-        role_id: roleFilter ? parseInt(roleFilter) : undefined,
+        role_id: roleFilter || undefined,
         is_active: statusFilter ? statusFilter === "active" : undefined,
       }),
   });
@@ -119,7 +119,7 @@ export default function Users() {
     queryFn: () => roleAPI.list(),
   });
 
-  const handleDelete = async (userId: number) => {
+  const handleDelete = async (userId: string) => {
     if (!confirm("Are you sure you want to delete this user?")) return;
 
     try {
@@ -140,7 +140,7 @@ export default function Users() {
         full_name: data.full_name,
         password: data.password,
         username: data.username,
-        role_id: data.role_id ? parseInt(data.role_id) : undefined,
+        role_id: data.role_id || undefined,
         phone_number: data.phone_number,
         position: data.position,
       });

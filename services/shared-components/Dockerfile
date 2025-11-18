@@ -21,6 +21,9 @@ FROM nginx:alpine
 # Copy built assets from builder
 COPY --from=builder /app/dist /usr/share/nginx/html
 
+# Copy navigation.yaml for runtime loading
+COPY --from=builder /app/src/config/navigation.yaml /usr/share/nginx/html/navigation.yaml
+
 # Copy nginx configuration
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 

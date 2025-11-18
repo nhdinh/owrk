@@ -20,8 +20,8 @@ interface UserCreateData {
   username?: string;
   full_name: string;
   password: string;
-  role_id?: number;
-  department_id?: number;
+  role_id?: string;
+  department_id?: string;
   phone_number?: string;
   position?: string;
   address?: string;
@@ -33,8 +33,8 @@ interface UserUpdateData {
   email?: string;
   username?: string;
   full_name?: string;
-  role_id?: number;
-  department_id?: number;
+  role_id?: string;
+  department_id?: string;
   phone_number?: string;
   position?: string;
   address?: string;
@@ -46,8 +46,8 @@ interface UserListParams {
   skip?: number;
   limit?: number;
   search?: string;
-  role_id?: number;
-  department_id?: number;
+  role_id?: string;
+  department_id?: string;
   is_active?: boolean;
   is_superuser?: boolean;
 }
@@ -57,7 +57,7 @@ export const userAPI = {
     const response = await apiClient.get('/users', { params });
     return response.data;
   },
-  get: async (id: number): Promise<User> => {
+  get: async (id: string): Promise<User> => {
     const response = await apiClient.get(`/users/${id}`);
     return response.data;
   },
@@ -65,23 +65,23 @@ export const userAPI = {
     const response = await apiClient.post('/users', data);
     return response.data;
   },
-  update: async (id: number, data: UserUpdateData): Promise<User> => {
+  update: async (id: string, data: UserUpdateData): Promise<User> => {
     const response = await apiClient.put(`/users/${id}`, data);
     return response.data;
   },
-  delete: async (id: number): Promise<void> => {
+  delete: async (id: string): Promise<void> => {
     await apiClient.delete(`/users/${id}`);
   },
-  activate: async (id: number): Promise<void> => {
+  activate: async (id: string): Promise<void> => {
     await apiClient.post(`/users/${id}/activate`);
   },
-  deactivate: async (id: number): Promise<void> => {
+  deactivate: async (id: string): Promise<void> => {
     await apiClient.post(`/users/${id}/deactivate`);
   },
-  resetPassword: async (id: number, newPassword: string): Promise<void> => {
+  resetPassword: async (id: string, newPassword: string): Promise<void> => {
     await apiClient.post(`/users/${id}/reset-password`, { new_password: newPassword });
   },
-  unlock: async (id: number): Promise<void> => {
+  unlock: async (id: string): Promise<void> => {
     await apiClient.post(`/users/${id}/unlock`);
   },
 };

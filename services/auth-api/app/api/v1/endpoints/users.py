@@ -5,6 +5,7 @@ User Management API Endpoints
 import logging
 from fastapi import APIRouter, Depends, HTTPException, status
 from typing import List
+from uuid import UUID
 
 from app.schemas.user_schema import (
     UserCreate,
@@ -15,6 +16,7 @@ from app.schemas.user_schema import (
 from app.core.dependencies import get_current_user, require_permission, require_role
 from app.core.unit_of_work import UnitOfWork
 from app.core.security import hash_password, verify_password
+from app.core.authorization import check_role_hierarchy, check_role_assignment_hierarchy
 from app.models.user import User
 
 logger = logging.getLogger(__name__)
@@ -114,7 +116,7 @@ async def get_active_users(
 
 @router.get("/{user_id}")
 async def get_user(
-    user_id: int, current_user: User = Depends(require_permission("user:read"))
+    user_id: UUID, current_user: User = Depends(require_permission("user:read"))
 ):
     """
     Get user by ID
@@ -236,13 +238,18 @@ async def create_user(
 
 @router.put("/{user_id}", response_model=UserResponse)
 async def update_user(
-    user_id: int,
+    user_id: str,
     user_data: UserUpdate,
     current_user: User = Depends(require_permission("user:update")),
 ):
     """
     Update user
     Requires 'user:update' permission
+
+    Role Hierarchy Protection:
+    - Users can only modify users with lower role hierarchy
+    - Users can only assign roles with lower or equal hierarchy to their own
+    - Superusers bypass all hierarchy checks
     """
     with UnitOfWork() as uow:
         user = uow.users.get_by_id(user_id)
@@ -250,6 +257,13 @@ async def update_user(
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
             )
+
+        # Check role hierarchy - current user must have higher hierarchy than target user
+        check_role_hierarchy(current_user, user, operation="update")
+
+        # If changing role, check if current user can assign the new role
+        if user_data.role_id is not None and user_data.role_id != user.role_id:
+            check_role_assignment_hierarchy(current_user, user_data.role_id, uow)
 
         # Update fields if provided
         if user_data.email is not None:
@@ -338,11 +352,14 @@ async def update_user(
 
 @router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_user(
-    user_id: int, current_user: User = Depends(require_permission("user:delete"))
+    user_id: str, current_user: User = Depends(require_permission("user:delete"))
 ):
     """
     Delete user (soft delete - set inactive)
     Requires 'user:delete' permission
+
+    Role Hierarchy Protection:
+    - Users can only delete users with lower role hierarchy
     """
     with UnitOfWork() as uow:
         user = uow.users.get_by_id(user_id)
@@ -358,6 +375,9 @@ async def delete_user(
                 status_code=status.HTTP_400_BAD_REQUEST, detail="Cannot delete yourself"
             )
 
+        # Check role hierarchy
+        check_role_hierarchy(current_user, user, operation="delete")
+
         # Soft delete - set inactive
         user.is_active = False
         uow.users.update(user)
@@ -368,11 +388,14 @@ async def delete_user(
 
 @router.post("/{user_id}/activate", response_model=UserResponse)
 async def activate_user(
-    user_id: int, current_user: User = Depends(require_permission("user:update"))
+    user_id: str, current_user: User = Depends(require_permission("user:update"))
 ):
     """
     Activate user account
     Requires 'user:update' permission
+
+    Role Hierarchy Protection:
+    - Users can only activate users with lower role hierarchy
     """
     with UnitOfWork() as uow:
         user = uow.users.get_by_id(user_id)
@@ -380,6 +403,9 @@ async def activate_user(
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
             )
+
+        # Check role hierarchy
+        check_role_hierarchy(current_user, user, operation="activate")
 
         user.is_active = True
         updated_user = uow.users.update(user)
@@ -426,11 +452,14 @@ async def activate_user(
 
 @router.post("/{user_id}/deactivate", response_model=UserResponse)
 async def deactivate_user(
-    user_id: int, current_user: User = Depends(require_permission("user:update"))
+    user_id: str, current_user: User = Depends(require_permission("user:update"))
 ):
     """
     Deactivate user account
     Requires 'user:update' permission
+
+    Role Hierarchy Protection:
+    - Users can only deactivate users with lower role hierarchy
     """
     with UnitOfWork() as uow:
         user = uow.users.get_by_id(user_id)
@@ -448,6 +477,9 @@ async def deactivate_user(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Cannot deactivate yourself",
             )
+
+        # Check role hierarchy
+        check_role_hierarchy(current_user, user, operation="deactivate")
 
         user.is_active = False
         updated_user = uow.users.update(user)
@@ -494,7 +526,7 @@ async def deactivate_user(
 
 @router.post("/{user_id}/unlock", response_model=UserResponse)
 async def unlock_user(
-    user_id: int, current_user: User = Depends(require_role("admin"))
+    user_id: str, current_user: User = Depends(require_role("admin"))
 ):
     """
     Unlock user account

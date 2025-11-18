@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from app.core.dependencies import require_permission
 from app.core.unit_of_work import UnitOfWork
 from app.models.user import User
-from app.models.role import Role, Permission
+from app.models.role import Role
 from app.schemas.role_schema import RoleCreate, RoleUpdate, RoleResponse
 
 
@@ -64,7 +64,7 @@ async def get_roles(current_user: User = Depends(require_permission("role:read")
 
 @router.get("/{role_id}")
 async def get_role(
-    role_id: int, current_user: User = Depends(require_permission("role:read"))
+    role_id: str, current_user: User = Depends(require_permission("role:read"))
 ):
     """
     Get role by ID

@@ -13,6 +13,7 @@ from apscheduler.triggers.cron import CronTrigger
 from app.core.config import settings
 from app.api.v1.router import api_router
 from app.services.depreciation_service import DepreciationService
+from app.core.service_discovery import register_service
 
 # Configure logging
 logging.basicConfig(
@@ -56,15 +57,8 @@ async def lifespan(app: FastAPI):
     # Startup
     logger.info("Starting Asset Management Service...")
 
-    async with httpx.AsyncClient() as client:
-        data = {
-            "name": settings.SERVICE_NAME,
-            "hostname": settings.SERVICE_HOSTNAME,
-            "port": settings.SERVICE_PORT,
-            "health_endpoint": "/health",
-        }
-        headers = {"Content-Type": "application/json"}
-        httpx.post("http://service-registry:3000/register", json=data)
+    # Register with service registry
+    await register_service()
 
     # Start scheduler only if not in testing mode
     if not settings.TESTING:
@@ -123,6 +117,116 @@ async def root():
         "message": "Asset Management Service API",
         "docs": "/docs",
         "health": "/health",
+    }
+
+
+@app.get("/permissions")
+async def get_service_permissions():
+    """
+    Get all permissions owned by asset-api for permission discovery.
+
+    This endpoint is used by the permission sync service to discover
+    and sync permissions from this service.
+    """
+    ASSET_PERMISSIONS = [
+        {
+            "code": "asset:create",
+            "name": "Create Assets",
+            "resource": "asset",
+            "action": "create",
+            "description": "Create new assets in the system",
+        },
+        {
+            "code": "asset:read",
+            "name": "View Assets",
+            "resource": "asset",
+            "action": "read",
+            "description": "View asset details and list assets",
+        },
+        {
+            "code": "asset:update",
+            "name": "Update Assets",
+            "resource": "asset",
+            "action": "update",
+            "description": "Modify existing asset information",
+        },
+        {
+            "code": "asset:delete",
+            "name": "Delete Assets",
+            "resource": "asset",
+            "action": "delete",
+            "description": "Remove assets from the system",
+        },
+        {
+            "code": "asset:assign",
+            "name": "Assign Assets",
+            "resource": "asset",
+            "action": "assign",
+            "description": "Assign assets to users or locations",
+        },
+        {
+            "code": "asset:transfer",
+            "name": "Transfer Assets",
+            "resource": "asset",
+            "action": "transfer",
+            "description": "Transfer assets between users or locations",
+        },
+        {
+            "code": "asset:maintain",
+            "name": "Maintain Assets",
+            "resource": "asset",
+            "action": "maintain",
+            "description": "Record asset maintenance activities",
+        },
+        {
+            "code": "category:create",
+            "name": "Create Categories",
+            "resource": "category",
+            "action": "create",
+            "description": "Create new asset categories",
+        },
+        {
+            "code": "category:read",
+            "name": "View Categories",
+            "resource": "category",
+            "action": "read",
+            "description": "View category details and list categories",
+        },
+        {
+            "code": "category:update",
+            "name": "Update Categories",
+            "resource": "category",
+            "action": "update",
+            "description": "Modify existing categories",
+        },
+        {
+            "code": "category:delete",
+            "name": "Delete Categories",
+            "resource": "category",
+            "action": "delete",
+            "description": "Remove categories from the system",
+        },
+        {
+            "code": "depreciation:read",
+            "name": "View Depreciation",
+            "resource": "depreciation",
+            "action": "read",
+            "description": "View depreciation records and schedules",
+        },
+        {
+            "code": "depreciation:calculate",
+            "name": "Calculate Depreciation",
+            "resource": "depreciation",
+            "action": "calculate",
+            "description": "Trigger depreciation calculations",
+        },
+    ]
+
+    return {
+        "service": "asset-api",
+        "version": "1.0.0",
+        "description": "Asset Management Service",
+        "permissions": ASSET_PERMISSIONS,
     }
 
 

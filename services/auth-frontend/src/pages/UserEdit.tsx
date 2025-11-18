@@ -40,7 +40,7 @@ export default function UserEdit() {
   // Fetch user data
   const { data: user, isLoading: userLoading } = useQuery({
     queryKey: ["user", id],
-    queryFn: () => userAPI.get(parseInt(id!)),
+    queryFn: () => userAPI.get(id!),
     enabled: !!id,
   });
 
@@ -58,7 +58,7 @@ export default function UserEdit() {
     phone_number: "",
     position: "",
     address: "",
-    role_id: undefined as number | undefined,
+    role_id: undefined as string | undefined,
     is_active: true,
   });
 
@@ -80,7 +80,7 @@ export default function UserEdit() {
 
   // Update mutation
   const updateMutation = useMutation({
-    mutationFn: (data: typeof formData) => userAPI.update(parseInt(id!), data),
+    mutationFn: (data: typeof formData) => userAPI.update(id!, data),
     onSuccess: () => {
       toast.success("User updated successfully");
       navigate(`/users/${id}`);
@@ -257,11 +257,11 @@ export default function UserEdit() {
                 <div className="space-y-2">
                   <Label htmlFor="role">Role</Label>
                   <Select
-                    value={formData.role_id?.toString() || "none"}
+                    value={formData.role_id || "none"}
                     onValueChange={(value) =>
                       handleChange(
                         "role_id",
-                        value === "none" ? undefined : parseInt(value)
+                        value === "none" ? undefined : value
                       )
                     }
                   >
@@ -271,7 +271,7 @@ export default function UserEdit() {
                     <SelectContent>
                       <SelectItem value="none">No Role</SelectItem>
                       {rolesData?.roles.map((role) => (
-                        <SelectItem key={role.id} value={role.id.toString()}>
+                        <SelectItem key={role.id} value={role.id}>
                           {role.display_name}
                         </SelectItem>
                       ))}

@@ -35,6 +35,10 @@ class Role(Base):
     is_active = Column(Boolean, default=True, nullable=False)
     is_system_role = Column(Boolean, default=False, nullable=False)  # Cannot be deleted
 
+    # Hierarchy (for role-based access control)
+    # Higher level = more privileged. Super Admin: 100, Admin: 90, Manager: 50, User: 10
+    hierarchy_level = Column(Integer, default=10, nullable=False)
+
     # Versioning (for history tracking)
     version = Column(Integer, default=1, nullable=False)  # Incremented on each update
 
@@ -71,6 +75,9 @@ class Permission(Base):
         String(50), nullable=False
     )  # e.g., 'create', 'read', 'update', 'delete'
     description = Column(Text, nullable=True)
+
+    # Service ownership (which microservice owns this permission)
+    service = Column(String(50), nullable=True)  # e.g., 'auth-api', 'asset-api', 'procurement-api'
 
     # Relationships
     roles = relationship(

@@ -45,7 +45,13 @@
       "Bash(chmod:*)",
       "Bash(/tmp/test_procurement.sh)",
       "Bash(bash c:Usersnhdinhdevofficeworktest_procurement.sh)",
-      "Bash(bash:*)"
+      "Bash(bash:*)",
+      "Bash(TEMP_TOKEN=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmZWNjM2MzZC1jMzY4LTExZjAtODNlMi01NjIwNzcwY2Q2NTUiLCJlbWFpbCI6ImFkbWluQGV4YW1wbGUuY29tIiwiZXhwIjoxNzYzMzUzMjg5LCJpYXQiOjE3NjMzNTI5ODksInR5cGUiOiJ0ZW1wIn0.gNUXtUAAQx_6Qv-6eKfU7XCH-SI62MSFqD43d9Acj_c\")",
+      "Bash(rm:*)",
+      "Bash(for SERVICE in asset-api procurement-api admin-api)",
+      "Bash(/c/Users/nhdinh/dev/officework/services/$SERVICE/app/core/service_discovery.py)",
+      "Bash(docker logs:*)",
+      "Bash(git -C /c/Users/nhdinh/dev/officework status app/api/v1/endpoints/users.py)"
     ],
     "deny": [],
     "ask": [],

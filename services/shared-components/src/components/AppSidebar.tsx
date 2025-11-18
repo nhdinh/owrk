@@ -16,11 +16,11 @@ import {
   Wrench,
   HandCoins,
   Trash,
-} from 'lucide-react';
-import { useState } from 'react';
-import yaml from 'js-yaml';
-import navigationConfig from '../config/navigation.yaml?raw';
-import { useAuth } from '../contexts/AuthContext';
+  Monitor,
+} from "lucide-react";
+import { useState, useEffect } from "react";
+import yaml from "js-yaml";
+import { useAuth } from "../contexts/AuthContext";
 
 // Icon mapping
 const iconMap: Record<string, any> = {
@@ -36,6 +36,7 @@ const iconMap: Record<string, any> = {
   Wrench,
   HandCoins,
   Trash,
+  Monitor,
 };
 
 interface SubMenuItem {
@@ -59,15 +60,21 @@ interface NavigationConfig {
 }
 
 export interface AppSidebarProps {
-  currentService?: 'dashboard' | 'auth' | 'assets' | 'procurement' | 'maintenance' | 'users' | 'admin';
+  currentService?:
+    | "dashboard"
+    | "auth"
+    | "assets"
+    | "procurement"
+    | "maintenance"
+    | "users"
+    | "admin";
   user?: any;
   isLoading?: boolean;
   onLogout?: () => void;
 }
 
-
 export function AppSidebar({
-  currentService = 'dashboard',
+  currentService = "dashboard",
   user: propUser,
   isLoading: propIsLoading,
   onLogout: propOnLogout,
@@ -77,14 +84,76 @@ export function AppSidebar({
 
   // Use props if provided, otherwise fallback to AuthContext
   const user = propUser !== undefined ? propUser : authContext.user;
-  const isLoading = propIsLoading !== undefined ? propIsLoading : authContext.isLoading;
+  const isLoading =
+    propIsLoading !== undefined ? propIsLoading : authContext.isLoading;
   const logout = propOnLogout || authContext.logout;
   const [isOpen, setIsOpen] = useState(false);
-  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set([currentService]));
+  const [expandedItems, setExpandedItems] = useState<Set<string>>(
+    new Set([currentService])
+  );
+  const [navigation, setNavigation] = useState<NavItem[]>([]);
+  const [navLoading, setNavLoading] = useState(true);
 
-  // Parse YAML configuration
-  const config = yaml.load(navigationConfig) as NavigationConfig;
-  const navigation = config.navigation;
+  // Fetch navigation configuration at runtime
+  useEffect(() => {
+    const fetchNavigation = async () => {
+      try {
+        // Try /shared/navigation.yaml first (API gateway path)
+        let response = await fetch("/shared/navigation.yaml");
+
+        // If not found, try /navigation.yaml (direct access)
+        if (!response.ok) {
+          response = await fetch("/navigation.yaml");
+        }
+
+        if (!response.ok) {
+          throw new Error(
+            `Failed to fetch navigation.yaml: ${response.status}`
+          );
+        }
+
+        const yamlText = await response.text();
+        const config = yaml.load(yamlText) as NavigationConfig;
+        setNavigation(config.navigation);
+      } catch (error) {
+        console.error("Failed to load navigation config:", error);
+        // Fallback to empty navigation
+        setNavigation([]);
+      } finally {
+        setNavLoading(false);
+      }
+    };
+
+    fetchNavigation();
+  }, []);
+
+  // Auto-expand menus when navigation is loaded and current path matches a submenu item
+  useEffect(() => {
+    if (navigation.length === 0) return;
+
+    const newExpanded = new Set<string>();
+    const currentPath = typeof window !== 'undefined' ? window.location.pathname : '';
+
+    navigation.forEach((item) => {
+      // Check if the current path matches the parent menu's href or any submenu item
+      const parentMatches = currentPath === item.href ||
+                           (item.href.endsWith('/') && currentPath.startsWith(item.href));
+
+      // Check if any submenu item matches the current path
+      const hasActiveSubmenu = item.submenu && item.submenu.length > 0 &&
+        item.submenu.some((subItem) => {
+          return currentPath === subItem.href ||
+                 (subItem.href.length > 1 && currentPath.startsWith(subItem.href));
+        });
+
+      // Expand if parent matches or any submenu item matches
+      if (parentMatches || hasActiveSubmenu) {
+        newExpanded.add(item.service || item.name);
+      }
+    });
+
+    setExpandedItems(newExpanded);
+  }, [navigation]); // Removed currentService from dependencies
 
   const toggleSidebar = () => setIsOpen(!isOpen);
 
@@ -99,15 +168,27 @@ export function AppSidebar({
   };
 
   const isCurrentPath = (href: string) => {
-    if (typeof window === 'undefined') return false;
+    if (typeof window === "undefined") return false;
 
-    // For service root paths (ending with /), check if current path starts with it
-    if (window.location.pathname == href) {
+    const currentPath = window.location.pathname;
+
+    // Exact match
+    if (currentPath === href) {
       return true;
-    } else if (href.endsWith('/') && href.length > 1) {
-      return window.location.pathname.startsWith(href);
     }
-    
+
+    // For paths ending with /, check if current path starts with it
+    // e.g., href="/dashboard/" matches "/dashboard/status"
+    if (href.endsWith('/') && href.length > 1) {
+      return currentPath.startsWith(href);
+    }
+
+    // For paths not ending with /, check if current path starts with it followed by /
+    // e.g., href="/dashboard" matches "/dashboard/status" but not "/dashboards"
+    if (!href.endsWith('/') && href.length > 1) {
+      return currentPath.startsWith(href + '/');
+    }
+
     return false;
   };
 
@@ -117,8 +198,22 @@ export function AppSidebar({
     const isExpanded = expandedItems.has(item.service || item.name);
 
     // Check if this item or any of its submenu items are current
-    const isSubmenuActive = hasSubmenu && item.submenu!.some(subItem => isCurrentPath(subItem.href));
-    const isCurrent = item.service === currentService || isCurrentPath(item.href) || isSubmenuActive;
+    const isSubmenuActive =
+      hasSubmenu &&
+      item.submenu!.some((subItem) => isCurrentPath(subItem.href));
+
+    // For parent items with submenu: only highlight if on the exact parent path, not child paths
+    // For items without submenu: highlight if path matches
+    let isCurrent = false;
+    if (hasSubmenu) {
+      // Parent menu is only "current" if we're exactly on its href (not on submenu items)
+      // This prevents the parent from being highlighted when we're on a submenu item
+      const currentPath = typeof window !== 'undefined' ? window.location.pathname : '';
+      isCurrent = currentPath === item.href;
+    } else {
+      // Regular menu item without submenu - use normal path matching
+      isCurrent = isCurrentPath(item.href);
+    }
 
     return (
       <div key={item.name} className="space-y-1">
@@ -126,7 +221,11 @@ export function AppSidebar({
         <div
           className={`
             group flex items-center px-2 py-2 text-sm font-medium rounded-md cursor-pointer
-            ${isCurrent ? 'bg-gray-800 text-white' : 'text-gray-300 hover:bg-gray-700 hover:text-white'}
+            ${
+              isCurrent
+                ? "bg-gray-800 text-white"
+                : "text-gray-300 hover:bg-gray-700 hover:text-white"
+            }
           `}
           onClick={() => {
             if (hasSubmenu) {
@@ -140,18 +239,23 @@ export function AppSidebar({
           <Icon
             className={`
               mr-3 h-6 w-6 flex-shrink-0
-              ${isCurrent ? 'text-blue-500' : 'text-gray-400 group-hover:text-gray-300'}
+              ${
+                isCurrent
+                  ? "text-blue-500"
+                  : isSubmenuActive
+                  ? "text-blue-400"
+                  : "text-gray-400 group-hover:text-gray-300"
+              }
             `}
             aria-hidden="true"
           />
           <span className="flex-1">{item.name}</span>
-          {hasSubmenu && (
-            isExpanded ? (
+          {hasSubmenu &&
+            (isExpanded ? (
               <ChevronDown className="h-4 w-4 text-gray-400" />
             ) : (
               <ChevronRight className="h-4 w-4 text-gray-400" />
-            )
-          )}
+            ))}
         </div>
 
         {/* Submenu items */}
@@ -167,9 +271,10 @@ export function AppSidebar({
                   href={subItem.href}
                   className={`
                     group flex items-center px-2 py-1.5 text-xs font-medium rounded-md
-                    ${isSubCurrent
-                      ? 'bg-gray-700 text-white'
-                      : 'text-gray-400 hover:bg-gray-700 hover:text-white'
+                    ${
+                      isSubCurrent
+                        ? "bg-gray-700 text-white"
+                        : "text-gray-400 hover:bg-gray-700 hover:text-white"
                     }
                   `}
                   onClick={() => setIsOpen(false)}
@@ -178,7 +283,11 @@ export function AppSidebar({
                   <SubIcon
                     className={`
                       mr-2 h-4 w-4 flex-shrink-0
-                      ${isSubCurrent ? 'text-blue-400' : 'text-gray-500 group-hover:text-gray-400'}
+                      ${
+                        isSubCurrent
+                          ? "text-blue-400"
+                          : "text-gray-500 group-hover:text-gray-400"
+                      }
                     `}
                     aria-hidden="true"
                   />
@@ -221,7 +330,7 @@ export function AppSidebar({
       <div
         className={`
           fixed inset-y-0 left-0 z-40 w-64 bg-gray-900 transform transition-transform duration-300 ease-in-out
-          ${isOpen ? 'translate-x-0' : '-translate-x-full'}
+          ${isOpen ? "translate-x-0" : "-translate-x-full"}
           lg:translate-x-0 lg:static lg:inset-0
         `}
       >
@@ -229,12 +338,20 @@ export function AppSidebar({
           {/* Logo */}
           <div className="flex items-center justify-center h-16 px-4 bg-gray-800">
             <Shield className="h-8 w-8 text-blue-500" />
-            <span className="ml-2 text-xl font-bold text-white">Asset Mgmt</span>
+            <span className="ml-2 text-xl font-bold text-white">
+              Asset Mgmt
+            </span>
           </div>
 
           {/* Navigation */}
           <nav className="flex-1 px-2 py-4 space-y-1 overflow-y-auto">
-            {navigation.map(renderNavItem)}
+            {navLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+              </div>
+            ) : (
+              navigation.map(renderNavItem)
+            )}
           </nav>
 
           {/* User section */}
@@ -249,23 +366,32 @@ export function AppSidebar({
                   <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center">
                     <span className="text-white font-semibold text-sm">
                       {user.full_name
-                        .split(' ')
+                        .split(" ")
                         .map((n: string) => n[0])
-                        .join('')
+                        .join("")
                         .toUpperCase()
                         .slice(0, 2)}
                     </span>
                   </div>
                 </div>
                 <div className="ml-3 flex-1 min-w-0">
-                  <p className="text-sm font-medium text-white truncate" title={user.full_name}>
+                  <p
+                    className="text-sm font-medium text-white truncate"
+                    title={user.full_name}
+                  >
                     {user.full_name}
                   </p>
-                  <p className="text-xs font-medium text-gray-400 truncate" title={user.email}>
+                  <p
+                    className="text-xs font-medium text-gray-400 truncate"
+                    title={user.email}
+                  >
                     {user.email}
                   </p>
                   {user.role && (
-                    <p className="text-xs text-blue-400 truncate" title={user.role.display_name}>
+                    <p
+                      className="text-xs text-blue-400 truncate"
+                      title={user.role.display_name}
+                    >
                       {user.role.display_name}
                     </p>
                   )}

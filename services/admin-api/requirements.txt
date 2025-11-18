@@ -11,3 +11,4 @@ redis==5.0.1
 alembic==1.12.1
 apscheduler==3.10.4
 unidecode==1.3.8          # For Vietnamese to ASCII conversion (slug generation)
+httpx

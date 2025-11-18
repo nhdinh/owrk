@@ -1,0 +1,7 @@
+FROM phpmyadmin
+
+WORKDIR /app
+
+# Script for creating init.sql
+COPY ./init-phpmyadmin.sh /app/init-phpmyadmin.sh
+RUN chmod +x /app/init-phpmyadmin.sh

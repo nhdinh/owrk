@@ -303,17 +303,17 @@ async def on_user_created(message):
 ```typescript
 // vite.config.ts in shared-components
 federation({
-  name: 'shared_components',
-  filename: 'remoteEntry.js',
+  name: "shared_components",
+  filename: "remoteEntry.js",
   exposes: {
-    './AppSidebar': './src/components/AppSidebar.tsx',
-    './AppLayout': './src/components/AppLayout.tsx',
+    "./AppSidebar": "./src/components/AppSidebar.tsx",
+    "./AppLayout": "./src/components/AppLayout.tsx",
   },
   shared: {
-    react: { singleton: true, requiredVersion: '^18.3.1' },
-    'react-dom': { singleton: true, requiredVersion: '^18.3.1' },
+    react: { singleton: true, requiredVersion: "^18.3.1" },
+    "react-dom": { singleton: true, requiredVersion: "^18.3.1" },
   },
-})
+});
 ```
 
 **YAML-Based Navigation Configuration** ([navigation.yaml](services/shared-components/src/config/navigation.yaml)):
@@ -343,8 +343,8 @@ navigation:
 **AppSidebar with AuthContext** ([AppSidebar.tsx](services/shared-components/src/components/AppSidebar.tsx)):
 
 ```typescript
-import yaml from 'js-yaml';
-import navigationConfig from '../config/navigation.yaml?raw';
+import yaml from "js-yaml";
+import navigationConfig from "../config/navigation.yaml?raw";
 
 interface User {
   id: number;
@@ -354,13 +354,18 @@ interface User {
 }
 
 interface AppSidebarProps {
-  currentService?: 'dashboard' | 'auth' | 'assets';
+  currentService?: "dashboard" | "auth" | "assets";
   user?: User | null;
   isLoading?: boolean;
   onLogout?: () => void;
 }
 
-export function AppSidebar({ currentService, user, isLoading, onLogout }: AppSidebarProps) {
+export function AppSidebar({
+  currentService,
+  user,
+  isLoading,
+  onLogout,
+}: AppSidebarProps) {
   // Parse YAML navigation
   const config = yaml.load(navigationConfig) as NavigationConfig;
 
@@ -375,20 +380,20 @@ export function AppSidebar({ currentService, user, isLoading, onLogout }: AppSid
 ```typescript
 // vite.config.ts in auth-fe
 federation({
-  name: 'auth_app',
+  name: "auth_app",
   remotes: {
-    shared_components: 'http://localhost:8000/shared/assets/remoteEntry.js',
+    shared_components: "http://localhost:8000/shared/assets/remoteEntry.js",
   },
   shared: {
-    react: { singleton: true, requiredVersion: '^18.3.1' },
-    'react-dom': { singleton: true, requiredVersion: '^18.3.1' },
+    react: { singleton: true, requiredVersion: "^18.3.1" },
+    "react-dom": { singleton: true, requiredVersion: "^18.3.1" },
   },
-})
+});
 
 // Component usage with AuthContext
 // @ts-ignore - Module Federation remote import
-import { AppSidebar } from 'shared_components/AppSidebar';
-import { useAuth } from '@/lib/auth-context';
+import { AppSidebar } from "shared_components/AppSidebar";
+import { useAuth } from "@/lib/auth-context";
 
 export function AppLayout({ children }: AppLayoutProps) {
   const { user, isLoading, logout } = useAuth();
@@ -408,6 +413,7 @@ export function AppLayout({ children }: AppLayoutProps) {
 ```
 
 **Benefits**:
+
 - Single source of truth for shared components
 - Runtime code sharing between independent apps
 - Reduced bundle sizes through shared dependencies (~65% reduction)
@@ -418,7 +424,9 @@ export function AppLayout({ children }: AppLayoutProps) {
 - **Centralized logout**: Logout functionality available in all apps
 
 **Key Features**:
+
 1. **YAML Navigation System** - [navigation.yaml](services/shared-components/src/config/navigation.yaml)
+
    - Centralized menu configuration
    - Expandable/collapsible submenus
    - Icon mapping from lucide-react
@@ -431,12 +439,14 @@ export function AppLayout({ children }: AppLayoutProps) {
    - Avatar with auto-generated initials
 
 **Build Output**:
+
 - remoteEntry.js: 3.6 KB
 - AppSidebar bundle: 126 KB (includes js-yaml parser)
 - AppLayout bundle: 508 bytes
 - Shared React manifests: 104 bytes total
 
 **Xem thêm**:
+
 - Memory file `design_patterns_and_guidelines`
 - **[MODULE_FEDERATION_IMPLEMENTATION.md](docs/deliveries/MODULE_FEDERATION_IMPLEMENTATION.md)** - Complete implementation guide
 
@@ -524,25 +534,25 @@ export function AppLayout({ children }: AppLayoutProps) {
 
 ### 6.3. Infrastructure Status
 
-| Component     | Status       | Health  | Port | Access URL |
-| ------------- | ------------ | ------- | ---- | ---------- |
-| **API Gateway** | ✅ **Running** | **Active** | **8000** | **http://localhost:8000** |
-| **service-registry** | ✅ **Running** | **Healthy** | **3000** | **http://localhost:3000** |
-| MySQL 8.0     | ✅ Running   | Healthy | 3306 | - |
-| MongoDB 7     | ✅ Running   | Healthy | 27017 | - |
-| Redis 7       | ✅ Running   | Healthy | 6379 | - |
-| RabbitMQ 3.12 | ✅ Running   | Healthy | 5672, 15672 | http://localhost:15672 |
-| **shared-components** | ✅ **Running** | **Active** | **3400** | **http://localhost:8000/shared/** |
-| auth-api      | ✅ Running   | Healthy | 8001 | http://localhost:8001 |
-| auth-fe    | ✅ Running   | Active  | 3100 | http://localhost:8000/auth/ |
-| asset-api     | ✅ Running   | Healthy | 8002 | http://localhost:8002 |
-| asset-fe   | ✅ Running   | Active  | 3200 | http://localhost:8000/assets/ |
-| dashboard-api | ✅ Running   | Active  | 8003 | http://localhost:8003 |
-| dashboard-fe-v2 | ✅ Running | Active  | 3300 | http://localhost:8000/dashboard/ |
-| **admin-api** | ✅ **Running** | **Healthy** | **8005** | **http://localhost:8005** ✨ |
-| **admin-frontend** | ⏸️ **Pending** | **N/A** | **3500** | **http://localhost:8000/admin/** ✨ |
-| auth-fe (legacy) | ⏸️ Stopped | N/A | 3000 | (Replaced by v2) |
-| asset-fe (legacy) | ⏸️ Stopped | N/A | 3001 | (Replaced by v2) |
+| Component             | Status         | Health      | Port        | Access URL                          |
+| --------------------- | -------------- | ----------- | ----------- | ----------------------------------- |
+| **API Gateway**       | ✅ **Running** | **Active**  | **8000**    | **http://localhost:8000**           |
+| **service-registry**  | ✅ **Running** | **Healthy** | **3000**    | **http://localhost:3000**           |
+| MySQL 8.0             | ✅ Running     | Healthy     | 3306        | -                                   |
+| MongoDB 7             | ✅ Running     | Healthy     | 27017       | -                                   |
+| Redis 7               | ✅ Running     | Healthy     | 6379        | -                                   |
+| RabbitMQ 3.12         | ✅ Running     | Healthy     | 5672, 15672 | http://localhost:15672              |
+| **shared-components** | ✅ **Running** | **Active**  | **3400**    | **http://localhost:8000/shared/**   |
+| auth-api              | ✅ Running     | Healthy     | 8001        | http://localhost:8001               |
+| auth-fe               | ✅ Running     | Active      | 3100        | http://localhost:8000/auth/         |
+| asset-api             | ✅ Running     | Healthy     | 8002        | http://localhost:8002               |
+| asset-fe              | ✅ Running     | Active      | 3200        | http://localhost:8000/assets/       |
+| dashboard-api         | ✅ Running     | Active      | 8003        | http://localhost:8003               |
+| dashboard-fe-v2       | ✅ Running     | Active      | 3300        | http://localhost:8000/dashboard/    |
+| **admin-api**         | ✅ **Running** | **Healthy** | **8005**    | **http://localhost:8005** ✨        |
+| **admin-frontend**    | ⏸️ **Pending** | **N/A**     | **3500**    | **http://localhost:8000/admin/** ✨ |
+| auth-fe (legacy)      | ⏸️ Stopped     | N/A         | 3000        | (Replaced by v2)                    |
+| asset-fe (legacy)     | ⏸️ Stopped     | N/A         | 3001        | (Replaced by v2)                    |
 
 **Check status**:
 
@@ -568,16 +578,19 @@ docker compose ps
    - **Status**: MongoDB read model now syncs correctly with MySQL write model
 
 3. **RabbitMQ Event Publishing** ✅ FIXED (2025-10-28)
+
    - **Issue**: Function signature mismatch causing "Max length exceeded" errors
    - **Solution**: Refactored `publish_event()` function signature
    - **Status**: Events now publish and consume successfully
 
 4. **User Update ResponseValidationError** ✅ FIXED (2025-10-29)
+
    - **Issue**: Multiple user endpoints (update, activate, deactivate, unlock) returned 500 errors
    - **Solution**: Fixed response serialization in 4 endpoints, added address field to schema
    - **Status**: All user management operations working correctly
 
 5. **Roles Showing 0 Permissions** ✅ FIXED (2025-10-29)
+
    - **Issue**: Roles list displayed "0 permissions" despite database having correct data
    - **Solution**: Added permissions array serialization to GET /roles endpoint
    - **Status**: Permission counts now display correctly
@@ -607,20 +620,20 @@ No active critical issues. System running stable.
 
 ### 6.5. Documentation Status
 
-| Document                       | Status      | Quality   | Last Updated   |
-| ------------------------------ | ----------- | --------- | -------------- |
-| Project Overview               | ✅ Complete | Excellent | 2025-10-21     |
-| Business Requirements          | ✅ Complete | Excellent | 2025-10-21     |
-| System Architecture            | ✅ Complete | Excellent | 2025-10-21     |
-| Database Design                | ✅ Complete | Excellent | 2025-10-21     |
-| API Specification              | ✅ Complete | Excellent | 2025-10-21     |
-| User Stories                   | ✅ Complete | Excellent | 2025-10-21     |
-| Implementation Plan            | ✅ Complete | Excellent | 2025-10-21     |
-| Sprint 1-2 Verification        | ✅ Complete | Excellent | 2025-10-27     |
-| CQRS Implementation Report     | ✅ Complete | Excellent | 2025-10-28     |
-| Auth Frontend V2 Fixes         | ✅ Complete | Excellent | 2025-10-29     |
-| **Module Federation Report**   | ✅ **NEW**  | Excellent | **2025-11-01** |
-| CLAUDE.md (this file)          | ✅ Complete | Excellent | **2025-11-01** |
+| Document                     | Status      | Quality   | Last Updated   |
+| ---------------------------- | ----------- | --------- | -------------- |
+| Project Overview             | ✅ Complete | Excellent | 2025-10-21     |
+| Business Requirements        | ✅ Complete | Excellent | 2025-10-21     |
+| System Architecture          | ✅ Complete | Excellent | 2025-10-21     |
+| Database Design              | ✅ Complete | Excellent | 2025-10-21     |
+| API Specification            | ✅ Complete | Excellent | 2025-10-21     |
+| User Stories                 | ✅ Complete | Excellent | 2025-10-21     |
+| Implementation Plan          | ✅ Complete | Excellent | 2025-10-21     |
+| Sprint 1-2 Verification      | ✅ Complete | Excellent | 2025-10-27     |
+| CQRS Implementation Report   | ✅ Complete | Excellent | 2025-10-28     |
+| Auth Frontend V2 Fixes       | ✅ Complete | Excellent | 2025-10-29     |
+| **Module Federation Report** | ✅ **NEW**  | Excellent | **2025-11-01** |
+| CLAUDE.md (this file)        | ✅ Complete | Excellent | **2025-11-01** |
 
 ---
 
@@ -660,36 +673,37 @@ docker compose stop auth-api
 
 **⭐ PRIMARY ACCESS (via API Gateway)**:
 
-| Service             | URL                                  | Credentials                      |
-| ------------------- | ------------------------------------ | -------------------------------- |
-| **Main Portal**     | **http://localhost:8000**            | Redirects to /dashboard/         |
-| **Dashboard**       | **http://localhost:8000/dashboard/** | admin@example.com / admin123     |
-| **Auth Frontend**   | **http://localhost:8000/auth/**      | admin@example.com / admin123     |
-| **Asset Frontend**  | **http://localhost:8000/assets/**    | admin@example.com / admin123     |
-| **Shared Components**| **http://localhost:8000/shared/**   | (Module Federation host)         |
-| **API Gateway Docs**| **http://localhost:8000/docs**       | -                                |
+| Service               | URL                                  | Credentials                  |
+| --------------------- | ------------------------------------ | ---------------------------- |
+| **Main Portal**       | **http://localhost:8000**            | Redirects to /dashboard/     |
+| **Dashboard**         | **http://localhost:8000/dashboard/** | admin@example.com / admin123 |
+| **Auth Frontend**     | **http://localhost:8000/auth/**      | admin@example.com / admin123 |
+| **Asset Frontend**    | **http://localhost:8000/assets/**    | admin@example.com / admin123 |
+| **Shared Components** | **http://localhost:8000/shared/**    | (Module Federation host)     |
+| **API Gateway Docs**  | **http://localhost:8000/docs**       | -                            |
 
 **Direct Access (Development Only)**:
 
-| Service             | URL                        | Credentials                      |
-| ------------------- | -------------------------- | -------------------------------- |
-| Service Registry    | http://localhost:3000      | (No auth required)               |
-| Service Registry Docs | http://localhost:3000/docs | -                              |
-| Shared Components   | http://localhost:3400      | (Module Federation host)         |
-| Dashboard API       | http://localhost:8003      | Requires auth token              |
-| Dashboard Frontend  | http://localhost:3300      | admin@example.com / admin123     |
-| Auth API            | http://localhost:8001      | admin@example.com / admin123     |
-| Auth API Docs       | http://localhost:8001/docs | Requires auth token              |
-| Auth Frontend V2    | http://localhost:3100      | admin@example.com / admin123     |
-| Asset API           | http://localhost:8002      | Requires auth token              |
-| Asset API Docs      | http://localhost:8002/docs | Requires auth token              |
-| Asset Frontend V2   | http://localhost:3200      | admin@example.com / admin123     |
-| RabbitMQ Management | http://localhost:15672     | guest / guest                    |
-| MySQL               | localhost:3306             | officework / (see .secrets/) |
-| MongoDB             | localhost:27017            | admin / (see .secrets/)          |
-| Redis               | localhost:6379             | (no auth)                        |
+| Service               | URL                        | Credentials                  |
+| --------------------- | -------------------------- | ---------------------------- |
+| Service Registry      | http://localhost:3000      | (No auth required)           |
+| Service Registry Docs | http://localhost:3000/docs | -                            |
+| Shared Components     | http://localhost:3400      | (Module Federation host)     |
+| Dashboard API         | http://localhost:8003      | Requires auth token          |
+| Dashboard Frontend    | http://localhost:3300      | admin@example.com / admin123 |
+| Auth API              | http://localhost:8001      | admin@example.com / admin123 |
+| Auth API Docs         | http://localhost:8001/docs | Requires auth token          |
+| Auth Frontend V2      | http://localhost:3100      | admin@example.com / admin123 |
+| Asset API             | http://localhost:8002      | Requires auth token          |
+| Asset API Docs        | http://localhost:8002/docs | Requires auth token          |
+| Asset Frontend V2     | http://localhost:3200      | admin@example.com / admin123 |
+| RabbitMQ Management   | http://localhost:15672     | guest / guest                |
+| MySQL                 | localhost:3306             | officework / (see .secrets/) |
+| MongoDB               | localhost:27017            | admin / (see .secrets/)      |
+| Redis                 | localhost:6379             | (no auth)                    |
 
 **📝 Notes**:
+
 - Legacy frontends (auth-fe at :3000 and asset-fe at :3001) have been stopped. Use the API Gateway URLs instead.
 - All three frontends (dashboard, auth, assets) use Module Federation to load shared components from shared-components service.
 - remoteEntry.js available at: http://localhost:8000/shared/assets/remoteEntry.js

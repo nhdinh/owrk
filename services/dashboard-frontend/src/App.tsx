@@ -9,6 +9,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 // @ts-ignore - Module Federation remote import
 import { AuthProvider, useAuth } from "shared_components/AuthContext";
 import Dashboard from "./pages/Dashboard";
+import Status from "./pages/Status";
 import "./index.css";
 import React from "react";
 
@@ -50,6 +51,14 @@ const AppRoutes = () => {
         element={
           <ProtectedRoute>
             <Dashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/status"
+        element={
+          <ProtectedRoute>
+            <Status />
           </ProtectedRoute>
         }
       />

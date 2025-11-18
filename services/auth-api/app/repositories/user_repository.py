@@ -87,11 +87,21 @@ class UserRepository(BaseRepository[User]):
 
     def get_by_email(self, email: str) -> Optional[User]:
         """Get user by email"""
-        return self.db.query(User).filter(User.email == email).first()
+        return (
+            self.db.query(User)
+            .filter(User.email == email)
+            .order_by(User.version.desc())
+            .first()
+        )
 
     def get_by_username(self, username: str) -> Optional[User]:
         """Get user by username"""
-        return self.db.query(User).filter(User.username == username).first()
+        return (
+            self.db.query(User)
+            .filter(User.username == username)
+            .order_by(User.version.desc())
+            .first()
+        )
 
     def get_by_ad_sync_id(self, ad_sync_id: str) -> Optional[User]:
         """Get user by Active Directory sync ID"""

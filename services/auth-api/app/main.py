@@ -48,7 +48,10 @@ from app.queries.handlers import (
     SearchUsersHandler,
     GetUserHistoryHandler,
 )
+from app.services.permission_sync_service import permission_sync_service
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from app.read_repositories.user_read_repository import UserReadRepository
+from app.core.service_discovery import register_service
 
 # Configure logging
 logging.basicConfig(
@@ -129,6 +132,17 @@ async def start_event_consumer():
         asyncio.create_task(start_event_consumer())
 
 
+async def initial_permission_sync():
+    """Run initial permission sync after startup delay"""
+    await asyncio.sleep(10)  # Wait 10 seconds for services to start
+    logger.info("🔄 Running initial permission sync...")
+    try:
+        results = await permission_sync_service.sync_all_permissions()
+        logger.info(f"✅ Initial permission sync complete: {results}")
+    except Exception as e:
+        logger.error(f"❌ Initial permission sync failed: {e}")
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """
@@ -137,15 +151,8 @@ async def lifespan(app: FastAPI):
     # Startup
     logger.info("🚀 Starting Auth Service...")
 
-    async with httpx.AsyncClient() as client:
-        data = {
-            "name": settings.SERVICE_NAME,
-            "hostname": settings.SERVICE_HOSTNAME,
-            "port": settings.SERVICE_PORT,
-            "health_endpoint": "/health",
-        }
-        headers = {"Content-Type": "application/json"}
-        httpx.post("http://service-registry:3000/register", json=data)
+    # Register with service registry
+    await register_service()
 
     # log node id
     node_id_path = "/tmp/node_id"
@@ -203,9 +210,33 @@ async def lifespan(app: FastAPI):
     asyncio.create_task(start_event_consumer())
     logger.info("📥 Event consumer started in background")
 
+    # Start permission sync scheduler
+    scheduler = AsyncIOScheduler()
+
+    # Schedule permission sync every 5 minutes
+    scheduler.add_job(
+        permission_sync_service.sync_all_permissions,
+        'interval',
+        minutes=5,
+        id='permission_sync',
+        name='Sync permissions from all services',
+        replace_existing=True
+    )
+
+    scheduler.start()
+    logger.info("📅 Permission sync scheduler started (every 5 minutes)")
+
+    # Run initial sync after 10 seconds
+    asyncio.create_task(initial_permission_sync())
+
     logger.info("✅ Auth Service started successfully")
 
     yield
+
+    # Shutdown scheduler
+    if scheduler.running:
+        scheduler.shutdown()
+        logger.info("✅ Permission sync scheduler stopped")
 
     # Shutdown
     logger.info("🛑 Shutting down Auth Service...")
@@ -256,6 +287,109 @@ async def health_check():
     Health check endpoint for container orchestration
     """
     return {"status": "healthy", "service": "auth-service", "version": "1.0.0"}
+
+
+@app.get("/permissions")
+async def get_service_permissions():
+    """
+    Get all permissions owned by auth-api for permission discovery.
+
+    This endpoint is used by the permission sync service to discover
+    and sync permissions from this service.
+    """
+    AUTH_PERMISSIONS = [
+        {
+            "code": "user:create",
+            "name": "Create Users",
+            "resource": "user",
+            "action": "create",
+            "description": "Create new user accounts in the system",
+        },
+        {
+            "code": "user:read",
+            "name": "View Users",
+            "resource": "user",
+            "action": "read",
+            "description": "View user account details and list users",
+        },
+        {
+            "code": "user:update",
+            "name": "Update Users",
+            "resource": "user",
+            "action": "update",
+            "description": "Modify existing user accounts",
+        },
+        {
+            "code": "user:delete",
+            "name": "Delete Users",
+            "resource": "user",
+            "action": "delete",
+            "description": "Remove user accounts from the system",
+        },
+        {
+            "code": "role:create",
+            "name": "Create Roles",
+            "resource": "role",
+            "action": "create",
+            "description": "Create new roles for access control",
+        },
+        {
+            "code": "role:read",
+            "name": "View Roles",
+            "resource": "role",
+            "action": "read",
+            "description": "View role details and list roles",
+        },
+        {
+            "code": "role:update",
+            "name": "Update Roles",
+            "resource": "role",
+            "action": "update",
+            "description": "Modify existing roles and their permissions",
+        },
+        {
+            "code": "role:delete",
+            "name": "Delete Roles",
+            "resource": "role",
+            "action": "delete",
+            "description": "Remove roles from the system",
+        },
+        {
+            "code": "permission:read",
+            "name": "View Permissions",
+            "resource": "permission",
+            "action": "read",
+            "description": "View available permissions in the system",
+        },
+        {
+            "code": "permission:assign",
+            "name": "Assign Permissions",
+            "resource": "permission",
+            "action": "assign",
+            "description": "Assign permissions to roles",
+        },
+        {
+            "code": "auth:login",
+            "name": "User Authentication",
+            "resource": "auth",
+            "action": "login",
+            "description": "Authenticate users and generate tokens",
+        },
+        {
+            "code": "auth:mfa",
+            "name": "Multi-Factor Authentication",
+            "resource": "auth",
+            "action": "mfa",
+            "description": "Manage MFA settings and verification",
+        },
+    ]
+
+    return {
+        "service": "auth-api",
+        "version": "1.0.0",
+        "description": "Authentication and Authorization Service",
+        "permissions": AUTH_PERMISSIONS,
+    }
 
 
 @app.get("/")

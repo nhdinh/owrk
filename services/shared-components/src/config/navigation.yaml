@@ -7,6 +7,14 @@ navigation:
     icon: Home
     service: dashboard
     description: System overview and statistics
+    submenu:
+      - name: Dashboard
+        href: /dashboard
+        icon: Dashboard
+      - name: Monitoring
+        href: /dashboard/status
+        icon: Monitor
+        description: Monitor
 
   - name: Users & Roles
     href: /auth/

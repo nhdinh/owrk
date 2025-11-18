@@ -19,7 +19,7 @@ interface RoleCreateData {
   name: string;
   display_name: string;
   description?: string;
-  permission_ids?: number[];
+  permission_ids?: string[];
   is_active?: boolean;
 }
 
@@ -27,7 +27,7 @@ interface RoleUpdateData {
   name?: string;
   display_name?: string;
   description?: string;
-  permission_ids?: number[];
+  permission_ids?: string[];
   is_active?: boolean;
 }
 
@@ -42,7 +42,7 @@ export const roleAPI = {
     const response = await apiClient.get('/roles', { params });
     return response.data;
   },
-  get: async (id: number): Promise<Role> => {
+  get: async (id: string): Promise<Role> => {
     const response = await apiClient.get(`/roles/${id}`);
     return response.data;
   },
@@ -50,21 +50,21 @@ export const roleAPI = {
     const response = await apiClient.post('/roles', data);
     return response.data;
   },
-  update: async (id: number, data: RoleUpdateData): Promise<Role> => {
+  update: async (id: string, data: RoleUpdateData): Promise<Role> => {
     const response = await apiClient.put(`/roles/${id}`, data);
     return response.data;
   },
-  delete: async (id: number): Promise<void> => {
+  delete: async (id: string): Promise<void> => {
     await apiClient.delete(`/roles/${id}`);
   },
   getPermissions: async (): Promise<Permission[]> => {
     const response = await apiClient.get('/permissions');
     return response.data;
   },
-  addPermission: async (roleId: number, permissionId: number): Promise<void> => {
+  addPermission: async (roleId: string, permissionId: string): Promise<void> => {
     await apiClient.post(`/roles/${roleId}/permissions/${permissionId}`);
   },
-  removePermission: async (roleId: number, permissionId: number): Promise<void> => {
+  removePermission: async (roleId: string, permissionId: string): Promise<void> => {
     await apiClient.delete(`/roles/${roleId}/permissions/${permissionId}`);
   },
 };

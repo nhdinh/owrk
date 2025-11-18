@@ -17,7 +17,9 @@ from app.core.config import settings
 
 
 # Password hashing context
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+pwd_context = CryptContext(
+    schemes=["bcrypt"], deprecated="auto", bcrypt__rounds=settings.BCRYPT_SALT_ROUNDS
+)
 
 
 # ==================== PASSWORD UTILITIES ====================

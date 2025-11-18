@@ -33,7 +33,7 @@ export default function RoleEdit() {
   // Fetch role data
   const { data: role, isLoading: roleLoading } = useQuery({
     queryKey: ["role", id],
-    queryFn: () => roleAPI.get(parseInt(id!)),
+    queryFn: () => roleAPI.get(id!),
     enabled: !!id,
   });
 
@@ -59,7 +59,7 @@ export default function RoleEdit() {
 
   // Update mutation
   const updateMutation = useMutation({
-    mutationFn: (data: typeof formData) => roleAPI.update(parseInt(id!), data),
+    mutationFn: (data: typeof formData) => roleAPI.update(id!, data),
     onSuccess: () => {
       toast.success("Role updated successfully");
       navigate(`/roles/${id}`);

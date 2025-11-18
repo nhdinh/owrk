@@ -15,6 +15,13 @@ class Settings:
     DEBUG: bool = os.getenv("DEBUG", "False").lower() == "true"
     TESTING: bool = os.getenv("TESTING", "False").lower() == "true"
     API_PREFIX: str = "/api/v1"
+    SERVICE_NAME: str = "procurement-api"
+    SERVICE_HOSTNAME: str = "procurement-api"
+    SERVICE_PORT: int = 8004
+    SERVICE_HEALTH_ENDPOINT: str = "/health"
+
+    # Service Registry
+    SERVICE_REGISTRY_URL: str = os.getenv("SERVICE_REGISTRY_URL", "http://service-registry:3000")
 
     # Database - MySQL (Write)
     DATABASE_USER: str = os.getenv("DATABASE_USER", "officework")

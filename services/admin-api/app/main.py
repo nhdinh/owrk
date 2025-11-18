@@ -10,6 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.core.database import engine
 from app.models.base import Base
+from app.core.service_discovery import register_service
 
 # Configure logging
 logging.basicConfig(
@@ -23,6 +24,9 @@ logger = logging.getLogger(__name__)
 async def lifespan(app: FastAPI):
     """Application lifespan manager"""
     logger.info("Starting Admin Service...")
+
+    # Register with service registry
+    await register_service()
 
     # Create database tables
     # try:
@@ -88,6 +92,102 @@ async def root():
         "version": "1.0.0",
         "docs": "/docs",
         "health": "/health",
+    }
+
+
+@app.get("/permissions", tags=["Permissions"])
+async def get_service_permissions():
+    """
+    Get all permissions owned by admin-api for permission discovery.
+
+    This endpoint is used by the permission sync service to discover
+    and sync permissions from this service.
+    """
+    ADMIN_PERMISSIONS = [
+        {
+            "code": "module_settings:create",
+            "name": "Create Module Settings",
+            "resource": "module_settings",
+            "action": "create",
+            "description": "Create new module configuration settings",
+        },
+        {
+            "code": "module_settings:read",
+            "name": "View Module Settings",
+            "resource": "module_settings",
+            "action": "read",
+            "description": "View module settings and configurations",
+        },
+        {
+            "code": "module_settings:update",
+            "name": "Update Module Settings",
+            "resource": "module_settings",
+            "action": "update",
+            "description": "Modify module settings and configurations",
+        },
+        {
+            "code": "module_settings:delete",
+            "name": "Delete Module Settings",
+            "resource": "module_settings",
+            "action": "delete",
+            "description": "Remove module settings",
+        },
+        {
+            "code": "trash:read",
+            "name": "View Trash",
+            "resource": "trash",
+            "action": "read",
+            "description": "View deleted items in trash/recycle bin",
+        },
+        {
+            "code": "trash:restore",
+            "name": "Restore from Trash",
+            "resource": "trash",
+            "action": "restore",
+            "description": "Restore items from trash",
+        },
+        {
+            "code": "trash:delete",
+            "name": "Permanently Delete",
+            "resource": "trash",
+            "action": "delete",
+            "description": "Permanently delete items from trash",
+        },
+        {
+            "code": "trash:manage",
+            "name": "Manage Trash Settings",
+            "resource": "trash",
+            "action": "manage",
+            "description": "Configure trash retention policies and auto-cleanup",
+        },
+        {
+            "code": "audit_log:read",
+            "name": "View Audit Logs",
+            "resource": "audit_log",
+            "action": "read",
+            "description": "View system audit logs and activity history",
+        },
+        {
+            "code": "system_log:read",
+            "name": "View System Logs",
+            "resource": "system_log",
+            "action": "read",
+            "description": "View system logs and error messages",
+        },
+        {
+            "code": "system:configure",
+            "name": "Configure System",
+            "resource": "system",
+            "action": "configure",
+            "description": "Configure system-wide settings and parameters",
+        },
+    ]
+
+    return {
+        "service": "admin-api",
+        "version": "1.0.0",
+        "description": "Admin Management Service",
+        "permissions": ADMIN_PERMISSIONS,
     }
 
 

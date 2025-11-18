@@ -1,5 +1,5 @@
 export interface User {
-  id: number;
+  id: string;
   email: string;
   username?: string;
   full_name: string;
@@ -9,8 +9,8 @@ export interface User {
   mfa_enabled: boolean;
   user_type?: string;
   role?: Role;
-  role_id?: number;
-  department_id?: number;
+  role_id?: string;
+  department_id?: string;
   phone_number?: string;
   position?: string;
   address?: string;
@@ -22,7 +22,7 @@ export interface User {
 }
 
 export interface Role {
-  id: number;
+  id: string;
   name: string;
   display_name: string;
   description?: string;
@@ -33,7 +33,7 @@ export interface Role {
 }
 
 export interface Permission {
-  id: number;
+  id: string;
   name: string;
   code: string;
   description?: string;

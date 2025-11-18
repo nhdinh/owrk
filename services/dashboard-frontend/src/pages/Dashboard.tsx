@@ -13,7 +13,6 @@ import {
   Shield,
   TrendingUp,
   AlertCircle,
-  CheckCircle,
   XCircle,
   Gauge,
 } from "lucide-react";
@@ -24,44 +23,6 @@ export default function Dashboard() {
     queryFn: () => dashboardAPI.getOverview(),
     refetchInterval: 30000,
   });
-
-  const { data: _ } = useQuery({
-    queryKey: ["dashboardRegister"],
-    queryFn: () => dashboardAPI.registerService(),
-    refetchInterval: 6000,
-  });
-
-  const { data: health } = useQuery({
-    queryKey: ["systemHealth"],
-    queryFn: () => dashboardAPI.getHealth(),
-    refetchInterval: 60000,
-  });
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "healthy":
-        return <CheckCircle className="h-4 w-4 text-green-300" />;
-      case "degraded":
-        return <AlertCircle className="h-4 w-4 text-yellow-300" />;
-      case "down":
-        return <XCircle className="h-4 w-4 text-red-300" />;
-      default:
-        return <AlertCircle className="h-4 w-4 text-gray-300" />;
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "healthy":
-        return "text-green-600";
-      case "degraded":
-        return "text-yellow-600";
-      case "down":
-        return "text-red-600";
-      default:
-        return "text-gray-600";
-    }
-  };
 
   return (
     <AppLayout currentService="dashboard">
@@ -80,42 +41,6 @@ export default function Dashboard() {
         </header>
 
         <main className="flex-1 overflow-y-auto px-4 py-8 lg:px-8">
-          {/* System Health Status */}
-          <div className="mb-8">
-            <h2 className="text-xl font-semibold mb-4">System Health</h2>
-            <div className="grid gap-4 md:grid-cols-4">
-              {health?.services.map((service) => (
-                <Card key={service.service}>
-                  <CardHeader className="flex flex-row items-center justify-between pb-2">
-                    <CardTitle className="text-sm font-medium">
-                      {service.service}
-                    </CardTitle>
-                    {getStatusIcon(service.status)}
-                  </CardHeader>
-                  <CardContent>
-                    <div
-                      className={`text-xl font-bold ${getStatusColor(
-                        service.status
-                      )}`}
-                    >
-                      {service.status.toUpperCase()}
-                    </div>
-                    {service.response_time_ms && (
-                      <p className="text-xs text-muted-foreground">
-                        {service.response_time_ms.toFixed(0)}ms response time
-                      </p>
-                    )}
-                    {service.last_check && (
-                      <p className="text-xs text-muted-foreground">
-                        Last check: {new Date(service.last_check).toString()}
-                      </p>
-                    )}
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-
           {/* User Statistics */}
           <div className="mb-8">
             <h2 className="text-xl font-semibold mb-4">User Statistics</h2>

@@ -16,7 +16,6 @@ from app.core.config import HealthCheckMethods, settings
 from app.schema import *
 from app.helper import get_host_address, do_one_ping
 from app.storage import RedisServiceStore, InfluxServiceStore
-from app.routes import monitoring_router
 
 # Configure logging
 logging.basicConfig(
@@ -224,9 +223,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# Include monitoring router
-app.include_router(monitoring_router)
 
 
 # Root endpoint

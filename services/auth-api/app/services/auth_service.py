@@ -61,7 +61,7 @@ class AuthService:
         """
         with UnitOfWork() as uow:
             # Get user by email
-            user = uow.users.get_by_email(email)
+            user: User = uow.users.get_by_email(email)
             if not user:
                 raise ValueError("Invalid email or password")
 
@@ -126,13 +126,14 @@ class AuthService:
 
             # Generate temporary token for MFA step
             temp_token = create_temp_token({"sub": str(user.id), "email": user.email})
+            mfa_enabled = user.mfa_enabled
 
             uow.commit()
 
             return LoginResponse(
                 temp_token=temp_token,
-                requires_mfa=user.mfa_enabled,
-                message="OTP required" if user.mfa_enabled else "Login successful",
+                requires_mfa=mfa_enabled,
+                message="OTP required" if mfa_enabled else "Login successful",
             )
 
     @staticmethod

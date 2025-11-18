@@ -21,7 +21,7 @@ export default function RoleDetail() {
 
   const { data: role, isLoading, refetch } = useQuery({
     queryKey: ['role', id],
-    queryFn: () => roleAPI.get(parseInt(id!)),
+    queryFn: () => roleAPI.get(id!),
     enabled: !!id,
   });
 

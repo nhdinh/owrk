@@ -42,6 +42,10 @@ class Settings(BaseSettings):
     SERVICE_NAME: str = "auth-api"
     SERVICE_PORT: int = 8000
     SERVICE_HOSTNAME: str = "auth-api"
+    SERVICE_HEALTH_ENDPOINT: str = "/health"
+
+    # Service Registry
+    SERVICE_REGISTRY_URL: str = os.getenv("SERVICE_REGISTRY_URL", "http://service-registry:3000")
 
     # Database - MySQL (Write DB)
     DATABASE_USER: str = os.getenv("DATABASE_USER", "officework")

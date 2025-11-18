@@ -16,14 +16,14 @@ class UserBase(BaseModel):
     phone_number: Optional[str] = None
     position: Optional[str] = None
     address: Optional[str] = None
-    department_id: Optional[int] = None
+    department_id: Optional[str] = None
 
 
 class UserCreate(UserBase):
     """Schema for creating a new user"""
 
     password: str = Field(..., min_length=8)
-    role_id: Optional[int] = None
+    role_id: Optional[str] = None
     user_type: str = Field(default="local", pattern="^(local|active_directory)$")
 
     @validator("password")
@@ -49,21 +49,21 @@ class UserUpdate(BaseModel):
     phone_number: Optional[str] = None
     position: Optional[str] = None
     address: Optional[str] = None
-    department_id: Optional[int] = None
+    department_id: Optional[str] = None
     is_active: Optional[bool] = None
-    role_id: Optional[int] = None
+    role_id: Optional[str] = None
 
 
 class UserResponse(UserBase):
     """Schema for user response"""
 
-    id: int
+    id: str
     user_type: str
     is_active: bool
     is_superuser: bool
     email_verified: bool
     mfa_enabled: bool
-    role_id: Optional[int]
+    role_id: Optional[str]
     created_at: datetime
     updated_at: Optional[datetime]
     last_login_at: Optional[datetime]

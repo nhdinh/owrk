@@ -52,7 +52,7 @@ export default function UserDetail() {
     refetch,
   } = useQuery({
     queryKey: ["user", id],
-    queryFn: () => userAPI.get(parseInt(id!)),
+    queryFn: () => userAPI.get(id!),
     enabled: !!id,
   });
 

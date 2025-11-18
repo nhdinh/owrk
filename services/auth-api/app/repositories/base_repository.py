@@ -2,7 +2,7 @@
 Base Repository with generic CRUD operations
 """
 
-from typing import TypeVar, Generic, Type, List, Optional, Dict, Any
+from typing import TypeVar, Generic, Type, List, Optional
 from sqlalchemy.orm import Session
 from sqlalchemy import and_
 
@@ -20,7 +20,7 @@ class BaseRepository(Generic[T]):
         self.model = model
         self.db = db
 
-    def get_by_id(self, id: int) -> Optional[T]:
+    def get_by_id(self, id: str) -> Optional[T]:
         """Get entity by ID"""
         return self.db.query(self.model).filter(self.model.id == id).first()
 
@@ -58,7 +58,7 @@ class BaseRepository(Generic[T]):
         self.db.refresh(entity)
         return entity
 
-    def delete(self, id: int) -> bool:
+    def delete(self, id: str) -> bool:
         """Delete entity by ID"""
         entity = self.get_by_id(id)
         if entity:
@@ -67,7 +67,7 @@ class BaseRepository(Generic[T]):
             return True
         return False
 
-    def exists(self, id: int) -> bool:
+    def exists(self, id: str) -> bool:
         """Check if entity exists"""
         return (
             self.db.query(self.model.id).filter(self.model.id == id).scalar()
